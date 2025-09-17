@@ -1,69 +1,139 @@
+# ------------------------------
+# Generic OS / editor cruft
+# ------------------------------
+.DS_Store
+Thumbs.db
+*~
 *.bak
 *.orig
-*.dylib
-*.a
-*.o
-*.tar.gz
-*.zip
-*.tar.bz2
-*.rar
-*~
+*.swp
+*.tmp
+*.log
+
+# ------------------------------
+# Qt Creator / qmake
+# ------------------------------
 *.pro.user*
-.DS_Store
+*.qbs.user*
+*.autosave
+.qmake.stash
+.qmake.cache
+*.pri.user
+# Qt generated sources
+moc_*
+ui_*.h
+qrc_*.cpp
+# Qt Creator project caches
+.qtc_clangd/
+.qtc/
+CMakeLists.txt.user
 
-!/neurolabi/lib/Mingw/*.zip
-/neurolabi/lib/*.tar
-
-# qtcreator c project file
-/neurolabi/c/clib.*
-
-# data file
-/neurolabi/data/
-
-# binary file
-obj/
+# ------------------------------
+# Build output (generic)
+# ------------------------------
+build/
+build-*/
+*/build/
+out/
+dist/
 bin/
+obj/
 obj64/
 release/
-/neurolabi/app/
-/neurolabi/lib/genelib/src/*.c
-/neurolabi/c/config.log
-/neurolabi/lib/genelib/src/config.log
-*-build-desktop-Qt*/
+debug/
+x64/
+x86/
+
+# Per-module build dirs we saw locally
+neurolabi/build/
+neurolabi/gui/build/
 gui-build-Desktop-*/
 gui-build-Desktop*-*/
 build-gui-Desktop-*/
 build-gui-Desktop*-*/
 build-gui-*/
+
+# ------------------------------
+# MSVC / Visual Studio
+# ------------------------------
+.vs/
+*.vcxproj.user
+*.ipch
+*.opendb
+*.tlog
+*.lastbuildstate
+*.idb
+*.pdb
+*.ilk
+*.iobj
+*.ipdb
+*.exp
+# link maps etc
+*.map
+
+# ------------------------------
+# GCC/Clang artifacts
+# ------------------------------
+*.o
+*.lo
+*.la
+*.a
+
+# ------------------------------
+# macOS bundles
+# ------------------------------
+neuTube.app/
+neurolabi/gui/neuTube_d.app/
+images/Info.plist
+
+# ------------------------------
+# CMake (if used anywhere)
+# ------------------------------
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
-/neurolabi/lib/genelib/src/Makefile
-neuTube.app/
-neurolabi/build/
-neurolabi/lib/fftw-3.3.2/
-neurolabi/lib/fftw3/
-neurolabi/lib/hdf5-1.8.12/
-neurolabi/lib/hdf5/
-neurolabi/lib/jansson-2.5/
-neurolabi/lib/jansson/
-neurolabi/lib/libpng-1.6.7/
-neurolabi/lib/libxml2-2.9.1/
-neurolabi/lib/png/
-neurolabi/lib/xml/
-neurolabi/lib/Mingw/64/
-neurolabi/lib/msvc/
-neurolabi/c/lib/
-neutube_win64_*/
+**/Makefile
 
+# ------------------------------
+# vcpkg
+# ------------------------------
+vcpkg_installed/
+# (keep vcpkg.json tracked)
+
+# ------------------------------
+# Project-specific exclusions
+# ------------------------------
+# third-party payloads packaged in-tree
+!/neurolabi/lib/Mingw/*.zip
+/neurolabi/lib/*.tar
+/neurolabi/lib/fftw-3.3.2/
+/neurolabi/lib/fftw3/
+/neurolabi/lib/hdf5-1.8.12/
+/neurolabi/lib/hdf5/
+/neurolabi/lib/jansson-2.5/
+/neurolabi/lib/jansson/
+/neurolabi/lib/libpng-1.6.7/
+/neurolabi/lib/libxml2-2.9.1/
+/neurolabi/lib/png/
+/neurolabi/lib/xml/
+/neurolabi/lib/Mingw/64/
+/neurolabi/lib/msvc/
+/neurolabi/c/lib/
+neutube_win64_*/
+neurolabi/app/
+
+# Qt project user files
 /neurolabi/gui/gui.pro.user*
 /neurolabi/c/c_lib.creator.user*
-/neurolabi/c/Makefile-def
-/neurolabi/c/config.status
-/neurolabi/c/include/neurolabi_config.h
-/neurolabi/lib/genelib/src/config.status
+/neurolabi/gui/gui.pro.autosave
 
-# gen file
+# Generated config headers
+/neurolabi/c/include/neurolabi_config.h
+
+# Known generated sources from the C core (keep these ignored if auto-generated)
+# NOTE: We DO NOT ignore files under neurolabi/c/include/ so your hand-authored
+# headers like neurolabi/c/include/tz_imatrix.h are tracked.
+# Legacy auto-generated C files (as in original ignore):
 /neurolabi/c/tz_darray.c
 /neurolabi/c/tz_darray.h
 /neurolabi/c/tz_dimage_lib.c
@@ -151,20 +221,17 @@ neutube_win64_*/
 /neurolabi/c/tz_voxel_linked_list.c
 /neurolabi/c/tz_voxel_linked_list.h
 
-#
-/neurolabi/cpp/lib/CMakeLists.txt
-/neurolabi/cpp/lib/build/
-/neurolabi/python/CMakeParser.pyc
-/neurolabi/python/QMakeParser.pyc
+# Legacy config logs
+/neurolabi/c/config.log
+/neurolabi/lib/genelib/src/config.log
+/neurolabi/c/Makefile-def
+/neurolabi/c/config.status
+/neurolabi/lib/genelib/src/Makefile
+/neurolabi/lib/genelib/src/config.status
 
-#deploy folder
-/neuTube.app/
+# Deployed bundles
 /neuTube_win64/
 /neuTube/
 
-# more auto-generated files
-/neurolabi/gui/neuTube_d.app/
-/neurolabi/gui/moc_*
-/neurolabi/gui/Makefile
-/neurolabi/gui/ui_*
+# One-off generated Qt files in-tree
 /neurolabi/gui/qrc_gui.cpp
