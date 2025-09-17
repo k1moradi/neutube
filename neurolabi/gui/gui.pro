@@ -1082,3 +1082,28 @@ SOURCES += main.cpp \
 OTHER_FILES += \
     extlib.pri \
     extratarget.pri
+
+
+# --- MSVC-specific cleanup of GCC/Clang flags ---
+win32-msvc {
+    # Drop GCC/Clang-only warning flags
+    QMAKE_CXXFLAGS -= -Wno-deprecated -Wno-deprecated-declarations
+    QMAKE_CFLAGS   -= -Wno-deprecated -Wno-deprecated-declarations
+
+    # Strip the GCC-only -isystem and any stray path tokens that leaked into flags
+    QMAKE_CXXFLAGS -= -isystem
+    QMAKE_CFLAGS   -= -isystem
+    QMAKE_CXXFLAGS -= ../gui/ext ./gui/ext $$PWD/../gui/ext $$shell_path($$PWD/../gui/ext)
+    QMAKE_CFLAGS   -= ../gui/ext ./gui/ext $$PWD/../gui/ext $$shell_path($$PWD/../gui/ext)
+
+    # Suppress “deprecated” noise on MSVC (C4996)
+    QMAKE_CXXFLAGS += /wd4996
+    QMAKE_CFLAGS   += /wd4996
+
+    # Use proper include instead of -isystem path hacks
+    INCLUDEPATH += $$PWD/ext
+
+    # (Optional) quiet external headers if you later use MSVC external headers mode
+    # QMAKE_CXXFLAGS += /experimental:external /external:W0 /external:anglebrackets
+}
+

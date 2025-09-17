@@ -40,41 +40,34 @@ typedef CONDITION_VARIABLE pthread_cond_t;
   //  Simple thread support
 
 typedef struct
-  { HANDLE *handle;
+  { HANDLE handle;
     void   *(*fct)(void *);
     void   *arg;
     void   *retval;
-    int     id;
+    DWORD   id;
   } Mythread;
 
 typedef Mythread *pthread_t;
 
 static DWORD WINAPI MyStart(void *arg)
-{ Mythread *tv = (Mythread *) arg;
-
-  tv->retval = tv->fct(tv->arg);
-  return (0);
+{
+    Mythread *tv = (Mythread *) arg;
+    tv->retval = tv->fct(tv->arg);
+    return 0;
 }
 
 static int pthread_create(pthread_t *thread, void *attr,
                           void *(*fct)(void *), void *arg)
-{ Mythread *tv;
-  if (attr != NULL)
-    { fprintf(stderr,"Do not support thread attributes\n");
-      exit (1);
-    }
-  tv = (Mythread *) malloc(sizeof(Mythread));
-  if (tv == NULL)
-    { fprintf(stderr,"pthread_create: Out of memory.\n");
-      exit (1);
-    };
-  tv->fct    = fct;
-  tv->arg    = arg;
-  tv->handle = CreateThread(NULL,0,MyStart,tv,0,&tv->id);
-  if (tv->handle == NULL)
-    return (EAGAIN);
-  else
-    return (0);
+{
+    Mythread *tv;
+    if (attr != NULL) { fprintf(stderr,"Do not support thread attributes\n"); exit(1); }
+    tv = (Mythread *) malloc(sizeof(Mythread));
+    if (tv == NULL) { fprintf(stderr,"pthread_create: Out of memory.\n"); exit(1); }
+    tv->fct    = fct;
+    tv->arg    = arg;
+    tv->handle = CreateThread(NULL, 0, MyStart, tv, 0, &tv->id); // now &tv->id is LPDWORD
+    if (tv->handle == NULL) return EAGAIN;
+    return 0;
 }
 
 static int pthread_join(pthread_t t, void **ret)
@@ -91,11 +84,8 @@ static int pthread_join(pthread_t t, void **ret)
 
 typedef int pthread_id;
 
-static pthread_id pthread_tag()
-{ return (GetCurrentThreadId()); }
-
-static int pthread_is_this(pthread_id id)
-{ return (GetCurrentThreadId() == id); }
+static pthread_id pthread_tag() { return GetCurrentThreadId(); }
+static int pthread_is_this(pthread_id id) { return (GetCurrentThreadId() == id); }
 
 #else   //  Small extension to pthreads!
 

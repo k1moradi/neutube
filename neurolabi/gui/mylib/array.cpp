@@ -40,41 +40,34 @@ typedef CONDITION_VARIABLE pthread_cond_t;
   //  Simple thread support
 
 typedef struct
-  { HANDLE *handle;
-    void   *(*fct)(void *);
-    void   *arg;
-    void   *retval;
-    int     id;
-  } Mythread;
+{ HANDLE handle;
+  void   *(*fct)(void *);
+  void   *arg;
+  void   *retval;
+  DWORD   id;          // was: int id;
+} Mythread;
 
 typedef Mythread *pthread_t;
 
 static DWORD WINAPI MyStart(void *arg)
-{ Mythread *tv = (Mythread *) arg;
-
+{
+  Mythread *tv = (Mythread *) arg;
   tv->retval = tv->fct(tv->arg);
-  return (0);
+  return 0;
 }
 
 static int pthread_create(pthread_t *thread, void *attr,
                           void *(*fct)(void *), void *arg)
-{ Mythread *tv;
-  if (attr != NULL)
-    { fprintf(stderr,"Do not support thread attributes\n");
-      exit (1);
-    }
+{
+  Mythread *tv;
+  if (attr != NULL) { fprintf(stderr,"Do not support thread attributes\n"); exit(1); }
   tv = (Mythread *) malloc(sizeof(Mythread));
-  if (tv == NULL)
-    { fprintf(stderr,"pthread_create: Out of memory.\n");
-      exit (1);
-    };
+  if (tv == NULL) { fprintf(stderr,"pthread_create: Out of memory.\n"); exit(1); }
   tv->fct    = fct;
   tv->arg    = arg;
-  tv->handle = CreateThread(NULL,0,MyStart,tv,0,&tv->id);
-  if (tv->handle == NULL)
-    return (EAGAIN);
-  else
-    return (0);
+  tv->handle = CreateThread(NULL, 0, MyStart, tv, 0, &tv->id); // now &tv->id is LPDWORD
+  if (tv->handle == NULL) return EAGAIN;
+  return 0;
 }
 
 static int pthread_join(pthread_t t, void **ret)
@@ -89,13 +82,10 @@ static int pthread_join(pthread_t t, void **ret)
   return (0);
 }
 
-typedef int pthread_id;
+typedef DWORD pthread_id;
 
-static pthread_id pthread_tag()
-{ return (GetCurrentThreadId()); }
-
-static int pthread_is_this(pthread_id id)
-{ return (GetCurrentThreadId() == id); }
+static pthread_id pthread_tag() { return GetCurrentThreadId(); }
+static int pthread_is_this(pthread_id id) { return (GetCurrentThreadId() == id); }
 
 #else   //  Small extension to pthreads!
 
@@ -292,8 +282,7 @@ static inline int sizeof_array_dims(mylib::Array *array)
   return (object->nsize);
 }
 
-static inline int allocate_array_data(mylib::Array *array, mylib::int64  dsize,
-                                      char *routine)
+static inline int allocate_array_data(mylib::Array *array, mylib::int64  dsize, const char *routine)
 { _Array *object = (_Array *) (((char *) array) - Array_Offset);
   if (object->dsize < dsize)
     { void *x = mylib::Guarded_Realloc(array->data,(size_t) dsize,routine);

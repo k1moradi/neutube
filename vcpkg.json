@@ -1,0 +1,9 @@
+{
+  "name": "neutube-deps",
+  "version-string": "0.1",
+  "dependencies": [
+    "jansson",
+    "libxml2",
+    "fftw3"
+  ]
+}

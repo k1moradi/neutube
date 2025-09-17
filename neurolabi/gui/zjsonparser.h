@@ -8,6 +8,15 @@
 #include "zjsonarray.h"
 #include "zjsonvalue.h"
 
+// Ensure the full json_error_t definition is visible (has .text field)
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include <jansson.h>
+#ifdef __cplusplus
+}
+#endif
+
 class ZIntPoint;
 
 class ZJsonParser
