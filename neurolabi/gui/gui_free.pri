@@ -112,8 +112,6 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zswcconnector.h \
    $${PWD}/zprogressable.h \
    $${PWD}/zuncopyable.h \
-   $${PWD}/biocytin/zstackprojector.h \
-   $${PWD}/biocytin/swcprocessor.h \
    $${PWD}/zresolution.h \
    $${PWD}/zswcpositionadjuster.h \
    $${PWD}/zswcrangeanalyzer.h \
@@ -128,7 +126,6 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/flyem/zintcuboidcomposition.h \
    $${PWD}/zswcglobalfeatureanalyzer.h \
    $${PWD}/zswclocationanalyzer.h \
-   $${PWD}/biocytin/zbiocytinfilenameparser.h \
    $${PWD}/zerror.h \
    $${PWD}/zhistogram.h \
    $${PWD}/misc/miscutility.h \
@@ -333,8 +330,6 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstackstatistics.cpp \
    $${PWD}/zswcconnector.cpp \
    $${PWD}/zprogressable.cpp \
-   $${PWD}/biocytin/zstackprojector.cpp \
-   $${PWD}/biocytin/swcprocessor.cpp \
    $${PWD}/zresolution.cpp \
    $${PWD}/zswcpositionadjuster.cpp \
    $${PWD}/zswcrangeanalyzer.cpp \
@@ -349,7 +344,6 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/flyem/zintcuboidcomposition.cpp \
    $${PWD}/zswcglobalfeatureanalyzer.cpp \
    $${PWD}/zswclocationanalyzer.cpp \
-   $${PWD}/biocytin/zbiocytinfilenameparser.cpp \
    $${PWD}/zhistogram.cpp \
    $${PWD}/misc/miscutility.cpp \
    $${PWD}/flyem/zflyemneuronrange.cpp \
