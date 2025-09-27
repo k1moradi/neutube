@@ -31,9 +31,12 @@ CMakeLists.txt.user
 # ------------------------------
 # Build output (generic)
 # ------------------------------
-build/
-build-*/
-*/build/
+_app_build_release/
+*/_app_build_release/
+_build/
+*/_build/
+_work/
+*/_work/
 out/
 dist/
 bin/

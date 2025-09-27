@@ -1,0 +1,138 @@
+/**@file tz_int_doubly_linked_list.h
+ * @brief doubly linked list of int
+ * @author Ting Zhao
+ */
+
+/* tz_doubly_linked_list.h.t
+ *
+ * 27-Nov-2007 Initial write: Ting Zhao
+ */
+
+/* Int prefix int type basic free type*/
+
+#ifndef _TZ_Int_DOUBLY_LINKED_LIST_H_
+#define _TZ_Int_DOUBLY_LINKED_LIST_H_
+
+#include "tz_cdefs.h"
+#include "tz_doubly_linked_list_defs.h"
+
+
+__BEGIN_DECLS
+
+typedef struct _Int_Dlist {
+  int data;                    /* data */
+  struct _Int_Dlist *prev;     /* previous node */
+  struct _Int_Dlist *next;     /* next node */
+} Int_Dlist;
+
+/*
+ * Int_Dlist_New() news a list with one node.
+ */
+Int_Dlist* Int_Dlist_New();
+
+/*
+ * Int_Dlist_Removeall() removes all nodes of <p>. All memories associated with
+ * <p> will be freed.
+ */
+void Int_Dlist_Remove_All(Int_Dlist *p);
+
+/*
+ * Int_Dlist_Set_Data() sets data for the current node of <p>.
+ */
+void Int_Dlist_Set_Data(Int_Dlist *p, int data);
+
+
+/*
+ * Int_Dlist_Head() return the head of <p> and Int_Dlist_Tail() returns the
+ * tail of p.
+ */
+Int_Dlist* Int_Dlist_Head(const Int_Dlist *p);
+Int_Dlist* Int_Dlist_Tail(const Int_Dlist *p);
+
+/*
+ * Int_Dlist_Next() returns the next node of <p> along the direction <d>.
+ */
+Int_Dlist* Int_Dlist_Next(const Int_Dlist *p, Dlist_Direction_e d);
+
+/*
+ * Int_Dlist_Length() returns the length of <p> in the direction <d>, which
+ * can be forward (DL_FORWARD), backward (DL_BACKWARD) or both ways 
+* (DL_BOTHDIR).
+ * When the length is achieved in both ways, it is the total length of the list.
+ * It returns 0 when the list is NULL and a negative number when something is 
+ * wrong in the function (e.g. invalid direction option).
+ */
+int Int_Dlist_Length(const Int_Dlist *p, Dlist_Direction_e d);
+
+/*
+ * Locate_Int_Dlist locates a certain node that has offset <n> to <p>. <n> can
+ * be negative, which means the located node is ahead of <p>. It returns NULL
+ * if the location is out of range.
+ */
+Int_Dlist* Locate_Int_Dlist(const Int_Dlist *p, int n);
+
+/*
+ * Append_Int_Dlist() appends <p1> and <p2> and returns the head of the new
+ * list.
+ */
+Int_Dlist* Append_Int_Dlist(Int_Dlist *p1, Int_Dlist *p2);
+
+/*
+ * Int_Dlist_Remove_End() removes one of the ends of <p> according to <e>:
+ * DL_HEAD for head and DL_TAIL for tail. It returns the new head or tail if
+ * the new list is not empty; otherwise it returns NULL.
+ */
+Int_Dlist* Int_Dlist_Remove_End(Int_Dlist *p, Dlist_End_e e);
+
+
+/*
+ * Int_Dlist_Remove_Node() removes the node <p> from its list.
+ * It returns the new head if the new list is not empty; otherwise it 
+ * returns NULL.
+ */
+Int_Dlist* Int_Dlist_Remove_Node(Int_Dlist *p);
+
+/*
+ * Int_Dlist_Unlinkall() removes all nodes but keeps the associated data
+ * intact if they are references.
+ */
+void Int_Dlist_Unlinkall(Int_Dlist *p);
+
+/*
+ * Int_Dlist_Add() adds data as a new node to the list. <e> speficies where
+ * where the new node is added. It can noly be only DL_HEAD or DL_TAIL. DL_HEAD
+ * means the new node is added as the head and DL_TAIL means the new node is
+ * added as the tail. It returns the new node.
+ */
+Int_Dlist* Int_Dlist_Add(Int_Dlist *p, int data, Dlist_End_e e);
+
+/*
+ * Int_Dlist_Insert() inserts <data> into <p> right before its current 
+ * position.
+ */
+void Int_Dlist_Insert(Int_Dlist *p, int data);
+
+/*
+ * Int_Dlist_Is_Empty() returns TRUE if <p> is empty; otherwise it returns 
+ * FALSE.
+ */
+BOOL Int_Dlist_Is_Empty(const Int_Dlist *p);
+
+/**@brief Turn a list to an array.
+ *
+ * Int_Dlist_To_Array() copies a list to an array. 
+ */
+int* Int_Dlist_To_Array(const Int_Dlist *p, int step, int *array, 
+			 int *length);
+
+/*
+ * Printing functions.
+ */
+void Print_Int_Dlist(const Int_Dlist *p);
+void Print_Int_Dlist_Compact(const Int_Dlist *p);
+void Print_Int_Dlist_F(const Int_Dlist *p, const char *format);
+
+
+__END_DECLS
+
+#endif
