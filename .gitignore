@@ -1,8 +1,11 @@
 # ------------------------------
 # Generic OS / editor cruft
 # ------------------------------
+# macOS / Windows
 .DS_Store
 Thumbs.db
+
+# Editors / swaps / backups
 *~
 *.bak
 *.orig
@@ -10,53 +13,84 @@ Thumbs.db
 *.tmp
 *.log
 
+# IDEs
+.vscode/
+.idea/
+# QtCreator caches
+.qtc_clangd/
+.qtc/
+
+# clangd / ccls caches
+.clangd/
+.ccls-cache/
+
 # ------------------------------
-# Qt Creator / qmake
+# Qt Creator / qmake / Qt generated
 # ------------------------------
+# qmake/Qt Creator local settings
 *.pro.user*
 *.qbs.user*
 *.autosave
 .qmake.stash
 .qmake.cache
 *.pri.user
-# Qt generated sources
+CMakeLists.txt.user
+
+# Qt-generated sources (should be ignored)
 moc_*
 ui_*.h
 qrc_*.cpp
-# Qt Creator project caches
-.qtc_clangd/
-.qtc/
-CMakeLists.txt.user
 
 # ------------------------------
-# Build output (generic)
+# Build output (repo-root, anchored)
 # ------------------------------
-_app_build_release/
-*/_app_build_release/
-_build/
-*/_build/
-_work/
-*/_work/
-_install/
-*/_install/
-out/
+# Root-level build / helper dirs created by your script
+/_app_build_release/
+/_app_build_debug/        # if used
+/_build/
+/_work/
+/_install/
 dist/
+out/
 bin/
-obj/
-obj64/
 release/
 debug/
 x64/
 x86/
 
-# Per-module build dirs we saw locally
-neurolabi/build/
-neurolabi/gui/build/
-gui-build-Desktop-*/
-gui-build-Desktop*-*/
-build-gui-Desktop-*/
-build-gui-Desktop*-*/
-build-gui-*/
+# Generic build artifact directories (catch module-local ones too)
+**/_app_build_release/
+**/_build/
+**/_work/
+**/_install/
+**/dist/
+**/out/
+**/bin/
+
+# CMake artifacts
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+# Do not ignore Makefiles you intentionally check-in. If you want to ignore generated Makefiles, add:
+# **/Makefile (but keep tracked root Makefiles if any)
+
+# ------------------------------
+# Compiler / linker artifacts
+# ------------------------------
+# object files, libtool artefacts, static libs (most often build artifacts)
+*.o
+*.lo
+*.la
+*.a
+*.so
+*.dll
+*.dylib
+
+# symbol/debug files
+*.pdb
+*.idb
+*.ilk
+*.map
 
 # ------------------------------
 # MSVC / Visual Studio
@@ -67,22 +101,9 @@ build-gui-*/
 *.opendb
 *.tlog
 *.lastbuildstate
-*.idb
-*.pdb
-*.ilk
 *.iobj
 *.ipdb
 *.exp
-# link maps etc
-*.map
-
-# ------------------------------
-# GCC/Clang artifacts
-# ------------------------------
-*.o
-*.lo
-*.la
-*.a
 
 # ------------------------------
 # macOS bundles
@@ -92,141 +113,146 @@ neurolabi/gui/neuTube_d.app/
 images/Info.plist
 
 # ------------------------------
-# CMake (if used anywhere)
-# ------------------------------
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-**/Makefile
-
-# ------------------------------
-# vcpkg
+# vcpkg / package managers
 # ------------------------------
 vcpkg_installed/
-# (keep vcpkg.json tracked)
+# (keep vcpkg.json tracked if used)
 
 # ------------------------------
 # Project-specific exclusions
 # ------------------------------
-# third-party payloads packaged in-tree
-/src/lib/Mingw/*.zip
-/src/lib/*.tar
-/src/lib/fftw-3.3.2/
-/src/lib/fftw3/
-/src/lib/hdf5-1.8.12/
-/src/lib/hdf5/
-/src/lib/jansson-2.5/
-/src/lib/jansson/
-/src/lib/libpng-1.6.7/
-/src/lib/libxml2-2.9.1/
-/src/lib/png/
-/src/lib/xml/
-/src/lib/Mingw/64/
-/src/lib/msvc/
-/src/c/lib/
-/src/app/
+# Third-party archives / packaged payloads in-tree (if you want to avoid committing them)
+src/lib/Mingw/*.zip
+src/lib/*.tar
+src/lib/fftw-3.3.2/
+src/lib/fftw3/
+src/lib/hdf5-1.8.12/
+src/lib/hdf5/
+src/lib/jansson-2.5/
+src/lib/jansson/
+src/lib/libpng-1.6.7/
+src/lib/libxml2-2.9.1/
+src/lib/png/
+src/lib/xml/
+src/lib/Mingw/64/
+src/lib/msvc/
 
-# Qt project user files
-/src/gui/gui.pro.user*
-/src/c/c_lib.creator.user*
-/src/gui/gui.pro.autosave
-/src/gui/qrc_gui.cpp
+# neurolabi built libs and helper dirs (your legacy layout)
+src/c/lib/
+src/app/
 
-# Generated config headers
-/src/c/include/neurolabi_config.h
-/src/c/tz_darray.c
-/src/c/tz_darray.h
-/src/c/tz_dimage_lib.c
-/src/c/tz_dimage_lib.h
-/src/c/tz_dmatrix.c
-/src/c/tz_dmatrix.h
-/src/c/tz_double_linked_list.c
-/src/c/tz_double_linked_list.h
-/src/c/tz_farray.c
-/src/c/tz_farray.h
-/src/c/tz_fftw.c
-/src/c/tz_fftw.h
-/src/c/tz_fftwf.c
-/src/c/tz_fftwf.h
-/src/c/tz_fimage_lib.c
-/src/c/tz_fimage_lib.h
-/src/c/tz_fmatrix.c
-/src/c/tz_fmatrix.h
-/src/c/tz_iarray.c
-/src/c/tz_iarray.h
-/src/c/tz_i64array.c
-/src/c/tz_i64array.h
-/src/c/tz_iimage_lib.c
-/src/c/tz_iimage_lib.h
-/src/c/tz_imatrix.c
-/src/c/tz_imatrix.h
-/src/c/tz_int_arraylist.c
-/src/c/tz_int_arraylist.h
-/src/c/tz_int64_arraylist.c
-/src/c/tz_int64_arraylist.h
-/src/c/tz_int_doubly_linked_list.c
-/src/c/tz_int_doubly_linked_list.h
-/src/c/tz_int_linked_list.c
-/src/c/tz_int_linked_list.h
-/src/c/tz_local_neuroseg_doubly_linked_list.c
-/src/c/tz_local_neuroseg_doubly_linked_list.h
-/src/c/tz_local_neuroseg_ellipse_doubly_linked_list.c
-/src/c/tz_local_neuroseg_ellipse_doubly_linked_list.h
-/src/c/tz_local_neuroseg_plane_doubly_linked_list.c
-/src/c/tz_local_neuroseg_plane_doubly_linked_list.h
-/src/c/tz_locne_chain_com.c
-/src/c/tz_locne_chain_com.h
-/src/c/tz_locne_node.c
-/src/c/tz_locne_node.h
-/src/c/tz_locne_node_doubly_linked_list.c
-/src/c/tz_locne_node_doubly_linked_list.h
-/src/c/tz_locnp_chain_com.c
-/src/c/tz_locnp_chain_com.h
-/src/c/tz_locnp_node.c
-/src/c/tz_locnp_node.h
-/src/c/tz_locnp_node_doubly_linked_list.c
-/src/c/tz_locnp_node_doubly_linked_list.h
-/src/c/tz_locrect_chain_com.c
-/src/c/tz_locrect_chain_com.h
-/src/c/tz_locrect_node.c
-/src/c/tz_locrect_node.h
-/src/c/tz_locrect_node_doubly_linked_list.c
-/src/c/tz_locrect_node_doubly_linked_list.h
-/src/c/tz_locseg_chain_com.c
-/src/c/tz_locseg_chain_com.h
-/src/c/tz_locseg_node.c
-/src/c/tz_locseg_node.h
-/src/c/tz_locseg_node_doubly_linked_list.c
-/src/c/tz_locseg_node_doubly_linked_list.h
-/src/c/tz_neuron_component_arraylist.c
-/src/c/tz_neuron_component_arraylist.h
-/src/c/tz_object_3d_linked_list.c
-/src/c/tz_object_3d_linked_list.h
-/src/c/tz_stack_tile_arraylist.c
-/src/c/tz_stack_tile_arraylist.h
-/src/c/tz_stack_tile_i_arraylist.c
-/src/c/tz_stack_tile_i_arraylist.h
-/src/c/tz_swc_arraylist.c
-/src/c/tz_swc_arraylist.h
-/src/c/tz_u16array.c
-/src/c/tz_u16array.h
-/src/c/tz_u8array.c
-/src/c/tz_u8array.h
-/src/c/tz_u8matrix.c
-/src/c/tz_u8matrix.h
-/src/c/tz_unipointer_arraylist.c
-/src/c/tz_unipointer_arraylist.h
-/src/c/tz_unipointer_linked_list.c
-/src/c/tz_unipointer_linked_list.h
-/src/c/tz_voxel_linked_list.c
-/src/c/tz_voxel_linked_list.h
-/src/c/config.log
-/src/lib/genelib/src/config.log
-/src/c/Makefile-def
-/src/c/config.status
-/src/lib/genelib/src/Makefile
-/src/lib/genelib/src/config.status
+# Qt GUI transient files
+src/gui/gui.pro.user*
+src/gui/gui.pro.autosave
+src/gui/qrc_gui.cpp
 
-/neuTube_win64/
-/neuTube/
+# If neurolabi_config.h is generated during build, ignore the generated one.
+# BUT be careful: if you track a canonical one in repo you should remove this entry.
+# Keep it only if the config is generated and should not be versioned.
+src/c/include/neurolabi_config.h
+
+# Generated C files: if these are generated by your template step, ignore the generated outputs.
+# NOTE: listing each file is brittle — consider moving generated sources to a single folder (e.g. src/c/generated/)
+# and ignoring that folder instead: /src/c/generated/
+# If you must ignore them individually, keep the list — otherwise prefer a pattern or generated dir.
+src/c/tz_darray.c
+src/c/tz_darray.h
+src/c/tz_dimage_lib.c
+src/c/tz_dimage_lib.h
+src/c/tz_dmatrix.c
+src/c/tz_dmatrix.h
+src/c/tz_double_linked_list.c
+src/c/tz_double_linked_list.h
+src/c/tz_farray.c
+src/c/tz_farray.h
+src/c/tz_fftw.c
+src/c/tz_fftw.h
+src/c/tz_fftwf.c
+src/c/tz_fftwf.h
+src/c/tz_fimage_lib.c
+src/c/tz_fimage_lib.h
+src/c/tz_fmatrix.c
+src/c/tz_fmatrix.h
+src/c/tz_iarray.c
+src/c/tz_iarray.h
+src/c/tz_i64array.c
+src/c/tz_i64array.h
+src/c/tz_iimage_lib.c
+src/c/tz_iimage_lib.h
+src/c/tz_imatrix.c
+src/c/tz_imatrix.h
+src/c/tz_int_arraylist.c
+src/c/tz_int_arraylist.h
+src/c/tz_int64_arraylist.c
+src/c/tz_int64_arraylist.h
+src/c/tz_int_doubly_linked_list.c
+src/c/tz_int_doubly_linked_list.h
+src/c/tz_int_linked_list.c
+src/c/tz_int_linked_list.h
+src/c/tz_local_neuroseg_doubly_linked_list.c
+src/c/tz_local_neuroseg_doubly_linked_list.h
+src/c/tz_local_neuroseg_ellipse_doubly_linked_list.c
+src/c/tz_local_neuroseg_ellipse_doubly_linked_list.h
+src/c/tz_local_neuroseg_plane_doubly_linked_list.c
+src/c/tz_local_neuroseg_plane_doubly_linked_list.h
+src/c/tz_locne_chain_com.c
+src/c/tz_locne_chain_com.h
+src/c/tz_locne_node.c
+src/c/tz_locne_node.h
+src/c/tz_locne_node_doubly_linked_list.c
+src/c/tz_locne_node_doubly_linked_list.h
+src/c/tz_locnp_chain_com.c
+src/c/tz_locnp_chain_com.h
+src/c/tz_locnp_node.c
+src/c/tz_locnp_node.h
+src/c/tz_locnp_node_doubly_linked_list.c
+src/c/tz_locnp_node_doubly_linked_list.h
+src/c/tz_locrect_chain_com.c
+src/c/tz_locrect_chain_com.h
+src/c/tz_locrect_node.c
+src/c/tz_locrect_node.h
+src/c/tz_locrect_node_doubly_linked_list.c
+src/c/tz_locrect_node_doubly_linked_list.h
+src/c/tz_locseg_chain_com.c
+src/c/tz_locseg_chain_com.h
+src/c/tz_locseg_node.c
+src/c/tz_locseg_node.h
+src/c/tz_locseg_node_doubly_linked_list.c
+src/c/tz_locseg_node_doubly_linked_list.h
+src/c/tz_neuron_component_arraylist.c
+src/c/tz_neuron_component_arraylist.h
+src/c/tz_object_3d_linked_list.c
+src/c/tz_object_3d_linked_list.h
+src/c/tz_stack_tile_arraylist.c
+src/c/tz_stack_tile_arraylist.h
+src/c/tz_stack_tile_i_arraylist.c
+src/c/tz_stack_tile_i_arraylist.h
+src/c/tz_swc_arraylist.c
+src/c/tz_swc_arraylist.h
+src/c/tz_u16array.c
+src/c/tz_u16array.h
+src/c/tz_u8array.c
+src/c/tz_u8array.h
+src/c/tz_u8matrix.c
+src/c/tz_u8matrix.h
+src/c/tz_unipointer_arraylist.c
+src/c/tz_unipointer_arraylist.h
+src/c/tz_unipointer_linked_list.c
+src/c/tz_unipointer_linked_list.h
+src/c/tz_voxel_linked_list.c
+src/c/tz_voxel_linked_list.h
+src/c/config.log
+src/lib/genelib/src/config.log
+src/c/Makefile-def
+src/c/config.status
+src/lib/genelib/src/Makefile
+src/lib/genelib/src/config.status
+
+# Dist / local packaging
+neuTube_win64*/
+neuTube*/
 neutube_win64_*/
+
+# ------------------------------
+# End .gitignore
+# ------------------------------
