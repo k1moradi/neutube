@@ -23,26 +23,17 @@ ZTraceProject::~ZTraceProject()
 
 int ZTraceProject::load(const QString /*path*/)
 {
-  /*
-  return m_parent->loadTraceProject((path
-                                     + m_parent->defaultTraceProjectFile())
-                                    .toLocal8Bit().constData());
-                                    */
   return 0;
 }
 
 void ZTraceProject::save()
 {
   QString filePath = m_projFilePath;
-
   QDir workDir(rootPath());
-
   if (!workDir.exists()) {
     workDir.mkpath(rootPath());
   }
-
   QDir tubeDir(m_workspacePath);
-
   if (tubeDir.exists()) {
     QDir bkTubeDir(rootPath() + "/" + "~" + tubeDir.dirName());
     if (bkTubeDir.exists()) {
@@ -50,19 +41,14 @@ void ZTraceProject::save()
     }
     tubeDir.rename(tubeDir.absolutePath(), bkTubeDir.absolutePath());
   }
-
   workDir.mkdir(tubeFolder());
-
   qDebug() << filePath;
-
   QFile file(filePath);
   file.open(QIODevice::WriteOnly);
-
   QTextStream out(&file);
-
-  out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
-  out << "<trace version = \"1.0\">" << endl;
-  out << "<data>" << endl;
+  out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << Qt::endl;
+  out << "<trace version = \"1.0\">" << Qt::endl;
+  out << "<data>" << Qt::endl;
   out << "<image type=";
   const ZStackFile &stackSource = m_parent->document()->getStack()->source();
 
@@ -73,35 +59,33 @@ void ZTraceProject::save()
   {
     switch (ZFileType::fileType(stackSource.firstUrl())) {
     case ZFileType::TIFF_FILE:
-      out << "\"tif\">" << endl;
-      out << "<url>" << stackSource.firstUrl().c_str() << "</url>" << endl;
+      out << "\"tif\">" << Qt::endl;
+      out << "<url>" << stackSource.firstUrl().c_str() << "</url>" << Qt::endl;
       break;
     case ZFileType::LSM_FILE:
-    //STACK_DOC_LSM_FILE:
-      out << "\"lsm\">" << endl;
-      out << "<url>" << stackSource.firstUrl().c_str() << "</url>" << endl;;
+      out << "\"lsm\">" << Qt::endl;
+      out << "<url>" << stackSource.firstUrl().c_str() << "</url>" << Qt::endl;;
       break;
     case ZFileType::V3D_RAW_FILE:
-      out << "\"raw\">" << endl;
-      out << "<url>" << stackSource.firstUrl().c_str() << "</url>" << endl;;
+      out << "\"raw\">" << Qt::endl;
+      out << "<url>" << stackSource.firstUrl().c_str() << "</url>" << Qt::endl;;
       break;
     default:
-      out << "unknown>" << stackSource.firstUrl().c_str() << endl;
+      out << "unknown>" << stackSource.firstUrl().c_str() << Qt::endl;
     }
   }
     break;
   case ZStackFile::FILE_BUNDLE:
   {
-    out << "\"bundle\">" << endl;
-    //File_Bundle_S *fb = (File_Bundle_S*) stackSource->ci;
-    out << "<prefix>" << stackSource.prefix().c_str() << "</prefix>" << endl;
-    out << "<suffix>" << stackSource.suffix().c_str() << "</suffix" << endl;
-    out << "<num_width>" << stackSource.numWidth() << "</num_width>" << endl;
-    out << "<first_num>" << stackSource.firstNum() << "</first_num>" << endl;
+    out << "\"bundle\">" << Qt::endl;
+    out << "<prefix>" << stackSource.prefix().c_str() << "</prefix>" << Qt::endl;
+    out << "<suffix>" << stackSource.suffix().c_str() << "</suffix"  << Qt::endl;
+    out << "<num_width>" << stackSource.numWidth() << "</num_width>" << Qt::endl;
+    out << "<first_num>" << stackSource.firstNum() << "</first_num>" << Qt::endl;
   }
     break;
   default:
-    out << "unknown>" << stackSource.firstUrl().c_str() << endl;
+    out << "unknown>" << stackSource.firstUrl().c_str() << Qt::endl;
   }
 
   out << "</image>" << endl;
@@ -110,37 +94,28 @@ void ZTraceProject::save()
   out << "<resolution>" << "<x>" << resolution.voxelSizeX() << "</x>"
       << "<y>" << resolution.voxelSizeY() << "</y>"
       << "<z>" << resolution.voxelSizeZ() << "</z>"
-      << "</resolution>" << endl;
-  out << "<unit>" << resolution.unit() << "</unit>" << endl;
-  out << "<channel>" << stackSource.channel() << "</channel>" << endl;
-
-  out << "</data>" << endl;
-
-  out << "<output>" << endl;
-  out << "<workdir>" << m_workspacePath << "</workdir>" << endl;
+      << "</resolution>" << Qt::endl;
+  out << "<unit>" << resolution.unit() << "</unit>" << Qt::endl;
+  out << "<channel>" << stackSource.channel() << "</channel>" << Qt::endl;
+  out << "</data>" << Qt::endl;
+  out << "<output>" << Qt::endl;
+  out << "<workdir>" << m_workspacePath << "</workdir>" << Qt::endl;
   if (m_parent->document()->tubePrefix() != NULL) {
-    out << "<tube>" << m_parent->document()->tubePrefix()
-        << "</tube>" << endl;
+    out << "<tube>" << m_parent->document()->tubePrefix() << "</tube>" << Qt::endl;
   }
-  out << "</output>" << endl;
-
+  out << "</output>" << Qt::endl;
   if (!m_decorationPath.isEmpty()) {
     out << "<object>" << endl;
     for (int i = 0; i < m_decorationPath.length(); i++) {
       out << "<" << m_decorationTag.at(i) << ">";
       out << m_decorationPath.at(i);
-      out << "</" << m_decorationTag.at(i) << ">" << endl;
+      out << "</" << m_decorationTag.at(i) << ">" << Qt::endl;
     }
-    out << "</object>" << endl;
+    out << "</object>" << Qt::endl;
   }
-
-  out << "</trace>" << endl;
-
+  out << "</trace>" << Qt::endl;
   file.close();
-
-  m_parent->document()
-      ->exportBinary((m_workspacePath + "/"
-                      + m_parent->document()->tubePrefix()).toLocal8Bit().constData());
+  m_parent->document()->exportBinary((m_workspacePath + "/" + m_parent->document()->tubePrefix()).toLocal8Bit().constData());
 }
 
 void ZTraceProject::saveAs(QString workspacePath)

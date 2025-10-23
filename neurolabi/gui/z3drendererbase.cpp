@@ -238,14 +238,12 @@ Z3DRendererBase::~Z3DRendererBase()
 
 void Z3DRendererBase::setGlobalShaderParameters(Z3DShaderProgram &shader, Z3DEye eye)
 {
+  CHECK_GL_ERROR_NOTE("Z3DRendererBase::setGlobalShaderParameters start");
   shader.setLogUniformLocationError(false);
-
   shader.setUniformValue("screen_dim", glm::vec2(m_viewport.z, m_viewport.w));
   shader.setUniformValue("screen_dim_RCP", 1.f / glm::vec2(m_viewport.z, m_viewport.w));
-
   // camera position in world coordinates, and corresponding transformation matrices
   shader.setUniformValue("camera_position", m_camera.getEye());
-
   shader.setUniformValue("view_matrix", getViewMatrix(eye));
   shader.setUniformValue("view_matrix_inverse", getViewMatrixInverse(eye));
   shader.setUniformValue("projection_matrix", getProjectionMatrix(eye));
@@ -254,9 +252,7 @@ void Z3DRendererBase::setGlobalShaderParameters(Z3DShaderProgram &shader, Z3DEye
   shader.setUniformValue("viewport_matrix", getViewportMatrix());
   shader.setUniformValue("viewport_matrix_inverse", getViewportMatrixInverse());
   shader.setUniformValue("projection_view_matrix", getProjectionMatrix(eye) * getViewMatrix(eye));
-
   shader.setUniformValue("gamma", 2.f);
-
   shader.setUniformValue("size_scale", getSizeScale());
   shader.setUniformValue("pos_scale", getCoordScales());
 
@@ -296,7 +292,7 @@ void Z3DRendererBase::setGlobalShaderParameters(Z3DShaderProgram &shader, Z3DEye
   }
 
   shader.setLogUniformLocationError(true);
-  CHECK_GL_ERROR;
+  CHECK_GL_ERROR_NOTE("Z3DRendererBase::setGlobalShaderParameters end");
 }
 
 void Z3DRendererBase::setGlobalShaderParameters(Z3DShaderProgram *shader, Z3DEye eye)
@@ -347,7 +343,6 @@ void Z3DRendererBase::addRenderer(Z3DPrimitiveRenderer *renderer)
     return;
 
   renderer->setRendererBase(this);
-
   renderer->initialize();
   renderer->setInitialized(true);
   connect(renderer, SIGNAL(openglRendererInvalid()), this, SLOT(invalidateDisplayList()));
@@ -565,49 +560,9 @@ void Z3DRendererBase::compile()
 
 void Z3DRendererBase::render(Z3DEye eye)
 {
-#ifdef _DEBUG_
-  if (m_renderMethod.isSelected("Old openGL")) {
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadMatrixf(glm::value_ptr(getProjectionMatrix(eye)));
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadMatrixf(glm::value_ptr(getViewMatrix(eye)));
-
-    if (!useDisplayList()) {
-      renderInstant();
-      glMatrixMode(GL_PROJECTION);
-      glPopMatrix();
-      glMatrixMode(GL_MODELVIEW);
-      glPopMatrix();
-      return;
-    }
-
-    // check if render state changed and we need to regenerate
-    // display list
-    if (m_displayList != 0 &&
-        m_lastOpenglRenderingState != m_renderers) {
-      invalidateDisplayList();
-    }
-
-    if (m_displayList == 0) {
-      generateDisplayList();
-    }
-
-    if (glIsList(m_displayList)) {
-      glCallList(m_displayList);
-    }
-
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-  } else {
-    renderUsingGLSL(eye);
-  }
-#else
+  CHECK_GL_ERROR_NOTE("Z3DRendererBase::render start");
   renderUsingGLSL(eye);
-#endif
+  CHECK_GL_ERROR_NOTE("Z3DRendererBase::render end");
 }
 
 void Z3DRendererBase::renderPicking(Z3DEye eye)

@@ -10,7 +10,9 @@ public:
   explicit ZStackYZView(ZStackFrame *parent = 0);
   explicit ZStackYZView(QWidget *parent = 0);
   virtual ~ZStackYZView();
-
+  // Unhide base overload(s) and provide an exact override
+  using ZStackView::resetCanvasWithStack;
+  void resetCanvasWithStack(ZMultiscalePixmap& canvas, ZPainter* painter) override;
 public:
   void paintStackBuffer();
   void paintSingleChannelStackSlice(ZStack *stack, int slice);

@@ -30,7 +30,7 @@ void NewProjectMainWindow::openTifStacks()
     QString fileName = QFileDialog::getOpenFileName(this,"Select one tif stack",NULL,"*[0-9]?.tif");
     if (!fileName.isEmpty()) {
         QFileInfo fInfo(fileName);
-        filenameCommon = fInfo.fileName().remove(QRegExp("([0-9]+).tif"));
+        filenameCommon = fInfo.fileName().remove(QRegularExpression("([0-9]+).tif"));
         filenameDir = fInfo.absoluteDir();
         displayStackInfo();
     }

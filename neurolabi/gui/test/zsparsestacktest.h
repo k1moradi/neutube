@@ -2,6 +2,7 @@
 #define ZSPARSESTACKTEST_H
 
 #include "ztestheader.h"
+#include "../zfspath.h"
 #include "zsparsestack.h"
 #include "neutubeconfig.h"
 #include "zstackfactory.h"
@@ -118,7 +119,7 @@ TEST(ZSparseStack, downsample)
 
   ZStack *stack2 = spStack.getStack();
 
-  stack2->save(GET_TEST_DATA_DIR + "/test.tif");
+  stack2->save((fs::path(GET_TEST_DATA_DIR) / "test.tif").string());
 }
 
 #endif

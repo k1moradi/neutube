@@ -55,7 +55,6 @@ QMAKE_CXXFLAGS += -isystem ../gui/ext
 
 CONFIG += rtti exceptions
 
-CONFIG += static_glew
 CONFIG += static_gtest
 
 DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
@@ -103,23 +102,16 @@ contains(CONFIG, sanitize) {
 
 #QT += webkit
 
-contains(CONFIG, static_glew) { # glew from ext folder
-    include($$PWD/ext/glew.pri)
-} else { # use your own glew
-
-  win32 {
-    LIBS += -lglew32 -lopengl32 -lglu32
-  }
-
-
-  macx {
-    LIBS += -lGLEW -framework AGL -framework OpenGL
-  }
-
-  unix:!macx {
-    LIBS += -lGL -lGLEW -lGLU
-  }
-} # static glew
+# --- OpenGL linking without GLEW (Qt + zglew.h handles function resolution) ---
+win32 {
+    LIBS += -lopengl32 -lglu32
+}
+macx {
+    LIBS += -framework OpenGL
+}
+unix:!macx {
+    LIBS += -lGL -lGLU
+}
 
 contains(CONFIG, static_gtest) { # gtest from ext folder
     include($$PWD/ext/gtest.pri)
@@ -613,7 +605,8 @@ HEADERS += mainwindow.h \
     flyem/zflyemtodolist.h \
     dialogs/zswcisolationdialog.h \
     dialogs/zstackframesettingdialog.h \
-    dialogs/zswcexportsvgdialog.h
+    dialogs/zswcexportsvgdialog.h \
+    zglviewport.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1077,7 +1070,8 @@ SOURCES += main.cpp \
     flyem/zflyemtodolist.cpp \
     dialogs/zswcisolationdialog.cpp \
     dialogs/zstackframesettingdialog.cpp \
-    dialogs/zswcexportsvgdialog.cpp
+    dialogs/zswcexportsvgdialog.cpp \
+    zglviewport.cpp
 
 OTHER_FILES += \
     extlib.pri \

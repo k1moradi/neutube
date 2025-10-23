@@ -39,7 +39,6 @@ template<typename T>
 ZTreeNode<T>* ZTreeNode<T>::lastChild() const
 {
   ZTreeNode<T> *child = m_firstChild;
-
   if (child != NULL) {
     while (child->nextSibling() != NULL) {
       child = child->nextSibling();
@@ -578,3 +577,24 @@ void ZTreeNode<T>::killDownstream()
   }
 }
 
+template<typename T>
+ZTreeNode<T>* ZTreeNode<T>::getNext() const
+{
+  ZTreeNode<T>* n = const_cast<ZTreeNode<T>*>(this);
+  if (n->firstChild()) return n->firstChild();
+  while (n && !n->nextSibling()) n = n->parent();
+  return n ? n->nextSibling() : NULL;
+}
+
+template<typename T>
+bool ZTreeNode<T>::isRoot(bool) const
+{
+  return isRoot();  // call the existing zero-arg overload
+}
+
+template<typename T>
+bool ZTreeNode<T>::isRegular(bool) const
+{
+  // Generic ZTreeNode has no notion of “virtual” nodes; treat as regular.
+  return true;
+}

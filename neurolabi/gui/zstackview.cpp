@@ -38,9 +38,7 @@
 #include "dvid/zdvidlabelslice.h"
 
 #include <QtGui>
-#ifdef _QT5_
 #include <QtWidgets>
-#endif
 
 using namespace std;
 
@@ -750,19 +748,14 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
         if (event->modifiers() == Qt::ShiftModifier) {
           ratio = 10;
         }
-
         int newPos = m_depthControl->value() + numSteps * ratio;
-        if ((newPos >= m_depthControl->minimum()) &&
-            (newPos <= m_depthControl->maximum())) {
+        if ((newPos >= m_depthControl->minimum()) && (newPos <= m_depthControl->maximum())) {
           setSliceIndex(newPos);
-          //m_depthControl->setValue(newPos);
-
           QPointF pos = imageWidget()->canvasCoordinate(event->pos());
           int z = sliceIndex();
           if (buddyPresenter()->interactiveContext().isProjectView()) {
             z = -1;
           }
-
           ZPoint pt = ZPoint(pos.x(), pos.y(), z);
           pt.shiftSliceAxisInverse(getSliceAxis());
           setInfo(buddyDocument()->rawDataInfo(pt.x(), pt.y(), pt.z()));
@@ -782,7 +775,6 @@ void ZStackView::resizeEvent(QResizeEvent *event)
 {
   setInfo();
   event->accept();
-  //buddyPresenter()->updateInteractiveContext();
 }
 
 void ZStackView::redrawObject()
@@ -793,23 +785,16 @@ void ZStackView::redrawObject()
 
 void ZStackView::redraw(EUpdateOption option)
 {
-//  tic();
   QElapsedTimer timer;
-//  ZBenchTimer timer;
   timer.start();
-
   ZIntCuboid box = getViewBoundBox();
-
   m_imageWidget->setCanvasRegion(
         box.getFirstCorner().getX(),
         box.getFirstCorner().getY(),
         box.getWidth(), box.getHeight());
-
   buddyDocument()->blockSignals(true);
-  buddyDocument()->showSwcFullSkeleton(
-        buddyPresenter()->isSwcFullSkeletonVisible());
+  buddyDocument()->showSwcFullSkeleton(buddyPresenter()->isSwcFullSkeletonVisible());
   buddyDocument()->blockSignals(false);
-
   paintStackBuffer();
   qint64 stackPaintTime = timer.elapsed();
   std::cout << "paint stack per frame: " << stackPaintTime << std::endl;
@@ -823,13 +808,8 @@ void ZStackView::redraw(EUpdateOption option)
   std::cout << "paint object per frame: " << objectPaintTime << std::endl;
 
   updateImageScreen(option);
-
-//  timer.stop();
-//  std::cout << "Paint time per frame: " << timer.time() * 1000 << " ms" << std::endl;
-//  std::cout << "paint time per frame: " << toc() << std::endl;
 #if defined(_FLYEM_)
   qint64 paintTime = timer.elapsed();
-
   qDebug() << "paint time per frame: " << paintTime;
   if (paintTime > 3000) {
     LWARN() << "Debugging for hiccup: " << "stack: " << stackPaintTime
@@ -838,11 +818,9 @@ void ZStackView::redraw(EUpdateOption option)
 #endif
 }
 
-
 void ZStackView::prepareDocument()
 {
   updateSlider();
-//  m_objectUpdater.setDocument(buddyDocument());
 }
 
 QMenu* ZStackView::leftMenu()

@@ -67,4 +67,10 @@ typedef double Zqreal;
 #include <QPen>
 #endif
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+  #define ZQT_SKIP_EMPTY Qt::SkipEmptyParts
+#else
+  #define ZQT_SKIP_EMPTY QString::SkipEmptyParts
+#endif
+
 #endif // ZQTHEADER_H

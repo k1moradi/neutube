@@ -16,12 +16,19 @@ symlink_to_conda() {
 }
 
 uncompress_lib () {
-  if [ ! -f $1.tar ]
-  then
-    gunzip < $1.tar.gz > $1.tar
+  local base="$1"
+  if   [ -f "${base}.tar" ]; then
+    tar -xvf "${base}.tar"
+  elif [ -f "${base}.tar.gz" ] || [ -f "${base}.tgz" ]; then
+    tar -xzvf "${base}.tar.gz" 2>/dev/null || tar -xzvf "${base}.tgz"
+  elif [ -f "${base}.tar.xz" ] || [ -f "${base}.txz" ]; then
+    tar -xJvf "${base}.tar.xz" 2>/dev/null || tar -xJvf "${base}.txz"
+  else
+    echo "uncompress_lib: no archive found for '${base}' (tried .tar, .tar.gz/.tgz, .tar.xz/.txz)" >&2
+    return 1
   fi
-  tar -xvf $1.tar
 }
+
 
 libdir=`pwd`
 export CFLAGS="-fPIC"
@@ -77,9 +84,9 @@ then
   then
     mkdir xml
   fi
-  uncompress_lib libxml2-2.9.1
-  cd libxml2-2.9.1
-  ./configure --without-iconv --without-zlib --without-lzma --with-pic --enable-shared=no --prefix=${libdir}/xml --without-python
+  uncompress_lib libxml2-2.9.14
+  cd libxml2-2.9.14
+  ./configure --without-iconv --without-zlib --without-lzma  --with-pic --enable-shared=no --prefix=${libdir}/xml --without-python
   make
   make install
   cd ..

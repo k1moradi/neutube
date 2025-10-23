@@ -13,7 +13,7 @@
 
 #include "private/tzp_geo3d_ball.c"
 
-Geo3d_Ball* New_Geo3d_Ball()
+Geo3d_Ball* New_Geo3d_Ball(void)
 {
   Geo3d_Ball *ball =
     (Geo3d_Ball *) Guarded_Malloc(sizeof(Geo3d_Ball), "New_Geo3d_Ball");

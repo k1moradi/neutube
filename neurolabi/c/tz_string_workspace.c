@@ -3,7 +3,7 @@
 #include "tz_string_defs.h"
 
 static inline int string_workspace_asize(const String_Workspace *sw)
-{ return (sw->size + 1) * sizeof(int); }
+{ return (sw->size + 1) * sizeof(char); }
 
 DEFINE_OBJECT_MANAGEMENT(String_Workspace, array, asize, string_workspace)
 
@@ -32,9 +32,7 @@ void Clean_String_Workspace(String_Workspace * sw)
 String_Workspace *Make_String_Workspace(int size)
 { 
   String_Workspace *sw= New_String_Workspace();
-  
   Construct_String_Workspace(sw, size);
-
   return sw;
 }
 
@@ -49,7 +47,7 @@ void String_Workspace_Grow(String_Workspace *sw)
 {
   if (sw->size > 0) {
     String_Workspace_Realloc(sw, sw->size * 2);
-    sw->size *= 2;
+    // sw->size *= 2;
   } else {
     Construct_String_Workspace(sw, 2);
   }

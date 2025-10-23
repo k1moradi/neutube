@@ -175,7 +175,7 @@ bool NeutubeConfig::load(const std::string &filePath)
         dynamic_cast<ZLogMessageReporter*>(m_messageReporter);
     if (reporter != NULL) {
       reporter->setInfoFile(getPath(LOG_APPOUT));
-      reporter->setErrorFile(getPath(LOG_WARN));
+      reporter->setWarnFile(getPath(LOG_WARN));
       reporter->setErrorFile(getPath(LOG_ERROR));
     }
 

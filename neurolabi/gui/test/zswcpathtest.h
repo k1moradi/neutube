@@ -2,6 +2,7 @@
 #define ZSWCPATHTEST_H
 
 #include "ztestheader.h"
+#include "../zfspath.h"
 #include "zswcpath.h"
 #include "zswctree.h"
 #include "neutubeconfig.h"
@@ -12,8 +13,7 @@
 static void createSwcPath(ZSwcPath *path)
 {
   ZSwcTree *tree = new ZSwcTree;
-  tree->load((GET_TEST_DATA_DIR +
-             "/benchmark/swc/fork.swc").c_str());
+  tree->load((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"swc"/"fork.swc").string().c_str());
   path->append(tree->firstRegularRoot());
   path->append(SwcTreeNode::firstChild(tree->firstRegularRoot()));
   path->append(SwcTreeNode::firstChild(

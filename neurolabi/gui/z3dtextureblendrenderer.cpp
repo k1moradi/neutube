@@ -50,6 +50,7 @@ QString Z3DTextureBlendRenderer::generateHeader()
 
 void Z3DTextureBlendRenderer::render(Z3DEye eye)
 {
+CHECK_GL_ERROR_NOTE("Z3DTextureBlendRenderer::render start");
   if (!m_initialized)
     return;
 
@@ -68,6 +69,7 @@ void Z3DTextureBlendRenderer::render(Z3DEye eye)
 
   renderScreenQuad(m_blendTextureShader);
   m_blendTextureShader.release();
+CHECK_GL_ERROR_NOTE("Z3DTextureBlendRenderer::render end");
 }
 
 void Z3DTextureBlendRenderer::renderPicking(Z3DEye)

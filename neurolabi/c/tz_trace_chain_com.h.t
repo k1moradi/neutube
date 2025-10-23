@@ -39,8 +39,8 @@ typedef struct _<1T>_Chain {
  *
  * @{
  */
-<1T>_Chain* New_<1T>_Chain();
-<1T>_Chain* Free_<1T>_Chain();
+<1T>_Chain* New_<1T>_Chain(void);
+<1T>_Chain* Free_<1T>_Chain(void);
 
 void Delete_<1T>_Chain(<1T>_Chain *chain);
 

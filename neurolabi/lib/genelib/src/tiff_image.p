@@ -129,7 +129,7 @@ void Kill_Tiff_Image(Tiff_Image *image)
   kill_tiff_image(image);
 }
 
-void Reset_Tiff_Image()
+void Reset_Tiff_Image(void)
 { reset_tiff_image();
   get_code_vector(-1,NULL);
 }

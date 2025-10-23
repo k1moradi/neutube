@@ -13,8 +13,7 @@ ZFileType::EFileType ZFileType::fileType(const std::string &filePath)
 
   if (str.endsWith(".swc", ZString::CASE_INSENSITIVE)) {
     return SWC_FILE;
-  } else if (str.endsWith(".tif", ZString::CASE_INSENSITIVE) ||
-             str.endsWith(".tiff", ZString::CASE_INSENSITIVE)) {
+  } else if (str.endsWith(".tif", ZString::CASE_INSENSITIVE) || str.endsWith(".tiff", ZString::CASE_INSENSITIVE)) {
     return TIFF_FILE;
   } else if (str.endsWith(".lsm", ZString::CASE_INSENSITIVE)) {
     return LSM_FILE;
@@ -34,11 +33,9 @@ ZFileType::EFileType ZFileType::fileType(const std::string &filePath)
     return V3D_APO_FILE;
   } else if (str.endsWith(".marker", ZString::CASE_INSENSITIVE)) {
     return V3D_MARKER_FILE;
-  } else if (str.endsWith(".raw", ZString::CASE_INSENSITIVE) ||
-             str.endsWith(".v3draw", ZString::CASE_INSENSITIVE)) {
+  } else if (str.endsWith(".raw", ZString::CASE_INSENSITIVE) || str.endsWith(".v3draw", ZString::CASE_INSENSITIVE)) {
     return V3D_RAW_FILE;
-  } else if (str.endsWith(".v3dpbd", ZString::CASE_INSENSITIVE) ||
-             str.endsWith(".pbd", ZString::CASE_INSENSITIVE)) {
+  } else if (str.endsWith(".v3dpbd", ZString::CASE_INSENSITIVE) || str.endsWith(".pbd", ZString::CASE_INSENSITIVE)) {
     return V3D_PBD_FILE;
   } else if (str.endsWith(".txt", ZString::CASE_INSENSITIVE)) {
     FILE *fp = fopen(str.c_str(), "r");
@@ -56,7 +53,6 @@ ZFileType::EFileType ZFileType::fileType(const std::string &filePath)
         }
       }
       fclose(fp);
-
       if (patternCount >= 2) {
         return RAVELER_BOOKMARK;
       }
@@ -75,8 +71,6 @@ ZFileType::EFileType ZFileType::fileType(const std::string &filePath)
   } else if (str.endsWith(".mraw", ZString::CASE_INSENSITIVE)) {
     return MC_STACK_RAW_FILE;
   }
-
-
   return UNIDENTIFIED_FILE;
 }
 

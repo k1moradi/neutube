@@ -24,6 +24,24 @@
      int  bin_search(int len, double *tab, double y)
 */
 
+/* ----- Portable uniform RNG in [0,1) ------------------------------------ */
+/* Windows (MSVC/MinGW) does not have drand48(). Use rand() scaled, making
+   sure we never return 1.0 (Sample_CDF uses log(1-x)).                      */
+#if defined(_WIN32) || defined(_WIN64) || defined(__MINGW32__) || defined(__MINGW64__)
+static inline double cdf_drand(void)
+{
+  /* divide by (RAND_MAX+1.0) to ensure x ∈ [0,1) */
+  return rand() / ((double)RAND_MAX + 1.0);
+}
+#else
+static inline double cdf_drand(void)
+{
+  return drand48();  /* POSIX / glibc / macOS */
+}
+#endif
+/* ------------------------------------------------------------------------ */
+
+
 typedef enum { NORMAL, BINOMIAL, POISSON, BERNOUILLI,
                GEOMETRIC, EXPONENTIAL, FAIRCOIN, UNIFORM } ctype;
 
@@ -110,13 +128,7 @@ static void init_unorm()
 static double sample_unorm()
 { double x, y;
   int    f;
-
-		/* Map [0,1) random var to upper-half of cdf */
-#ifdef _MSC_VER
-	x = double(rand())/RAND_MAX;
-#else
-  x = drand48();
-#endif
+  x = cdf_drand();    /* Map [0,1) random var to upper-half of cdf */
   if (x >= .5)
     y = x-.5;
   else
@@ -463,14 +475,8 @@ double Sample_CDF(CDF *cdf)
 { int    f;
   double x;
   Cdf   *bin;
-
   bin = (Cdf *) cdf;
-
-  #ifdef _MSC_VER
-	x = double(rand())/RAND_MAX;
-#else
-  x = drand48();
-  #endif
+  x = cdf_drand();
   switch (bin->kind)
   { case FAIRCOIN:
       f = x * bin->parm3; 

@@ -2,6 +2,7 @@
 #define ZSWCANALYZERTEST_H
 
 #include "ztestheader.h"
+#include "../zfspath.h"
 #include "neutubeconfig.h"
 #include "zswcrangeanalyzer.h"
 #include "zswcnodezrangeselector.h"
@@ -18,7 +19,7 @@ TEST(ZSwcRangeAnalyzer, computeLayerRange)
 {
   ZSwcRangeAnalyzer analyzer;
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/range1.swc");
+  tree.load((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"swc"/"range1.swc").string().c_str());
   analyzer.setZStep(10.0);
   analyzer.setZMargin(5.0);
   std::vector<ZEllipsoid> range = analyzer.computeLayerRange(tree);
@@ -38,13 +39,13 @@ TEST(ZSwcRangeAnalyzer, computeLayerRange)
   EXPECT_DOUBLE_EQ(30.0, range[2].getCenter().z());
   //EXPECT_DOUBLE_EQ(3.0, range[2].getZRadius());
 
-  //tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/range2.swc");
+  //tree.load((fs::path(GET_TEST_DATA_DIR) / "benchmark"/"swc"/"range2.swc").string().c_str());
 }
 
 TEST(ZSwcNodeZRangeSelector, selectFrom)
 {
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/range1.swc");
+  tree.load((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"swc"/"range1.swc").string().c_str());
 
   ZSwcNodeZRangeSelector selector;
   selector.setZRange(0.0, 15.0);
@@ -77,9 +78,9 @@ TEST(ZSwcNodeZRangeSelector, selectFrom)
 TEST(ZSwcNodeSelector, range)
 {
   ZSwcTree tree1;
-  tree1.load(GET_TEST_DATA_DIR + "/benchmark/swc/range1.swc");
+  tree1.load((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"swc"/"range1.swc").string().c_str());
   ZSwcTree tree2;
-  tree2.load(GET_TEST_DATA_DIR + "/benchmark/swc/range2.swc");
+  tree2.load((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"swc"/"range2.swc").string().c_str());
 
   ZSwcRangeAnalyzer rangeAnalyzer;
 
@@ -100,44 +101,20 @@ TEST(ZSwcNodeSelector, range)
   nodeArray = selector.antiSelectFrom(tree2);
   EXPECT_EQ(4, (int) nodeArray.size());
 
-  tree2.load(GET_TEST_DATA_DIR + "/benchmark/swc/range3.swc");
+  tree2.load((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"swc"/"range3.swc").string().c_str());
   nodeArray = rangeAnalyzer.getOutsideNode(tree1, tree2);
   EXPECT_EQ(1, (int) nodeArray.size());
-  //SwcTreeNode::setType(nodeArray.begin(), nodeArray.end(), 0);
-  /*
-
-  std::vector<ZEllipsoid> range2 = rangeAnalyzer.computeLayerRange(tree2);
-  Swc_Tree_Node bufferNode;
-  tree2.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
-  for (Swc_Tree_Node *tn = tree2.begin(); tn != NULL; tn = tree2.next()) {
-    bufferNode = *tn;
-    for (std::vector<ZEllipsoid>::const_iterator iter = range2.begin();
-         iter != range2.end(); ++iter) {
-      if (iter->containsPoint(
-            SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn))) {
-        SwcTreeNode::translate(&bufferNode, -iter->getCenter().x(),
-                               -iter->getCenter().y(), 0.0);
-        break;
-      }
-    }
-    if (!selector.isSelected(&bufferNode)) {
-      SwcTreeNode::setType(tn, 0);
-    }
-  }
-*/
-  //tree2.print();
-  //tree2.save(GET_TEST_DATA_DIR + "/test.swc");
 }
 
 TEST(ZSwcGlobalFeatureAnalyzer, computeFeature)
 {
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/single_node.swc");
+  tree.load((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"swc"/"single_node.swc").string().c_str());
   double ratio = ZSwcGlobalFeatureAnalyzer::computeBoxLateralVerticalRatio(tree);
   ASSERT_LT(1.0, ratio);
   ASSERT_GT(2.0, ratio);
 
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/length_test.swc");
+  tree.load((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"swc"/"length_test.swc").string().c_str());
   ZDoubleVector feature = ZSwcGlobalFeatureAnalyzer::computeFeatureSet(
         tree, ZSwcGlobalFeatureAnalyzer::NGF1);
   ZDoubleVector::print(feature);
@@ -150,11 +127,11 @@ TEST(ZSwcSubtreeAnalyzer, labelSubtree)
   analyzer.setMaxLength(15.0);
 
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/length_test.swc");
+  tree.load((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"swc"/"length_test.swc").string().c_str());
   analyzer.labelSubtree(&tree);
 
   tree.setTypeByLabel();
-  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+  tree.save((fs::path(GET_TEST_DATA_DIR) / "test.swc").string());
 }
 
 #endif

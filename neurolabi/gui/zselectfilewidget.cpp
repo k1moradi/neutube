@@ -56,7 +56,7 @@ QStringList ZSelectFileWidget::getSelectedMultipleOpenFiles()
   if (m_fileMode == OPEN_MULTIPLE_FILES)
     return m_multipleFNames;
   else if (m_fileMode == OPEN_MULTIPLE_FILES_WITH_FILTER) {
-    QRegExp regExp(m_filterLineEdit->text(), Qt::CaseInsensitive, QRegExp::Wildcard);
+    QRegularExpression regExp(m_filterLineEdit->text(), QRegularExpression::CaseInsensitiveOption);
     return m_multipleFNames.filter(regExp);
   }
   else

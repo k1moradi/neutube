@@ -2,6 +2,7 @@
 #define ZFLYEMNEURONRANGETEST_H
 
 #include "ztestheader.h"
+#include "../zfspath.h"
 #include "neutubeconfig.h"
 #include "flyem/zflyemneuronrange.h"
 

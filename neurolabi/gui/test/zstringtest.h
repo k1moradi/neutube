@@ -2,6 +2,7 @@
 #define ZSTRINGTEST_H
 
 #include "ztestheader.h"
+#include "../zfspath.h"
 #include "neutubeconfig.h"
 #include "zstring.h"
 #include "biocytin/zbiocytinfilenameparser.h"
@@ -30,7 +31,7 @@ TEST(ZString, extractWord) {
 
 TEST(ZString, ParseFileName)
 {
-  std::string str = "/Users/foo/test/DH070613-1-2.tif";
+  std::string str = ((fs::path(GET_TEST_DATA_DIR) / "test"/"DH070613-1-2.tif").string());
 
   EXPECT_EQ("DH070613-1-2.tif", ZString::getBaseName(str));
   EXPECT_EQ("DH070613-1-2",
@@ -39,7 +40,7 @@ TEST(ZString, ParseFileName)
 
 TEST(ZBiocytinFileNameParser, Basic)
 {
-  std::string str = "/Users/foo/test/DH070613-1-2.tif";
+  std::string str = ((fs::path(GET_TEST_DATA_DIR) / "test"/"DH070613-1-2.tif").string());
 
   EXPECT_EQ("DH070613-1-2", ZBiocytinFileNameParser::getCoreName(str));
 

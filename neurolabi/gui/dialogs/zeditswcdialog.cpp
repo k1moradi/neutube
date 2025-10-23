@@ -1115,7 +1115,7 @@ void ZEditSwcDialog::runOperation(
 
   if (m_cutCheckBox->isChecked() && !m_cutLineEdit->text().isEmpty()) {
     QString alltext = m_cutLineEdit->text();
-    QStringList septextList = alltext.split(",", QString::SkipEmptyParts);
+    QStringList septextList = alltext.split(",", ZQT_SKIP_EMPTY);
     QList<int> cutList;
     for (int i=0; i<septextList.size(); i++) {
       bool ok;

@@ -187,6 +187,7 @@ QString Z3DVolumeSliceRenderer::generateHeader()
 
 void Z3DVolumeSliceRenderer::render(Z3DEye eye)
 {
+CHECK_GL_ERROR_NOTE("Z3DVolumeSliceRenderer::render start");
   if (!m_initialized)
     return;
 
@@ -203,6 +204,7 @@ void Z3DVolumeSliceRenderer::render(Z3DEye eye)
     renderTriangleList(m_volumeSliceShader, m_quads[i]);
 
   m_volumeSliceShader.release();
+CHECK_GL_ERROR_NOTE("Z3DVolumeSliceRenderer::render end");
 }
 
 void Z3DVolumeSliceRenderer::renderPicking(Z3DEye)

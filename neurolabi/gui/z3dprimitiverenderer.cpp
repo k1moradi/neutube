@@ -1,8 +1,8 @@
 #include "zglew.h"
 #include "z3dprimitiverenderer.h"
-
 #include "z3dmesh.h"
 #include "z3dgpuinfo.h"
+#include "z3d_attrib_locations.h"
 
 Z3DPrimitiveRenderer::Z3DPrimitiveRenderer(QObject *parent)
   : QObject(parent)
@@ -77,6 +77,7 @@ void Z3DPrimitiveRenderer::renderScreenQuad(const Z3DShaderProgram &shader, bool
     glDepthFunc(GL_ALWAYS);
 
   if (m_hardwareSupportVAO) {
+    ensurePrivateVAO();
     glBindVertexArray(m_privateVAO);
   }
 
@@ -84,7 +85,7 @@ void Z3DPrimitiveRenderer::renderScreenQuad(const Z3DShaderProgram &shader, bool
                         -1.f, -1.f, 0.f, //bottom left corner
                         1.f, 1.f, 0.f, //top right corner
                         1.f, -1.f, 0.f}; // bottom right rocner
-  GLint attr_vertex = shader.attributeLocation("attr_vertex");
+  const int attr_vertex = Z3DAttr::loc(Z3DAttr::Attr::Vertex);
 
   GLuint bufObjects[1];
   glGenBuffers(1, bufObjects);
@@ -125,15 +126,16 @@ void Z3DPrimitiveRenderer::renderTriangleList(
   GLenum type = mesh.getTriangleListType();
 
   if (m_hardwareSupportVAO) {
+    ensurePrivateVAO();
     glBindVertexArray(m_privateVAO);
   }
 
-  GLint attr_vertex = shader.attributeLocation("attr_vertex");
-  GLint attr_1dTexCoord0 = shader.attributeLocation("attr_1dTexCoord0");
-  GLint attr_2dTexCoord0 = shader.attributeLocation("attr_2dTexCoord0");
-  GLint attr_3dTexCoord0 = shader.attributeLocation("attr_3dTexCoord0");
-  GLint attr_normal = shader.attributeLocation("attr_normal");
-  GLint attr_color = shader.attributeLocation("attr_color");
+  const int attr_vertex      = Z3DAttr::loc(Z3DAttr::Attr::Vertex);
+  const int attr_1dTexCoord0 = Z3DAttr::loc(Z3DAttr::Attr::Tex1D0);
+  const int attr_2dTexCoord0 = Z3DAttr::loc(Z3DAttr::Attr::Tex2D0);
+  const int attr_3dTexCoord0 = Z3DAttr::loc(Z3DAttr::Attr::Tex3D0);
+  const int attr_normal      = Z3DAttr::loc(Z3DAttr::Attr::Normal);
+  const int attr_color       = Z3DAttr::loc(Z3DAttr::Attr::Color);
 
   GLsizei bufObjectsSize = 1;  // vertex
   if (attr_1dTexCoord0 != -1 && !textureCoordinates1D.empty())
@@ -237,4 +239,49 @@ void Z3DPrimitiveRenderer::invalidateOpenglPickingRenderer()
 
 void Z3DPrimitiveRenderer::coordScalesChanged()
 {
+}
+
+bool Z3DPrimitiveRenderer::ensureVAOsForCurrentContext()
+{
+  if (!m_hardwareSupportVAO)
+    return false;
+
+  QOpenGLContext* ctx = QOpenGLContext::currentContext();
+  if (!ctx) {
+    // No current context: cannot create VAOs now.
+    return false;
+  }
+
+  // If we already have VAOs owned by this exact context, nothing to do.
+  if (m_VAO != 0 && m_vaoContext == ctx)
+    return false;
+
+  // Context changed or VAOs not created yet: (re)create them.
+  if (m_VAO) {
+    glDeleteVertexArrays(1, &m_VAO);
+    glDeleteVertexArrays(1, &m_pickingVAO);
+    glDeleteVertexArrays(1, &m_privateVAO);
+    m_VAO = m_pickingVAO = m_privateVAO = 0;
+  }
+
+  glGenVertexArrays(1, &m_VAO);
+  glGenVertexArrays(1, &m_pickingVAO);
+  glGenVertexArrays(1, &m_privateVAO);
+  m_vaoContext = ctx;
+  return true; // created/recreated now
+}
+
+// z3dprimitiverenderer.cpp
+static inline bool vaoAlive(GLuint id) {
+  return id != 0 && glIsVertexArray(id) == GL_TRUE;
+}
+
+void Z3DPrimitiveRenderer::ensurePrivateVAO() {
+  if (!m_hardwareSupportVAO) return;
+  if (m_privateVAO && !vaoAlive(m_privateVAO)) {
+    m_privateVAO = 0;              // stale (different context) -> reset
+  }
+  if (!m_privateVAO) {
+    glGenVertexArrays(1, &m_privateVAO);   // create in *current* context
+  }
 }

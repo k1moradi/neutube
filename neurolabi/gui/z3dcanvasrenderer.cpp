@@ -33,6 +33,7 @@ Z3DCanvasRenderer::~Z3DCanvasRenderer() {}
 
 void Z3DCanvasRenderer::process(Z3DEye eye)
 {
+  CHECK_GL_ERROR_NOTE("Z3DCanvasRenderer::process start");
   if (!m_canvas)
     return;
 
@@ -84,10 +85,10 @@ void Z3DCanvasRenderer::process(Z3DEye eye)
     m_textureCopyRenderer->setColorTexture(currentInport.getColorTexture());
     m_textureCopyRenderer->setDepthTexture(currentInport.getDepthTexture());
     m_rendererBase->render(eye);
-    CHECK_GL_ERROR;
+    CHECK_GL_ERROR_NOTE("Z3DCanvasRenderer::process end 1");
   } else {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    CHECK_GL_ERROR;
+    CHECK_GL_ERROR_NOTE("Z3DCanvasRenderer::process end 2");
   }
 }
 

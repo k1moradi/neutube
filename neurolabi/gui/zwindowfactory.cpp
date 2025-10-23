@@ -2,6 +2,7 @@
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QMessageBox>
+
 #include "z3dapplication.h"
 #include "neutubeconfig.h"
 #include "z3dcompositor.h"
@@ -22,7 +23,6 @@ ZWindowFactory::ZWindowFactory()
 
 ZWindowFactory::~ZWindowFactory()
 {
-
 }
 
 void ZWindowFactory::init()
@@ -38,7 +38,6 @@ Z3DWindow* ZWindowFactory::make3DWindow(
     ZStackDoc *doc, Z3DWindow::EInitMode mode)
 {
   ZSharedPointer<ZStackDoc> sharedDoc(doc);
-
   return make3DWindow(sharedDoc, mode);
 }
 
@@ -48,7 +47,6 @@ Z3DWindow* ZWindowFactory::open3DWindow(
   Z3DWindow *window = make3DWindow(doc, mode);
   window->show();
   window->raise();
-
   return window;
 }
 
@@ -63,24 +61,14 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
           "<a href=www.neutracing.com>www.neutracing.com</a>");
     return NULL;
   }
-
   Z3DWindow *window = NULL;
-
-  if (Z3DApplication::app()->is3DSupported() && doc) {
+  if (doc) {
     window = new Z3DWindow(doc, mode, false, m_parentWidget);
     if (m_windowTitle.isEmpty()) {
       window->setWindowTitle("3D View");
     } else {
       window->setWindowTitle(m_windowTitle);
     }
-    //connect(window, SIGNAL(destroyed()), m_hostFrame, SLOT(detach3DWindow()));
-    /*
-    if (GET_APPLICATION_NAME == "Biocytin") {
-      window->getCompositor()->setBackgroundFirstColor(glm::vec3(1, 1, 1));
-      window->getCompositor()->setBackgroundSecondColor(glm::vec3(1, 1, 1));
-    }
-    */
-
     if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isBackgroundOn()) {
       window->getCompositor()->setShowBackground(false);
     }
@@ -106,11 +94,8 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
     if (doc->getTag() != NeuTube::Document::FLYEM_SPLIT &&
         doc->getTag() != NeuTube::Document::SEGMENTATION_TARGET &&
         doc->getTag() != NeuTube::Document::FLYEM_PROOFREAD) {
-//      window->getCanvas()->disableKeyEvent();
     }
-
     window->setZScale(doc->getPreferredZScale());
-
     if (!m_showVolumeBoundBox) {
       window->getVolumeRaycaster()->hideBoundBox();
     }
@@ -123,54 +108,56 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
     } else {
       window->setGeometry(m_windowGeometry);
     }
-
     for (QMap<Z3DWindow::ERendererLayer, bool>::const_iterator
          iter = m_layerVisible.begin(); iter != m_layerVisible.end(); ++iter) {
       window->setVisible(iter.key(), iter.value());
     }
-
     if (!isControlPanelVisible()) {
       window->hideControlPanel();
     }
-
     if (!isObjectViewVisible()) {
       window->hideObjectView();
     }
-
     configure(window);
-//    doc->registerUser(window);
   }
-
   return window;
 }
 
 Z3DWindow* ZWindowFactory::make3DWindow(ZScalableStack *stack)
 {
-  if (stack == NULL) {
-    return NULL;
+  if (!stack) return nullptr;
+  // Capture metadata before releasing the stack
+  const glm::vec3 scale(stack->getXScale(), stack->getYScale(), stack->getZScale());
+  const ZPoint    offset = stack->getOffset();
+  // Build a document from the stack (no GL work here)
+  ZStackDoc *doc = new ZStackDoc;
+  doc->loadStack(stack->getStack());
+  // Release stack resources regardless of what happens next
+  stack->releaseStack();
+  delete stack;
+  stack = nullptr;
+  // IMPORTANT: do NOT gate on is3DSupported() here; it may be false until the
+  // first context is created. Create the window; GL init will happen asynchronously.
+  Z3DWindow *window = make3DWindow(doc);
+  if (!window) {
+    // If your overload transfers ownership of 'doc' into the window,
+    // this 'delete' must be removed. Keep whichever semantics your code uses.
+    delete doc;
+    return nullptr;
   }
-
-  Z3DWindow *window = NULL;
-
-  if (Z3DApplication::app()->is3DSupported()) {
-    ZStackDoc *doc = new ZStackDoc;
-    doc->loadStack(stack->getStack());
-    window = make3DWindow(doc);
-    window->getVolumeSource()->getVolume(0)->setScaleSpacing(
-          glm::vec3(stack->getXScale(), stack->getYScale(), stack->getZScale()));
-    ZPoint offset = stack->getOffset();
-    window->getVolumeSource()->getVolume(0)->setOffset(
-          glm::vec3(offset.x(), offset.y(), offset.z()));
-    window->updateVolumeBoundBox();
-    window->updateOverallBoundBox();
-    //window->resetCameraClippingRange();
-    window->resetCamera();
-    stack->releaseStack();
-    delete stack;
+  // Apply non-GL properties (safe before GL init)
+  if (auto *vs = window->getVolumeSource()) {
+    if (auto *v0 = vs->getVolume(0)) {
+      v0->setScaleSpacing(scale);
+      v0->setOffset(glm::vec3(offset.x(), offset.y(), offset.z()));
+    }
   }
-
-  configure(window);
-
+  // Do NOT call updateVolumeBoundBox / resetCamera here.
+  // Those run in Z3DWindow::finishInitGL(), after GL is actually ready.
+  configure(window);   // any non-GL per-window tweaks
+  // Show to trigger QOpenGLWidget::initializeGL → finishInitGL()
+  window->show();
+  window->raise();
   return window;
 }
 
@@ -191,7 +178,6 @@ void ZWindowFactory::setWindowGeometry(const QRect &rect)
 
 void ZWindowFactory::configure(Z3DWindow */*window*/)
 {
-
 }
 
 void ZWindowFactory::setVisible(Z3DWindow::ERendererLayer layer, bool visible)

@@ -21,25 +21,19 @@ void ZDvidAnnotation::init()
   setDefaultRadius();
 }
 
-void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
-                           NeuTube::EAxis sliceAxis) const
+void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*option*/, NeuTube::EAxis sliceAxis) const
 {
   bool visible = true;
   int z = painter.getZ(slice);
-
   if (slice < 0) {
     visible = isProjectionVisible();
   } else {
     visible = isVisible(z, sliceAxis);
   }
-
   double radius = getRadius(z, sliceAxis);
-
   ZIntPoint center = m_position;
   center.shiftSliceAxis(sliceAxis);
-
   bool isFocused = (z == center.getZ());
-
   if (visible) {
     QColor color = getColor();
     if (!isFocused) {
@@ -48,10 +42,8 @@ void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*opti
       alpha += 0.1;
       color.setAlphaF(alpha * color.alphaF());
     }
-
     painter.setPen(color);
     painter.setBrush(Qt::NoBrush);
-
     if (isFocused) {
       int x = center.getX();
       int y = center.getY();
@@ -59,8 +51,7 @@ void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*opti
       painter.drawLine(QPointF(x, y - 1), QPointF(x, y + 1));
     }
     if (radius > 0.0) {
-      painter.drawEllipse(QPointF(center.getX(), center.getY()),
-                          radius, radius);
+      painter.drawEllipse(QPointF(center.getX(), center.getY()), radius, radius);
     }
     if (!getUserName().empty()) {
       QString decorationText = "u";
@@ -68,15 +59,12 @@ void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*opti
       int height = 25;
       QColor oldColor = painter.getPen().color();
       painter.setPen(QColor(0, 0, 0));
-      painter.drawText(center.getX(), center.getY(), width, height,
-                       Qt::AlignLeft, decorationText);
+      painter.drawText(center.getX(), center.getY(), width, height, Qt::AlignLeft, decorationText);
       painter.setPen(oldColor);
     }
   }
-
   QPen pen = painter.getPen();
   pen.setCosmetic(m_usingCosmeticPen);
-
   bool drawingBoundBox = false;
   if (isSelected()) {
     drawingBoundBox = true;
@@ -89,7 +77,6 @@ void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*opti
     pen.setStyle(Qt::SolidLine);
     pen.setCosmetic(m_usingCosmeticPen);
   }
-
   if (drawingBoundBox) {
     QRectF rect;
     double halfSize = m_radius;
@@ -100,7 +87,6 @@ void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*opti
     rect.setTop(center.getY() - halfSize);
     rect.setWidth(halfSize * 2);
     rect.setHeight(halfSize * 2);
-
     painter.setBrush(Qt::NoBrush);
     pen.setWidthF(pen.widthF() * 0.5);
     if (visible) {
@@ -133,7 +119,6 @@ double ZDvidAnnotation::GetDefaultRadius(EKind kind)
   default:
     break;
   }
-
   return 7.0;
 }
 
@@ -154,7 +139,6 @@ QColor ZDvidAnnotation::GetDefaultColor(EKind kind)
   default:
     break;
   }
-
   return QColor(128, 128, 128);
 }
 
@@ -168,14 +152,10 @@ bool ZDvidAnnotation::hit(double x, double y, double z)
   if (isVisible(z, NeuTube::Z_AXIS)) {
     double dx = x - m_position.getX();
     double dy = y - m_position.getY();
-
     double d2 = dx * dx + dy * dy;
-
     double radius = getRadius(z, NeuTube::Z_AXIS);
-
     return d2 <= radius * radius;
   }
-
   return false;
 }
 
@@ -183,9 +163,7 @@ bool ZDvidAnnotation::hit(double x, double y)
 {
   double dx = x - m_position.getX();
   double dy = y - m_position.getY();
-
   double d2 = dx * dx + dy * dy;
-
   return d2 <= m_radius * m_radius;
 }
 
@@ -205,28 +183,23 @@ void ZDvidAnnotation::loadJsonObject(const ZJsonObject &obj)
     m_position.setX(ZJsonParser::integerValue(value, 0));
     m_position.setY(ZJsonParser::integerValue(value, 1));
     m_position.setZ(ZJsonParser::integerValue(value, 2));
-
     if (obj.hasKey("Kind")) {
       setKind(ZJsonParser::stringValue(obj["Kind"]));
     } else {
       setKind(KIND_INVALID);
     }
-
     if (obj.hasKey("Tags")) {
       ZJsonArray tagJson(obj["Tags"], ZJsonValue::SET_INCREASE_REF_COUNT);
       for (size_t i = 0; i < tagJson.size(); ++i) {
         m_tagArray.push_back(ZJsonParser::stringValue(tagJson.at(i)));
       }
     }
-
     if (obj.hasKey("Rels")) {
       ZJsonArray jsonArray(obj.value("Rels"));
       m_relJson = jsonArray;
     }
-
     setDefaultRadius();
     setDefaultColor();
-
     if (obj.hasKey("Prop")) {
       m_propertyJson.setValue(obj.value("Prop").clone());
     }
@@ -254,13 +227,11 @@ void ZDvidAnnotation::setKind(const std::string &kind)
 ZJsonObject ZDvidAnnotation::toJsonObject() const
 {
   ZJsonObject obj;
-
   ZJsonArray posJson = ZJsonFactory::MakeJsonArray(m_position);
   obj.setEntry("Pos", posJson);
   obj.setEntry("Kind", GetKindName(getKind()));
   ZJsonValue relJson = m_relJson.clone();
   obj.setEntry("Rels", relJson);
-
   if (!m_tagArray.empty()) {
     ZJsonArray tagJson;
     for (std::vector<std::string>::const_iterator iter = m_tagArray.begin();
@@ -270,12 +241,10 @@ ZJsonObject ZDvidAnnotation::toJsonObject() const
     }
     obj.setEntry("Tags", tagJson);
   }
-
   if (!m_propertyJson.isEmpty()) {
     ZJsonValue propJson = m_propertyJson.clone();
     obj.setEntry("Prop", propJson);
   }
-
   return obj;
 }
 
@@ -293,7 +262,6 @@ bool ZDvidAnnotation::isVisible(int z, NeuTube::EAxis sliceAxis) const
     dz = abs(getPosition().getZ() - z);
     break;
   }
-
   return dz < iround(getRadius());
 }
 
@@ -311,7 +279,6 @@ double ZDvidAnnotation::getRadius(int z, NeuTube::EAxis sliceAxis) const
     dz = abs(getPosition().getZ() - z);
     break;
   }
-
   return std::max(0.0, getRadius() - dz);
 }
 
@@ -354,7 +321,6 @@ std::string ZDvidAnnotation::GetKindName(EKind kind)
   default:
     break;
   }
-
   return "Invalid";
 }
 
@@ -369,7 +335,6 @@ ZDvidAnnotation::EKind ZDvidAnnotation::GetKind(const std::string &name)
   } else if (name == "Unknown") {
     return ZDvidAnnotation::KIND_UNKNOWN;
   }
-
   return ZDvidAnnotation::KIND_INVALID;
 }
 

@@ -2,6 +2,7 @@
 #define ZFLYEMQUALITYCONTROLTEST_H
 
 #include "ztestheader.h"
+#include "../zfspath.h"
 #include "neutubeconfig.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zintcuboidarray.h"
@@ -52,7 +53,7 @@ TEST(ZFlyEmQualityAnalyzer, isStitchedOrphanBody)
   EXPECT_TRUE(analyzer.isStitchedOrphanBody(obj));
 
   ZIntCuboidArray blockArray;
-  blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/benchmark/block.txt");
+  blockArray.loadSubstackList(GET_TEST_DATA_DIR + ((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"block.txt").string().c_str()));
   EXPECT_EQ(216, (int) blockArray.size());
 
   Cuboid_I boundBox = blockArray.getBoundBox();
@@ -81,7 +82,7 @@ TEST(ZFlyEmQualityAnalyzer, isStitchedOrphanBody)
   blockArray.translate(0, 0, 10);
 
 
-  obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+  obj.load(GET_TEST_DATA_DIR + ((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"29.sobj").string().c_str()));
   analyzer.setSubstackRegion(blockArray);
   //EXPECT_FALSE(analyzer.isStitchedOrphanBody(obj));
 
@@ -89,7 +90,7 @@ TEST(ZFlyEmQualityAnalyzer, isStitchedOrphanBody)
   /*
   blockArray.translate(0, 0, -10);
   blockArray.rescale(0.5);
-  blockArray.exportSwc(GET_TEST_DATA_DIR + "/flyem/FIB/skeletonization/session9/block.swc");
+  blockArray.exportSwc((fs::path(GET_TEST_DATA_DIR) / "flyem/FIB/skeletonization/session9/block.swc").string());
   */
 
   roi.clear();
@@ -125,7 +126,7 @@ TEST(ZFlyEmQualityAnalyzer, touchingGlobalBoundary) {
   //blockArray.append(100, 100, 0, 100, 100, 100);
   blockArray.append(50, 50, 100, 100, 100, 100);
 
-  //blockArray.exportSwc(GET_TEST_DATA_DIR + "/test.swc");
+  //blockArray.exportSwc((fs::path(GET_TEST_DATA_DIR) / "test.swc").string());
 
   ZFlyEmQualityAnalyzer analyzer;
   analyzer.setSubstackRegion(blockArray);
@@ -133,7 +134,7 @@ TEST(ZFlyEmQualityAnalyzer, touchingGlobalBoundary) {
 #if 0
   ZIntCuboidFaceArray faceArray = blockArray.getBorderFace();
   ZSwcTree *tree = ZSwcGenerator::createSwc(faceArray, 3.0);
-  tree->save(GET_TEST_DATA_DIR + "/test.swc");
+  tree->save((fs::path(GET_TEST_DATA_DIR) / "test.swc").string());
 #endif
 
   ZObject3dScan obj;
@@ -201,7 +202,7 @@ TEST(ZFlyEmQualityAnalyzer, touchingSideBoundary) {
   //blockArray.append(100, 100, 0, 100, 100, 100);
   blockArray.append(50, 50, 100, 100, 100, 100);
 
-  //blockArray.exportSwc(GET_TEST_DATA_DIR + "/test.swc");
+  //blockArray.exportSwc((fs::path(GET_TEST_DATA_DIR) / "test.swc").string());
 
   ZFlyEmQualityAnalyzer analyzer;
   analyzer.setSubstackRegion(blockArray);

@@ -32,6 +32,7 @@ void Z3DTextureCopyRenderer::deinitialize()
 
 void Z3DTextureCopyRenderer::render(Z3DEye eye)
 {
+CHECK_GL_ERROR_NOTE("Z3DTextureCopyRenderer::render start");
   if (!m_initialized)
     return;
 
@@ -49,6 +50,7 @@ void Z3DTextureCopyRenderer::render(Z3DEye eye)
 
   renderScreenQuad(m_copyTextureShader);
   m_copyTextureShader.release();
+CHECK_GL_ERROR_NOTE("Z3DTextureCopyRenderer::render end");
 }
 
 void Z3DTextureCopyRenderer::renderPicking(Z3DEye)

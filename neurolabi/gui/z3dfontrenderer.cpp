@@ -4,6 +4,7 @@
 #include <QDir>
 #include "z3dsdfont.h"
 #include "z3dgpuinfo.h"
+#include "z3d_attrib_locations.h"
 
 Z3DFontRenderer::Z3DFontRenderer(QObject *parent)
   : Z3DPrimitiveRenderer(parent)
@@ -175,6 +176,7 @@ QString Z3DFontRenderer::generateHeader()
 
 void Z3DFontRenderer::render(Z3DEye eye)
 {
+CHECK_GL_ERROR_NOTE("Z3DFontRenderer::render start");
   if (m_allFontNames.isEmpty()) {
     LERROR() << "Can not find any font.";
     return;
@@ -205,14 +207,16 @@ void Z3DFontRenderer::render(Z3DEye eye)
   if (m_showFontShadow.get())
     shader.setUniformValue("shadow_color", m_fontShadowColor.get());
 
+  const int attr_vertex      = Z3DAttr::loc(Z3DAttr::Attr::Vertex);
+  const int attr_2dTexCoord0 = Z3DAttr::loc(Z3DAttr::Attr::Tex2D0);
+  const int attr_color       = Z3DAttr::loc(Z3DAttr::Attr::Color);
+
   if (m_hardwareSupportVAO) {
+    bool vaoNew = ensureVAOsForCurrentContext();
+    if (vaoNew) m_dataChanged = true;
     if (m_dataChanged) {
       glBindVertexArray(m_VAO);
       // set vertex data
-      GLint attr_vertex = shader.attributeLocation("attr_vertex");
-      GLint attr_2dTexCoord0 = shader.attributeLocation("attr_2dTexCoord0");
-      GLint attr_color = shader.attributeLocation("attr_color");
-
       glEnableVertexAttribArray(attr_vertex);
       glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[0]);
       glBufferData(GL_ARRAY_BUFFER, m_fontPositions.size()*3*sizeof(GLfloat), &(m_fontPositions[0]), GL_STATIC_DRAW);
@@ -243,10 +247,6 @@ void Z3DFontRenderer::render(Z3DEye eye)
 
   } else {
     // set vertex data
-    GLint attr_vertex = shader.attributeLocation("attr_vertex");
-    GLint attr_2dTexCoord0 = shader.attributeLocation("attr_2dTexCoord0");
-    GLint attr_color = shader.attributeLocation("attr_color");
-
     glEnableVertexAttribArray(attr_vertex);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[0]);
     glBufferData(GL_ARRAY_BUFFER, m_fontPositions.size()*3*sizeof(GLfloat), &(m_fontPositions[0]), GL_STATIC_DRAW);
@@ -279,6 +279,7 @@ void Z3DFontRenderer::render(Z3DEye eye)
   if (m_rendererBase->getShaderHookType() == Z3DRendererBase::Normal) {
     glPopAttrib();
   }
+CHECK_GL_ERROR_NOTE("Z3DFontRenderer::render end");
 }
 
 void Z3DFontRenderer::renderPicking(Z3DEye)

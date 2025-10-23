@@ -1,28 +1,17 @@
 #include "zglew.h"
 #include "z3dshaderprogram.h"
+#include <QFile>
 
 #include "z3dapplication.h"
-#include <QFile>
 #include "QsLog.h"
 #include "z3dvolume.h"
+#include "z3d_attrib_locations.h"
 
 Z3DShaderProgram::Z3DShaderProgram(QObject * parent)
-#ifdef _QT5_
   : QOpenGLShaderProgram(parent)
-#else
-  : QGLShaderProgram(parent)
-#endif
   , m_logUniformLocationError(false)
 {
 }
-
-#ifndef _QT5_
-Z3DShaderProgram::Z3DShaderProgram(const QGLContext *context, QObject *parent)
-  : QGLShaderProgram(context, parent)
-  , m_logUniformLocationError(false)
-{
-}
-#endif
 
 Z3DShaderProgram::~Z3DShaderProgram()
 {
@@ -31,11 +20,7 @@ Z3DShaderProgram::~Z3DShaderProgram()
 bool Z3DShaderProgram::bind()
 {
   m_textureUnitManager.reset();
-#ifdef _QT5_
   return QOpenGLShaderProgram::bind();
-#else
-  return QGLShaderProgram::bind();
-#endif
 }
 
 void Z3DShaderProgram::bindFragDataLocation(GLuint colorNumber, const QString &name)
@@ -218,11 +203,7 @@ void Z3DShaderProgram::loadFromSourceCode(const QStringList &vertSrcs, const QSt
   removeAllShaders();
   for (int i=0; i<vertSrcs.size(); ++i) {
     QString vertSrc = header + vertSrcs[i];
-#ifdef _QT5_
     if (!addShaderFromSourceCode(QOpenGLShader::Vertex, vertSrc)) {
-#else
-    if (!addShaderFromSourceCode(QGLShader::Vertex, vertSrc)) {
-#endif
       LDEBUG() << vertSrc;
       throw Exception("Can not compile vertex shader. Error log: " + log().toStdString());
     }
@@ -230,11 +211,7 @@ void Z3DShaderProgram::loadFromSourceCode(const QStringList &vertSrcs, const QSt
 
   for (int i=0; i<geomSrcs.size(); ++i) {
     QString geomSrc = header + geomSrcs[i];
-#ifdef _QT5_
     if (!addShaderFromSourceCode(QOpenGLShader::Geometry, geomSrc)) {
-#else
-    if (!addShaderFromSourceCode(QGLShader::Geometry, geomSrc)) {
-#endif
       LDEBUG() << geomSrc;
       throw Exception("Can not compile geometry shader. Error log: " + log().toStdString());
     }
@@ -242,19 +219,48 @@ void Z3DShaderProgram::loadFromSourceCode(const QStringList &vertSrcs, const QSt
 
   for (int i=0; i<fragSrcs.size(); ++i) {
     QString fragSrc = header + fragSrcs[i];
-#ifdef _QT5_
     if (!addShaderFromSourceCode(QOpenGLShader::Fragment, fragSrc)) {
-#else
-    if (!addShaderFromSourceCode(QGLShader::Fragment, fragSrc)) {
-#endif
       LDEBUG() << fragSrc;
       throw Exception("Can not compile fragment shader. Error log: " + log().toStdString());
     }
   }
 
+  // Bind every declared vertex attribute name to its fixed, compile-time location
+  // *before* linking the shader program. This guarantees stable attribute indices
+  // across all programs and enables the rest of the renderer to use the fast,
+  // integer-based OpenGL/Qt APIs (e.g., enableAttributeArray/setAttributeBuffer)
+  // without any runtime name lookups or string hashing.
+  for (const Z3DAttr::Binding& attributeBindingRecord : Z3DAttr::kBindings) {
+      bindAttributeLocation(
+          attributeBindingRecord.name,
+          Z3DAttr::loc(attributeBindingRecord.attr)  // MUST be called before link
+      );
+  }
+
   if (!link()) {
     throw Exception("Can not link shader. Error log: " + log().toStdString());
   }
+
+#ifdef _DEBUG_
+  // Debug-only verification:
+  // For each declared binding, check the linked program's location **if** the attribute exists.
+  // If the attribute is not present or optimized out in this program, Qt returns -1; skip in that case.
+  for (const Z3DAttr::Binding& attributeBindingRecord : Z3DAttr::kBindings) {
+    const int queriedLocationFromLinkedProgram = attributeLocation(attributeBindingRecord.name);
+    if (queriedLocationFromLinkedProgram == -1) {
+      // Attribute not active in this program – nothing to verify.
+      continue;
+    }
+    const int expectedFixedLocationForAttribute = Z3DAttr::loc(attributeBindingRecord.attr);
+    if (queriedLocationFromLinkedProgram != expectedFixedLocationForAttribute) {
+      LERROR() << "Attrib binding mismatch for"
+               << attributeBindingRecord.name
+               << "expected" << expectedFixedLocationForAttribute
+               << "got" << queriedLocationFromLinkedProgram;
+    }
+    Q_ASSERT(queriedLocationFromLinkedProgram == expectedFixedLocationForAttribute);
+  }
+#endif  // _DEBUG_
 }
 
 void Z3DShaderProgram::loadFromSourceCode(const QStringList &vertSrcs, const QStringList &fragSrcs,
@@ -390,46 +396,6 @@ void Z3DShaderProgram::setUniformValue(const QString &name, GLuint v1, GLuint v2
   GLint l = getUniformLocation(name);
   setUniformValue(l, v1, v2, v3, v4);
 }
-
-//void Z3DShaderProgram::setUniformValue(GLint loc, bool value)
-//{
-//  setUniformValue(loc, static_cast<GLint>(value));
-//}
-
-//void Z3DShaderProgram::setUniformValue(GLint loc, bool v1, bool v2)
-//{
-//  setUniformValue(loc, static_cast<GLint>(v1), static_cast<GLint>(v2));
-//}
-
-//void Z3DShaderProgram::setUniformValue(GLint loc, bool v1, bool v2, bool v3)
-//{
-//  setUniformValue(loc, static_cast<GLint>(v1), static_cast<GLint>(v2), static_cast<GLint>(v3));
-//}
-
-//void Z3DShaderProgram::setUniformValue(GLint loc, bool v1, bool v2, bool v3, bool v4)
-//{
-//  setUniformValue(loc, static_cast<GLint>(v1), static_cast<GLint>(v2), static_cast<GLint>(v3), static_cast<GLint>(v4));
-//}
-
-//void Z3DShaderProgram::setUniformValue(const QString &name, bool value)
-//{
-//  setUniformValue(name, static_cast<GLint>(value));
-//}
-
-//void Z3DShaderProgram::setUniformValue(const QString &name, bool v1, bool v2)
-//{
-//  setUniformValue(name, static_cast<GLint>(v1), static_cast<GLint>(v2));
-//}
-
-//void Z3DShaderProgram::setUniformValue(const QString &name, bool v1, bool v2, bool v3)
-//{
-//  setUniformValue(name, static_cast<GLint>(v1), static_cast<GLint>(v2), static_cast<GLint>(v3));
-//}
-
-//void Z3DShaderProgram::setUniformValue(const QString &name, bool v1, bool v2, bool v3, bool v4)
-//{
-//  setUniformValue(name, static_cast<GLint>(v1), static_cast<GLint>(v2), static_cast<GLint>(v3), static_cast<GLint>(v4));
-//}
 
 void Z3DShaderProgram::setUniformValue(GLint loc, const glm::vec2 &value)
 {

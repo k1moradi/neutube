@@ -17259,7 +17259,7 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   QString str("\"MaxLabel\": {\"test\": 12433534}; other {}");
-  str.remove(QRegExp("\"MaxLabel\":\\s*\\{[^{}]*\\}"));
+  str.remove(QRegularExpression("\"MaxLabel\":\\s*\\{[^{}]*\\}"));
   qDebug() << str;
 #endif
 

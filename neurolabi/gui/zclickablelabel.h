@@ -13,13 +13,10 @@ class ZClickableLabel : public QWidget
 {
   Q_OBJECT
 public:
-  explicit ZClickableLabel(QWidget *parent = 0, Qt::WindowFlags f = 0);
-  
+  explicit ZClickableLabel(QWidget *parent = nullptr, Qt::WindowFlags f = {});
 signals:
   void clicked();
-
 public slots:
-
 protected:
   virtual void mousePressEvent(QMouseEvent *ev);
   virtual bool event(QEvent *event);
@@ -31,12 +28,11 @@ protected:
 class ZClickableColorLabel : public ZClickableLabel
 {
   Q_OBJECT
-
 public:
-  explicit ZClickableColorLabel(ZVec4Parameter *color, QWidget *parent = 0, Qt::WindowFlags f = 0);
-  explicit ZClickableColorLabel(ZVec3Parameter *color, QWidget *parent = 0, Qt::WindowFlags f = 0);
-  explicit ZClickableColorLabel(ZDVec4Parameter *color, QWidget *parent = 0, Qt::WindowFlags f = 0);
-  explicit ZClickableColorLabel(ZDVec3Parameter *color, QWidget *parent = 0, Qt::WindowFlags f = 0);
+  explicit ZClickableColorLabel(ZVec4Parameter  *color, QWidget *parent = nullptr, Qt::WindowFlags f = {});
+  explicit ZClickableColorLabel(ZVec3Parameter  *color, QWidget *parent = nullptr, Qt::WindowFlags f = {});
+  explicit ZClickableColorLabel(ZDVec4Parameter *color, QWidget *parent = nullptr, Qt::WindowFlags f = {});
+  explicit ZClickableColorLabel(ZDVec3Parameter *color, QWidget *parent = nullptr, Qt::WindowFlags f = {});
 
   inline void setWidth(int width) {
     m_width = width;
@@ -49,7 +45,6 @@ public:
   inline void setClickable(bool state) {
     m_isClickable = state;
   }
-
   QColor toQColor();
 
 protected:
@@ -73,10 +68,8 @@ private:
 class ZClickableColorMapLabel : public ZClickableLabel
 {
   Q_OBJECT
-
 public:
-  explicit ZClickableColorMapLabel(ZColorMapParameter *colorMap, QWidget *parent = NULL,
-                                   Qt::WindowFlags f = 0);
+  explicit ZClickableColorMapLabel(ZColorMapParameter *colorMap, QWidget *parent = nullptr, Qt::WindowFlags f = {});
 protected:
   virtual void paintEvent(QPaintEvent * e);
   virtual QSize minimumSizeHint() const;
@@ -87,14 +80,12 @@ protected:
 class ZClickableTransferFunctionLabel : public ZClickableLabel
 {
 public:
-  explicit ZClickableTransferFunctionLabel(Z3DTransferFunctionParameter *transferFunc, QWidget *parent = NULL,
-                                   Qt::WindowFlags f = 0);
+  explicit ZClickableTransferFunctionLabel(Z3DTransferFunctionParameter *transferFunc, QWidget *parent = nullptr, Qt::WindowFlags f = {});
 protected:
   virtual void paintEvent(QPaintEvent * e);
   virtual QSize minimumSizeHint() const;
   Z3DTransferFunctionParameter* m_transferFunction;
   virtual bool getTip(const QPoint &p, QRect *r, QString *s);
 };
-
 
 #endif // ZCLICKABLELABEL_H

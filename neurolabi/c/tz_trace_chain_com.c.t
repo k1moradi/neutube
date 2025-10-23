@@ -38,7 +38,7 @@
 #include "tz_u8array.h"
 
 
-<1T>_Chain* New_<1T>_Chain()
+<1T>_Chain* New_<1T>_Chain(void)
 {
   <1T>_Chain *chain = 
     (<1T>_Chain *) Guarded_Malloc(sizeof(<1T>_Chain), "New_<1T>_Chain");

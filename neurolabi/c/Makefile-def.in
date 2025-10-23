@@ -40,7 +40,7 @@ endif
 #ifeq ($(UNAME), MINGW32_NT-6.1)
 #if (findstring $(UNAME),MINGW32)
 ifneq (,$(findstring MINGW32,$(UNAME)))
-LIBFLAGS = -L/usr/local/lib -L$(EXT_LIB_DIR) @LIBS@ -lpcre2posix -lpcre2-8
+LIBFLAGS = -L/usr/local/lib -L$(EXT_LIB_DIR) @LIBS@ -lpcre2-posix -lpcre2-8
 else
 #LIBFLAGS = -L/usr/local/lib -L$(EXT_LIB_DIR) @LIBS@
 LIBFLAGS = -L../lib/fftw3/lib -L../lib/jansson/lib -L ../lib/xml/lib -L$(EXT_LIB_DIR) @LIBS@

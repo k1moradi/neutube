@@ -2,6 +2,7 @@
 #define ZFLYEMSYNASEANNOTATIONTEST_H
 
 #include "ztestheader.h"
+#include "../zfspath.h"
 #include "neutubeconfig.h"
 #include "flyem/zsynapseannotationarray.h"
 #include "zintcuboidarray.h"
@@ -14,7 +15,7 @@ TEST(ZFlyEmSyanpzeAnnotation, synapseCount) {
   FlyEm::ZSynapseAnnotationArray synapseArray;
 
   synapseArray.loadJson(
-        GET_TEST_DATA_DIR + "/benchmark/flyem/annotations-synapse.json");
+        GET_TEST_DATA_DIR + ((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"flyem"/"annotations-synapse.json").string().c_str()));
 
   //synapseArray.print();
 
@@ -44,14 +45,14 @@ TEST(ZFlyEmSyanpzeAnnotation, buildConnection) {
   FlyEm::ZSynapseAnnotationArray synapseArray;
 
   synapseArray.loadJson(
-        GET_TEST_DATA_DIR + "/benchmark/flyem/annotations-synapse.json");
+        GET_TEST_DATA_DIR + ((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"flyem"/"annotations-synapse.json").string().c_str()));
 
   ZGraph *graph = synapseArray.getConnectionGraph();
   EXPECT_EQ(100000001, graph->getVertexNumber());
   EXPECT_EQ(3, graph->getEdgeNumber());
 
   ZFlyEmDataBundle bundle;
-  bundle.loadJsonFile(GET_TEST_DATA_DIR + "/benchmark/flyem/data_bundle.json");
+  bundle.loadJsonFile(GET_TEST_DATA_DIR + ((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"flyem"/"data_bundle.json").string().c_str()));
 
   FlyEm::ZSynapseAnnotationArray *synapseAnnotation =
       bundle.getSynapseAnnotation();

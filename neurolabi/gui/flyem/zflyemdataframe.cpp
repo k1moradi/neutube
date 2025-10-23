@@ -11,6 +11,7 @@
 #include <QStatusBar>
 #include <QDir>
 #include <QTextStream>
+#include <QRegularExpression>
 
 #include "flyemdataform.h"
 #include "dialogs/informationdialog.h"
@@ -420,33 +421,36 @@ void ZFlyEmDataFrame::updateSource(
   std::string source = sourceType;
   std::transform(source.begin(), source.end(), source.begin(), ::tolower);
   if (usingRegexp) {
-    QRegExp regexp(sourceValue.c_str());
+    const QRegularExpression rx(QRegularExpression::anchoredPattern(QString::fromStdString(sourceValue)));
+    // add CaseInsensitiveOption if you need case-insensitive matching:
+    // QRegularExpression::CaseInsensitiveOption
+
     if (source == "type") {
-      int bundleIndex = 0;
-      foreach (ZFlyEmDataBundle *data, m_dataArray) {
-        for (vector<ZFlyEmNeuron>::const_iterator neuronIter =
-             data->getNeuronArray().begin();
-             neuronIter != data->getNeuronArray().end();
-             ++neuronIter) {
-          if (!neuronIter->getType().empty()) {
-            if (regexp.exactMatch(neuronIter->getType().c_str())) {
-              m_sourceIdArray.push_back(pair<int, int>(neuronIter->getId(),
-                                                       bundleIndex));
+      for (int bundleIndex = 0; bundleIndex < m_dataArray.size(); ++bundleIndex) {
+        ZFlyEmDataBundle* data = m_dataArray[bundleIndex];
+        const auto& neurons = data->getNeuronArray();
+
+        for (const auto& neuron : neurons) {
+          const std::string& ty = neuron.getType();
+          if (!ty.empty()) {
+            const QString qTy = QString::fromStdString(ty);
+            if (rx.match(qTy).hasMatch()) {
+              m_sourceIdArray.emplace_back(neuron.getId(), bundleIndex);
             }
           }
         }
       }
     } else if (source == "name") {
-      int bundleIndex = 0;
-      foreach (ZFlyEmDataBundle *data, m_dataArray) {
-        for (vector<ZFlyEmNeuron>::const_iterator neuronIter =
-             data->getNeuronArray().begin();
-             neuronIter != data->getNeuronArray().end();
-             ++neuronIter) {
-          if (!neuronIter->getName().empty()) {
-            if (regexp.exactMatch(neuronIter->getName().c_str())) {
-              m_sourceIdArray.push_back(pair<int, int>(neuronIter->getId(),
-                                                       bundleIndex));
+      for (int bundleIndex = 0; bundleIndex < m_dataArray.size(); ++bundleIndex) {
+        ZFlyEmDataBundle* data = m_dataArray[bundleIndex];
+        const auto& neurons = data->getNeuronArray();
+
+        for (const auto& neuron : neurons) {
+          const std::string& nm = neuron.getName();
+          if (!nm.empty()) {
+            const QString qNm = QString::fromStdString(nm);
+            if (rx.match(qNm).hasMatch()) {
+              m_sourceIdArray.emplace_back(neuron.getId(), bundleIndex);
             }
           }
         }

@@ -11,22 +11,10 @@ class ZMessageReporter
 public:
   ZMessageReporter();
   virtual ~ZMessageReporter() {}
-
-  /*
-  enum EMessageType {
-    Information, Warning, Error, Debug
-  };
-  */
-
-  virtual void report(const std::string &title, const std::string &message,
-                      NeuTube::EMessageType msgType);
-
-  static void report(std::ostream &stream,
-                     const std::string &title, const std::string &message,
-                     NeuTube::EMessageType msgType);
-
+  virtual void report(const std::string &title, const std::string &message, NeuTube::EMessageType msgType);
+  static void report(std::ostream &stream, const std::string &title, const std::string &message, NeuTube::EMessageType msgType);
 private:
   static int m_count;
 };
 
-#endif // ZERRORREPORTER_H
+#endif // ZMESSAGEPORTER_H

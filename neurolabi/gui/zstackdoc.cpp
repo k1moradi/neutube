@@ -1,9 +1,7 @@
 #include "z3dgl.h"
 #include <iostream>
 #include <QtGui>
-#ifdef _QT5_
 #include <QtWidgets>
-#endif
 #include <QTextStream>
 #include <QtDebug>
 #include <iterator>
@@ -14,7 +12,6 @@
 #include <QApplication>
 #include <QtConcurrentRun>
 #include <QMutexLocker>
-
 #include "QsLog.h"
 
 #include "dialogs/informationdialog.h"
@@ -123,14 +120,10 @@ ZStackDoc::~ZStackDoc()
   if (m_futureMap.hasThreadAlive()) {
     m_futureMap.waitForFinished();
   }
-
   deprecate(STACK);
   deprecate(SPARSE_STACK);
-
   qDebug() << "ZStackDoc destroyed";
-
   m_objectGroup.removeAllObject(true);
-
   if (m_swcNetwork != NULL) {
     delete m_swcNetwork;
   }
@@ -155,35 +148,24 @@ void ZStackDoc::init()
   m_isSegmentationReady = false;
   m_changingSaveState = true;
   m_autoSaving = true;
-
   m_stack = NULL;
   m_sparseStack = NULL;
   m_labelField = NULL;
   m_parentFrame = NULL;
-  //m_masterChain = NULL;
   m_isTraceMaskObsolete = true;
   m_swcNetwork = NULL;
   m_stackFactory = NULL;
-
   m_actionFactory = new ZActionFactory;
-
   initNeuronTracer();
   m_swcObjsModel = new ZSwcObjsModel(this, this);
   m_swcNodeObjsModel = new ZSwcNodeObjsModel(this, this);
   m_punctaObjsModel = new ZPunctaObjsModel(this, this);
-  m_seedObjsModel = new ZDocPlayerObjsModel(
-        this, ZStackObjectRole::ROLE_SEED, this);
+  m_seedObjsModel = new ZDocPlayerObjsModel(this, ZStackObjectRole::ROLE_SEED, this);
   m_graphObjsModel = new ZGraphObjsModel(this, this);
   m_undoStack = new QUndoStack(this);
-
-//  m_undoAction = NULL;
-//  m_redoAction = NULL;
-
   qRegisterMetaType<QSet<ZStackObject::ETarget> >("QSet<ZStackObject::ETarget>");
   qRegisterMetaType<QList<Swc_Tree_Node*> >("QList<Swc_Tree_Node*>");
   connectSignalSlot();
-
-  //setReporter(new ZQtMessageReporter());
 
   if (NeutubeConfig::getInstance().isAutoSaveEnabled()) {
     QTimer *timer = new QTimer(this);
@@ -1336,13 +1318,11 @@ const ZStack* ZStackDoc::stackRef() const
 
 void ZStackDoc::loadStack(Stack *stack, bool isOwner)
 {
-  if (stack == NULL)
-    return;
-
+  Q_ASSERT(stack);
+  if (stack == NULL) { return; }
   deprecate(STACK);
   ZStack* &mainStack = stackRef();
   mainStack = new ZStack;
-
   if (mainStack != NULL) {
     mainStack->load(stack, isOwner);
     initNeuronTracer();
@@ -1352,19 +1332,14 @@ void ZStackDoc::loadStack(Stack *stack, bool isOwner)
 
 void ZStackDoc::loadStack(ZStack *zstack)
 {
-  if (zstack == NULL)
-    return;
-
+  Q_ASSERT(zstack);
+  if (zstack == NULL) return;
   // load it only when the pointer is different
   ZStack* &mainStack = stackRef();
-
   if (zstack != mainStack) {
     deprecate(STACK);
     mainStack = zstack;
     initNeuronTracer();
-
-//    emit stackBoundBoxChanged();
-
     notifyStackModified();
   }
 }
@@ -1372,7 +1347,6 @@ void ZStackDoc::loadStack(ZStack *zstack)
 void ZStackDoc::loadReaderResult()
 {
   deprecate(STACK);
-
   ZStack*& mainStack = stackRef();
   mainStack = m_reader.getStack();
 
@@ -1567,12 +1541,7 @@ void ZStackDoc::readStack(const char *filePath, bool newThread)
     m_reader.start();
   } else {
     deprecate(STACK);
-
-    //ZStack*& mainStack = stackRef();
-    //mainStack = m_stackSource.readStack();
     loadStack(m_stackSource.readStack());
-
-//    notifyStackModified();
   }
 }
 
@@ -4799,7 +4768,6 @@ void ZStackDoc::deprecateDependent(EComponent component)
 void ZStackDoc::deprecate(EComponent component)
 {
   deprecateDependent(component);
-
   switch (component) {
   case STACK:
     delete stackRef();

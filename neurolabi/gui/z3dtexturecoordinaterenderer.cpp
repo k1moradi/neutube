@@ -1,7 +1,7 @@
 #include "zglew.h"
 #include "z3dtexturecoordinaterenderer.h"
-
 #include "z3dmesh.h"
+#include "z3d_attrib_locations.h"
 
 Z3DTextureCoordinateRenderer::Z3DTextureCoordinateRenderer(QObject *parent)
   : Z3DPrimitiveRenderer(parent)
@@ -37,6 +37,7 @@ void Z3DTextureCoordinateRenderer::deinitialize()
 
 void Z3DTextureCoordinateRenderer::render(Z3DEye eye)
 {
+CHECK_GL_ERROR_NOTE("Z3DTextureCoordinateRenderer::render start");
   if (!m_initialized)
     return;
 
@@ -50,13 +51,14 @@ void Z3DTextureCoordinateRenderer::render(Z3DEye eye)
 
   m_renderTextureCoordinateShader.bind();
   m_rendererBase->setGlobalShaderParameters(m_renderTextureCoordinateShader, eye);
+  const int attr_vertex      = Z3DAttr::loc(Z3DAttr::Attr::Vertex);
+  const int attr_3dTexCoord0 = Z3DAttr::loc(Z3DAttr::Attr::Tex3D0);
 
   if (m_hardwareSupportVAO) {
+    bool vaoNew = ensureVAOsForCurrentContext();
+    if (vaoNew) m_dataChanged = true;
     if (m_dataChanged) {
       glBindVertexArray(m_VAO);
-      GLint attr_vertex = m_renderTextureCoordinateShader.attributeLocation("attr_vertex");
-      GLint attr_3dTexCoord0 = m_renderTextureCoordinateShader.attributeLocation("attr_3dTexCoord0");
-
       int bufIdx = 0;
       glEnableVertexAttribArray(attr_vertex);
       glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[bufIdx++]);
@@ -88,9 +90,6 @@ void Z3DTextureCoordinateRenderer::render(Z3DEye eye)
     glBindVertexArray(0);
 
   } else {
-    GLint attr_vertex = m_renderTextureCoordinateShader.attributeLocation("attr_vertex");
-    GLint attr_3dTexCoord0 = m_renderTextureCoordinateShader.attributeLocation("attr_3dTexCoord0");
-
     int bufIdx = 0;
     glEnableVertexAttribArray(attr_vertex);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[bufIdx++]);
@@ -118,6 +117,7 @@ void Z3DTextureCoordinateRenderer::render(Z3DEye eye)
   }
 
   m_renderTextureCoordinateShader.release();
+CHECK_GL_ERROR_NOTE("Z3DTextureCoordinateRenderer::render end");
 }
 
 void Z3DTextureCoordinateRenderer::renderPicking(Z3DEye)

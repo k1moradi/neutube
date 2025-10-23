@@ -2,6 +2,7 @@
 #define ZVOXELGRAPHICSTEST_H
 
 #include "ztestheader.h"
+#include "../zfspath.h"
 #include "neutubeconfig.h"
 #include "zvoxelgraphics.h"
 #include "zobject3d.h"
@@ -114,7 +115,7 @@ TEST(ZVoxelGraphics, paint)
 
   plane = ZVoxelGraphics::createPolyPlaneObject(polyline, vec2, len2);
   Stack *stack = plane->toStack();
-  //C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
+  //C_Stack::write((fs::path(GET_TEST_DATA_DIR) / "test.tif").string(), stack);
   C_Stack::kill(stack);
 
   delete plane;
@@ -134,7 +135,7 @@ TEST(ZVoxelGraphics, paint)
 
   //triangle->print();
   stack = triangle->toStack();
-  //C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
+  //C_Stack::write((fs::path(GET_TEST_DATA_DIR) / "test.tif").string(), stack);
   C_Stack::kill(stack);
 
   delete triangle;
@@ -143,7 +144,7 @@ TEST(ZVoxelGraphics, paint)
         ZIntPoint(0, 10, 0), ZIntPoint(60, 0, 80),
         ZIntPoint(-50, 100, 30), ZIntPoint(150, 100, 50));
   stack = quad->toStack();
-  //C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
+  //C_Stack::write((fs::path(GET_TEST_DATA_DIR) / "test.tif").string(), stack);
   C_Stack::kill(stack);
 
   delete quad;
@@ -158,7 +159,7 @@ TEST(ZVoxelGraphics, paint)
   polyline2.push_back(ZIntPoint(250, 200, 0));
   quad = ZVoxelGraphics::createPolyPlaneObject(polyline1, polyline2);
   stack = quad->toStack();
-  //C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
+  //C_Stack::write((fs::path(GET_TEST_DATA_DIR) / "test.tif").string(), stack);
   C_Stack::kill(stack);
 
 

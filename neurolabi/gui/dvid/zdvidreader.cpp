@@ -1522,7 +1522,7 @@ ZDvidVersionDag ZDvidReader::readVersionDag(const std::string &uuid) const
   bufferReader.read(dvidUrl.getRepoInfoUrl().c_str(), isVerbose());
 
   QString str(bufferReader.getBuffer().data());
-  str.replace(QRegExp("\"MaxLabel\":\\s*\\{[^{}]*\\}"), "\"MaxLabel\":{}");
+  str.replace(QRegularExpression("\"MaxLabel\":\\s*\\{[^{}]*\\}"), "\"MaxLabel\":{}");
 
 //  qDebug() << str;
 

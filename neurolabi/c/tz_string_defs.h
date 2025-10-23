@@ -34,7 +34,7 @@ void Default_String_Workspace(String_Workspace *sw);
 void Construct_String_Workspace(String_Workspace * sw, int size);
 void Clean_String_Workspace(String_Workspace * sw);
 
-String_Workspace* Make_String_Workspace();
+String_Workspace* Make_String_Workspace(int size);
 
 /* Functions defined in the macros */
 String_Workspace* New_String_Workspace();

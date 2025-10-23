@@ -2279,11 +2279,11 @@ Geo3d_Ball* Local_Neuroseg_Ball_Bound(const Local_Neuroseg *locseg,
 				      Geo3d_Ball *ball)
 {
   if (ball == NULL) {
-#ifdef _MSC_VER
+//#ifdef _MSC_VER
     ball = New_Geo3d_Ball();
-#else
-    ball = New_Geo3d_Ball(ball);
-#endif
+//#else
+//    ball = New_Geo3d_Ball(ball);
+//#endif
   }
   
   Local_Neuroseg_Center(locseg, ball->center);

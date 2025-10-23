@@ -2,6 +2,7 @@
 #define ZSTACKDOCTEST_H
 
 #include "ztestheader.h"
+#include "../zfspath.h"
 #include "zstackdoc.h"
 #include "neutubeconfig.h"
 #include "zobject3d.h"
@@ -21,19 +22,19 @@ TEST(ZStackDoc, Basic)
 TEST(ZStackDoc, Swc)
 {
   ZStackDoc doc;
-  doc.readSwc((GET_TEST_DATA_DIR + "/benchmark/bundle1/swc/1.swc").c_str());
-  doc.saveSwc(GET_TEST_DATA_DIR + "/test1.swc");
+  doc.readSwc((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"bundle1"/"swc"/"1.swc").string().c_str());
+  doc.saveSwc((fs::path(GET_TEST_DATA_DIR)/"test1.swc").string());
   ASSERT_EQ(1, doc.getSwcList().size());
-  ASSERT_EQ(GET_TEST_DATA_DIR + "/test1.swc", doc.getSwcList().front()->getSource());
+  ASSERT_EQ((fs::path(GET_TEST_DATA_DIR)/"test1.swc").string(), doc.getSwcList().front()->getSource());
 
   ZSwcTree *tree = new ZSwcTree;
-  tree->load(GET_TEST_DATA_DIR + "/benchmark/bundle1/swc/2.swc");
+  tree->load((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"bundle1"/"swc"/"2.swc").string().c_str());
   doc.addObject(tree);
   ASSERT_EQ(2, doc.getSwcList().size());
 
-  doc.saveSwc(GET_TEST_DATA_DIR + "/test2.swc");
+  doc.saveSwc((fs::path(GET_TEST_DATA_DIR) / "test2.swc").string());
   ASSERT_EQ(1, doc.getSwcList().size());
-  ASSERT_EQ(GET_TEST_DATA_DIR + "/test2.swc", doc.getSwcList().front()->getSource());
+  ASSERT_EQ((fs::path(GET_TEST_DATA_DIR) / "test2.swc").string(), doc.getSwcList().front()->getSource());
 }
 
 TEST(ZStackDoc, Player)

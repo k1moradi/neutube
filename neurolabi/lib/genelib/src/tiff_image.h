@@ -131,7 +131,7 @@ Tiff_Image *Copy_Tiff_Image(Tiff_Image *image);
 void        Pack_Tiff_Image(Tiff_Image *image);
 void        Free_Tiff_Image(Tiff_Image *image);
 void        Kill_Tiff_Image(Tiff_Image *image);
-void        Reset_Tiff_Image();
+void        Reset_Tiff_Image(void);
 int         Tiff_Image_Usage();
 
 Tiff_Histogram *Copy_Tiff_Histogram(Tiff_Histogram *histogram);

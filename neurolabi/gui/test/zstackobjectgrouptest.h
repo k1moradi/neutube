@@ -2,6 +2,7 @@
 #define ZSTACKOBJECTGROUPTEST_H
 
 #include "ztestheader.h"
+#include "../zfspath.h"
 #include "neutubeconfig.h"
 #include "zstackobjectgroup.h"
 #include "zobject3d.h"

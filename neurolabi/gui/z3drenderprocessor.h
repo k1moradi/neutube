@@ -53,8 +53,8 @@ protected:
 
 private:
   std::vector<Z3DRenderOutputPort*> m_privateRenderPorts;
-
   GLuint m_privateVAO;
+  void ensurePrivateVAO();
 };
 
 #endif // Z3DRENDERPROCESSOR_H

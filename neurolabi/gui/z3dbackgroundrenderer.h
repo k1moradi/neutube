@@ -43,6 +43,10 @@ protected:
   ZOptionParameter<QString> m_mode;
 
   GLuint m_VBO;
+private:
+  bool configureVAO();     // (re)build VAO state if needed
+  void drawQuadNoVAO();    // software path helper
+  bool m_bgVAOConfigured = false;
 };
 
 #endif // Z3DBACKGROUNDRENDERER_H

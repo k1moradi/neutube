@@ -187,6 +187,7 @@ QString Z3DImage2DRenderer::generateHeader()
 
 void Z3DImage2DRenderer::render(Z3DEye eye)
 {
+CHECK_GL_ERROR_NOTE("Z3DImage2DRenderer::render start");
   if (!m_initialized)
     return;
 
@@ -203,6 +204,7 @@ void Z3DImage2DRenderer::render(Z3DEye eye)
     renderTriangleList(m_image2DShader, m_quads[i]);
 
   m_image2DShader.release();
+CHECK_GL_ERROR_NOTE("Z3DImage2DRenderer::render end");
 }
 
 void Z3DImage2DRenderer::renderPicking(Z3DEye)

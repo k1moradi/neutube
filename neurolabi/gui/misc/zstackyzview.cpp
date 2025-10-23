@@ -24,18 +24,14 @@ int ZStackYZView::getDepth() const
   if (stack != NULL) {
     return stack->width();
   }
-
   return 0;
 }
 
 void ZStackYZView::paintSingleChannelStackSlice(ZStack *stack, int slice)
 {
-//  void *dataArray = stack->getDataPointer(0, slice);
-
   switch (stack->kind()) {
   case GREY:
-    m_image->setData(stack->array8(), slice,
-                     stack->depth(), NeuTube::X_AXIS);
+    m_image->setData(stack->array8(), slice, stack->depth(), NeuTube::X_AXIS);
     break;
   default:
     break;
@@ -60,6 +56,12 @@ void ZStackYZView::resetCanvasWithStack(T &canvas, ZPainter *painter)
       canvas = NULL;
     }
   }
+}
+
+void ZStackYZView::resetCanvasWithStack(ZMultiscalePixmap& canvas, ZPainter* painter)
+{
+  // Forward to base (YZ view typically uses ZImage; this is just to satisfy the virtual)
+  ZStackView::resetCanvasWithStack(canvas, painter);
 }
 
 void ZStackYZView::updateImageCanvas()

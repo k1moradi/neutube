@@ -208,23 +208,19 @@ bool Z3DNetworkEvaluator::initializeNetwork()
         processor->m_initialized = true;
         processor->deinitialize();
         processor->m_initialized = false;
-
         // don't break, try to initialize the other processors even if one failed
         failed = true;
       }
     }
   }
-
   // update size
   sizeChangedFromProcessor();
   for (size_t i=0; i<m_reverseSortedRenderProcessors.size(); i++) {
-    QObject::disconnect(m_reverseSortedRenderProcessors[i],
-                        SIGNAL(requestUpstreamSizeChange(Z3DRenderProcessor*)),
-                        0, 0);
-    connect(m_reverseSortedRenderProcessors[i], SIGNAL(requestUpstreamSizeChange(Z3DRenderProcessor*)),
-            this, SLOT(sizeChangedFromProcessor(Z3DRenderProcessor*)));
+    if (auto *sender = m_reverseSortedRenderProcessors[i]) {
+      QObject::disconnect(sender, SIGNAL(requestUpstreamSizeChange(Z3DRenderProcessor*)), nullptr, nullptr);
+    }
+    connect(m_reverseSortedRenderProcessors[i], SIGNAL(requestUpstreamSizeChange(Z3DRenderProcessor*)), this, SLOT(sizeChangedFromProcessor(Z3DRenderProcessor*)));
   }
-
   unlock();
   CHECK_GL_ERROR;
   return !failed;
@@ -236,14 +232,11 @@ bool Z3DNetworkEvaluator::deinitializeNetwork()
     LWARN() << "locked.";
     return false;
   }
-
   if (!m_canvasRenderer) {
     LWARN() << "no network.";
     return false;
   }
-
   lock();
-
   bool failed = false;
   for (size_t i = 0; i < m_renderingOrder.size(); ++i) {
     Z3DProcessor* processor = m_renderingOrder[i];
@@ -261,7 +254,6 @@ bool Z3DNetworkEvaluator::deinitializeNetwork()
       }
     }
   }
-
   unlock();
   return !failed;
 }
@@ -285,7 +277,6 @@ void Z3DNetworkEvaluator::clearProcessWrappers()
   for (size_t i=0; i<m_processWrappers.size(); ++i) {
     delete m_processWrappers[i];
   }
-
   m_processWrappers.clear();
 }
 
@@ -297,25 +288,18 @@ void Z3DNetworkEvaluator::updateNetwork()
 
 void Z3DNetworkEvaluator::buildNetwork()
 {
-  std::set<Z3DProcessor*> prevProcessors(
-        m_renderingOrder.begin(), m_renderingOrder.end());
-
+  std::set<Z3DProcessor*> prevProcessors(m_renderingOrder.begin(), m_renderingOrder.end());
   m_renderingOrder.clear();
   m_processorToVertexMapper.clear();
   m_processorGraph.clear();
   m_reverseSortedRenderProcessors.clear();
-
   // nothing more to do, if no network sink is present
-  if (!m_canvasRenderer)
-    return;
-
+  if (!m_canvasRenderer) return;
   std::set<Z3DProcessor*> processed;
   std::queue<Z3DProcessor*> processQueue;
-
   processQueue.push(m_canvasRenderer);
   Vertex v = boost::add_vertex(VertexInfo(m_canvasRenderer), m_processorGraph);
   m_processorToVertexMapper[m_canvasRenderer] = v;
-
   // build graph of all connected processors
   while (!processQueue.empty()) {
     Z3DProcessor *processor = processQueue.front();

@@ -45,7 +45,7 @@ typedef Object_3d* Object_3d_P;
 size_t Object_3d_Asize(size_t size);
 
 Object_3d* New_Object_3d();
-void Default_Object_3d();
+void Default_Object_3d(Object_3d *object);
 
 Object_3d *Make_Object_3d(size_t size, int conn);
 void Set_Object_3d_Asize(Object_3d *obj, size_t asize);

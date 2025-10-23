@@ -2,6 +2,7 @@
 #define ZCUBOIDTEST_H
 
 #include "ztestheader.h"
+#include "../zfspath.h"
 #include "neutubeconfig.h"
 #include "zintcuboidarray.h"
 #include "flyem/zintcuboidcomposition.h"
@@ -23,7 +24,7 @@ TEST(ZIntCuboidArray, basic)
   int index = blockArray.hitTest(1, 1, 1);
   EXPECT_EQ(0, index);
 
-  blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/benchmark/flyem/block.txt");
+  blockArray.loadSubstackList(GET_TEST_DATA_DIR + ((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"flyem"/"block.txt").string().c_str()));
   EXPECT_EQ(216, (int) blockArray.size());
 
   for (size_t i = 0; i < blockArray.size(); ++i) {
@@ -70,10 +71,10 @@ TEST(ZIntCuboidArray, boundBox)
 TEST(ZIntCuboidArray, exportSwc)
 {
   ZIntCuboidArray blockArray;
-  blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/benchmark/flyem/block.txt");
+  blockArray.loadSubstackList(GET_TEST_DATA_DIR + ((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"flyem"/"block.txt").string().c_str()));
 
 
-  //blockArray.exportSwc(GET_TEST_DATA_DIR + "/test.swc");
+  //blockArray.exportSwc((fs::path(GET_TEST_DATA_DIR) / "test.swc").string());
 }
 
 TEST(ZIntCuboidArray, removeInvalidCublid)
@@ -96,7 +97,7 @@ TEST(ZIntCuboidArray, removeInvalidCublid)
 TEST(ZIntCuboidArray, range)
 {
   ZIntCuboidArray blockArray;
-  blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/benchmark/flyem/block.txt");
+  blockArray.loadSubstackList(GET_TEST_DATA_DIR + ((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"flyem"/"block.txt").string().c_str()));
 
   Cuboid_I boundBox = blockArray.getBoundBox();
   //std::cout << blockArray.size() << std::endl;

@@ -17,10 +17,8 @@ public:
     JPG_FILE, DVID_OBJECT_FILE, HDF5_FILE,
     MC_STACK_RAW_FILE, TXT_FILE
   };
-
   static EFileType fileType(const std::string &filePath);
   static std::string typeName(EFileType type);
-
   static bool isImageFile(const std::string &filePath);
   static bool isObjectFile(const std::string &filePath);
   static bool isImageFile(EFileType type);

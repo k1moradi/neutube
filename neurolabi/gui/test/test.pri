@@ -1,4 +1,5 @@
-HEADERS +=     test/zswctreetest.h \
+HEADERS += \
+    test/zswctreetest.h \
     test/zsttransformtest.h \
     test/zobject3dscantest.h \
     test/zswcpathtest.h \
@@ -46,3 +47,4 @@ HEADERS +=     test/zswctreetest.h \
     test/zstackobjectgrouptest.h \
     test/ztestheader.h \
     test/zvoxelarraytest.h
+

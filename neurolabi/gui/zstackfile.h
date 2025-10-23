@@ -16,6 +16,10 @@ class ZStackFile
 public:
   ZStackFile();
   ZStackFile(const ZStackFile &file);
+  ZStackFile& operator=(const ZStackFile&) = default;
+  ZStackFile(ZStackFile&&) noexcept = default;
+  ZStackFile& operator=(ZStackFile&&) noexcept = default;
+  ~ZStackFile() = default;
 
   enum EFileType {
     UNIDENTIFIED, SINGLE_FILE, FILE_BUNDLE, IMAGE_SERIES, FILE_LIST,

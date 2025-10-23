@@ -1,6 +1,18 @@
 #include "zglew.h"
 #include "z3dbackgroundrenderer.h"
 #include "z3dgpuinfo.h"
+#include "z3d_attrib_locations.h"
+
+// z3dbackgroundrenderer.cpp
+namespace {
+  // Single source of truth for the quad’s vertices
+  static const GLfloat kQuadVerts[12] = {
+    -1.f,  1.f, 1.0f - 1e-5f,   // top-left
+    -1.f, -1.f, 1.0f - 1e-5f,   // bottom-left
+     1.f,  1.f, 1.0f - 1e-5f,   // top-right
+     1.f, -1.f, 1.0f - 1e-5f    // bottom-right
+  };
+}
 
 Z3DBackgroundRenderer::Z3DBackgroundRenderer(QObject *parent)
   : Z3DPrimitiveRenderer(parent)
@@ -31,6 +43,53 @@ void Z3DBackgroundRenderer::compile()
   m_backgroundShaderGrp.rebuild(generateHeader());
 }
 
+static inline bool vaoAlive(GLuint id) {
+  return id != 0 && glIsVertexArray(id) == GL_TRUE;
+}
+
+// (Re)create VAO + attribute pointer in the *current* context.
+// No shader arg needed: attr locations are fixed globally (position at 0).
+bool Z3DBackgroundRenderer::configureVAO()
+{
+  if (!m_hardwareSupportVAO) return false;
+
+  const bool vaoNew = ensureVAOsForCurrentContext(); // recreates m_VAO if stale
+  if (vaoNew) m_bgVAOConfigured = false;
+
+  if (m_bgVAOConfigured) return false;
+
+  glBindVertexArray(m_VAO);
+
+  const int attr_vertex = Z3DAttr::loc(Z3DAttr::Attr::Vertex);
+
+  glEnableVertexAttribArray(attr_vertex);
+  glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(kQuadVerts), kQuadVerts, GL_STATIC_DRAW);
+  glVertexAttribPointer(attr_vertex, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+  glBindVertexArray(0);
+
+  m_bgVAOConfigured = true;
+  return true;
+}
+
+// Software path; uses the same VBO each call.
+void Z3DBackgroundRenderer::drawQuadNoVAO()
+{
+  const int attr_vertex = Z3DAttr::loc(Z3DAttr::Attr::Vertex);
+
+  glEnableVertexAttribArray(attr_vertex);
+  glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(kQuadVerts), kQuadVerts, GL_STATIC_DRAW);
+  glVertexAttribPointer(attr_vertex, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glDisableVertexAttribArray(attr_vertex);
+}
+
 void Z3DBackgroundRenderer::initialize()
 {
   Z3DPrimitiveRenderer::initialize();
@@ -40,26 +99,7 @@ void Z3DBackgroundRenderer::initialize()
   normalShaders << "pass.vert" << "background.frag";
   m_backgroundShaderGrp.init(allshaders, generateHeader(), m_rendererBase, normalShaders);
   m_backgroundShaderGrp.addAllSupportedPostShaders();
-
   glGenBuffers(1, &m_VBO);
-
-  if (m_hardwareSupportVAO) {
-    glBindVertexArray(m_VAO);
-    GLfloat vertices[] = {-1.f, 1.f, 1.0f-1e-5, //top left corner
-                          -1.f, -1.f, 1.0f-1e-5, //bottom left corner
-                          1.f, 1.f, 1.0f-1e-5, //top right corner
-                          1.f, -1.f, 1.0f-1e-5}; // bottom right rocner
-    GLint attr_vertex = m_backgroundShaderGrp.get().attributeLocation("attr_vertex");
-
-    glEnableVertexAttribArray(attr_vertex);
-    glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, 3*4*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(attr_vertex, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    glBindVertexArray(0);
-  }
 }
 
 void Z3DBackgroundRenderer::deinitialize()
@@ -125,7 +165,7 @@ void Z3DBackgroundRenderer::renderUsingOpengl()
 
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
-  CHECK_GL_ERROR;
+  CHECK_GL_ERROR_NOTE("Z3DBackgroundRenderer::renderUsingOpengl end");
 }
 
 void Z3DBackgroundRenderer::renderPickingUsingOpengl()
@@ -135,38 +175,26 @@ void Z3DBackgroundRenderer::renderPickingUsingOpengl()
 
 void Z3DBackgroundRenderer::render(Z3DEye eye)
 {
+  CHECK_GL_ERROR_NOTE("Z3DBackgroundRenderer::render start");
   m_backgroundShaderGrp.bind();
   Z3DShaderProgram &shader = m_backgroundShaderGrp.get();
   m_rendererBase->setGlobalShaderParameters(shader, eye);
 
   shader.setUniformValue("color1", m_firstColor.get());
-  if (m_mode.get() != "Uniform")
+  if (m_mode.get() != "Uniform") {
     shader.setUniformValue("color2", m_secondColor.get());
+  }
 
   if (m_hardwareSupportVAO) {
+    configureVAO();
     glBindVertexArray(m_VAO);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
   } else {
-    GLfloat vertices[] = {-1.f, 1.f, 1.0f-1e-5, //top left corner
-                          -1.f, -1.f, 1.0f-1e-5, //bottom left corner
-                          1.f, 1.f, 1.0f-1e-5, //top right corner
-                          1.f, -1.f, 1.0f-1e-5}; // bottom right rocner
-    GLint attr_vertex = shader.attributeLocation("attr_vertex");
-
-    glEnableVertexAttribArray(attr_vertex);
-    glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, 3*4*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(attr_vertex, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    glDisableVertexAttribArray(attr_vertex);
+    drawQuadNoVAO();
   }
-
   m_backgroundShaderGrp.release();
+  CHECK_GL_ERROR_NOTE("Z3DBackgroundRenderer::render end");
 }
 
 void Z3DBackgroundRenderer::renderPicking(Z3DEye)

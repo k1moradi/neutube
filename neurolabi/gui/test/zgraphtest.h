@@ -137,7 +137,7 @@ TEST(ZGraph, computeShortestPath) {
   graph2.addEdge(0, 8, 3.0);
   graph2.addEdge(4, 9, 1.0);
 
-  //graph2.exportDotFile(GET_TEST_DATA_DIR + "/test.dot");
+  //graph2.exportDotFile((fs::path(GET_TEST_DATA_DIR) / "test.dot").string());
   path = graph2.computeShortestPath(0, 100);
   EXPECT_TRUE(path.empty());
 
@@ -190,7 +190,7 @@ TEST(ZGraph, match)
   graph.addEdge(8, 9, 22);
   graph.addEdge(6, 9, 20);
 
-  //graph.exportDotFile(GET_TEST_DATA_DIR + "/test.dot");
+  //graph.exportDotFile((fs::path(GET_TEST_DATA_DIR) / "test.dot").string());
 
 
   match = graph.runMinWeightSumMatch();

@@ -32,7 +32,7 @@ typedef Geo3d_Ball* Geo3d_Ball_P;
 
 #define NEUROCOMP_GEO3D_BALL(nc) (((nc)->type == NEUROCOMP_TYPE_GEO3D_BALL) ? ((Geo3d_Ball*) ((nc)->data)) : NULL)
 
-Geo3d_Ball* New_Geo3d_Ball();
+Geo3d_Ball* New_Geo3d_Ball(void);
 void Delete_Geo3d_Ball(Geo3d_Ball *ball);
 void Kill_Geo3d_Ball(Geo3d_Ball *ball);
 

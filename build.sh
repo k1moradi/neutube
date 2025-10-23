@@ -2,6 +2,19 @@
 
 #Example:
 #sh build.sh /Users/zhaot/local/lib/Trolltech/Qt-4.8.5/bin/qmake /Users/zhaot/local/lib/Trolltech/Qt-4.8.5/mkspecs/macx-g++
+detect_cores() {
+  local cores=16  # fallback
+  if command -v nproc >/dev/null 2>&1; then
+    # Linux and MSYS2 (via coreutils)
+    cores=$(nproc)
+  elif [ "$(uname)" = "Darwin" ]; then
+    # macOS
+    cores=$(sysctl -n hw.ncpu 2>/dev/null || echo 4)
+  fi
+  echo "$cores"
+}
+
+NUM_CORES=$(detect_cores)
 
 if [ $# -lt 1 ]
 then
@@ -38,7 +51,7 @@ set -e
 
 edition=general
 debug_config=release
-make_args='-j3'
+make_args="-j${NUM_CORES}"
 while getopts d:e:c:q:m: option
 do
   echo $option
@@ -126,7 +139,7 @@ fi
 cd $build_dir
 echo $qmake_args > source.qmake
 $QMAKE $qmake_args 
-make -j3
+make ${make_args}
 
 bin_dir=.
 if [ -d $bin_dir/neuTube.app ]

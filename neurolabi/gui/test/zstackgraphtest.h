@@ -2,6 +2,7 @@
 #define ZSTACKGRAPHTEST_H
 
 #include "ztestheader.h"
+#include "../zfspath.h"
 #include "neutubeconfig.h"
 #include "zstackgraph.h"
 #include "c_stack.h"
@@ -87,7 +88,7 @@ TEST(ZStackGraph, buildGraph) {
   graph = stackGraph.buildGraph(stack);
   path = graph->computeShortestPath(1, 5);
 
-  //graph->exportDotFile(GET_TEST_DATA_DIR + "/test.dot");
+  //graph->exportDotFile((fs::path(GET_TEST_DATA_DIR) / "test.dot").string());
 
   EXPECT_EQ(1, path[0]);
   EXPECT_EQ(6, path[1]);
@@ -112,7 +113,7 @@ TEST(ZStackGraph, buildGraph) {
   EXPECT_EQ(2, path[2]);
   EXPECT_EQ(5, path[3]);
 
-  //graph->exportDotFile(GET_TEST_DATA_DIR + "/test.dot");
+  //graph->exportDotFile((fs::path(GET_TEST_DATA_DIR) / "test.dot").string());
 
   delete graph;
 
@@ -123,7 +124,7 @@ TEST(ZStackGraph, buildGraph) {
   stackGraph.setSignalMask(mask);
   stackGraph.setGroupMaskAcrossZ(groupMask, C_Stack::depth(stack));
   graph = stackGraph.buildGraph(stack);
-  //graph->exportDotFile(GET_TEST_DATA_DIR + "/test.dot");
+  //graph->exportDotFile((fs::path(GET_TEST_DATA_DIR) / "test.dot").string());
 
   path = graph->computeShortestPath(0, 26);
   EXPECT_EQ(0, path[0]);
@@ -151,7 +152,7 @@ TEST(ZStackGraph, buildGraph) {
   stackGraph.setGroupMask(groupMask);
 
   graph = stackGraph.buildGraph(stack);
-  //graph->exportDotFile(GET_TEST_DATA_DIR + "/test.dot");
+  //graph->exportDotFile((fs::path(GET_TEST_DATA_DIR) / "test.dot").string());
 
   path = stackGraph.computeShortestPath(stack, 4, 26);
   EXPECT_EQ(4, path[0]);

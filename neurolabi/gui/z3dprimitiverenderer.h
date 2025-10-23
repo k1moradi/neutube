@@ -2,10 +2,11 @@
 #define Z3DPRIMITIVERENDERER_H
 
 #include <QObject>
+#include <QPointer>
+#include <QOpenGLContext>
 #include "z3drendererbase.h"
 
 class Z3DTriangleList;
-
 class Z3DPrimitiveRenderer : public QObject
 {
   Q_OBJECT
@@ -96,12 +97,15 @@ protected:
 
   std::vector<ZParameter*> m_parameters;
 
+  bool ensureVAOsForCurrentContext();
   bool m_hardwareSupportVAO;
   GLuint m_VAO;
   GLuint m_pickingVAO;
 
 private:
   GLuint m_privateVAO;
+  QPointer<QOpenGLContext> m_vaoContext;
+  void ensurePrivateVAO();
 };
 
 #endif // Z3DPRIMITIVERENDERER_H

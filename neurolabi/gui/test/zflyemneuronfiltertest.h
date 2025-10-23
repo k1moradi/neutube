@@ -2,6 +2,7 @@
 #define ZFLYEMNEURONFILTERTEST_H
 
 #include "ztestheader.h"
+#include "../zfspath.h"
 #include "neutubeconfig.h"
 #include "flyem/zflyemneuronfilter.h"
 #include "flyem/zflyemneuronfilterfactory.h"
@@ -50,7 +51,7 @@ TEST(ZFlyEmNeuronFilter, Factory)
 TEST(ZFlyEmNeuronFilter, filter)
 {
   ZFlyEmDataBundle bundle;
-  bundle.loadJsonFile(GET_TEST_DATA_DIR + "/benchmark/bundle1/data_bundle.json");
+  bundle.loadJsonFile(GET_TEST_DATA_DIR + ((fs::path(GET_TEST_DATA_DIR)/"benchmark"/"bundle1"/"data_bundle.json").string().c_str()));
   ZFlyEmNeuron *neuron = bundle.getNeuron(1);
 
   ZFlyEmNeuronFilterFactory factory;

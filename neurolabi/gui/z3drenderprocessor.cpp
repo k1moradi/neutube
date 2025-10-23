@@ -7,6 +7,7 @@
 #include "z3dgpuinfo.h"
 #include <QImageWriter>
 #include "zsharedpointer.h"
+#include "z3d_attrib_locations.h"
 
 Z3DRenderProcessor::Z3DRenderProcessor()
   : Z3DProcessor()
@@ -126,6 +127,7 @@ void Z3DRenderProcessor::renderScreenQuad(const Z3DShaderProgram &shader)
   glDepthFunc(GL_ALWAYS);
 
   if (m_hardwareSupportVAO) {
+    ensurePrivateVAO();
     glBindVertexArray(m_privateVAO);
   }
 
@@ -133,7 +135,7 @@ void Z3DRenderProcessor::renderScreenQuad(const Z3DShaderProgram &shader)
                         -1.f, -1.f, 0.f, //bottom left corner
                         1.f, 1.f, 0.f, //top right corner
                         1.f, -1.f, 0.f}; // bottom right rocner
-  GLint attr_vertex = shader.attributeLocation("attr_vertex");
+  const int attr_vertex = Z3DAttr::loc(Z3DAttr::Attr::Vertex);
 
   GLuint bufObjects[1];
   glGenBuffers(1, bufObjects);
@@ -184,4 +186,13 @@ void Z3DRenderProcessor::saveTextureAsImage(Z3DTexture *tex, const QString &file
   catch (std::exception const & e) {
     LERROR() << "std exception:" << e.what();
   }
+}
+
+static inline bool vaoAlive(GLuint id) {
+  return id != 0 && glIsVertexArray(id) == GL_TRUE;
+}
+void Z3DRenderProcessor::ensurePrivateVAO() {
+  if (!m_hardwareSupportVAO) return;
+  if (m_privateVAO && !vaoAlive(m_privateVAO)) m_privateVAO = 0;
+  if (!m_privateVAO) glGenVertexArrays(1, &m_privateVAO);
 }

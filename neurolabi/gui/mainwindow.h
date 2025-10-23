@@ -86,14 +86,10 @@ class MainWindow : public QMainWindow {
 public:
   MainWindow(QWidget *parent = 0);
   ~MainWindow();
-
   /*!
    * \brief Run configuration.
    */
   void configure();
-
-  void initOpenglContext();
-
   class MessageProcessor : public ZMessageProcessor {
   public:
     void processMessage(ZMessage *message, QWidget *host) const;
@@ -105,40 +101,28 @@ public: /* frame operation */
   ZFlyEmDataFrame* currentFlyEmDataFrame();
   ZTiledStackFrame* currentTiledStackFrame();
   int frameNumber();
-
   //Add a flyem data frame. Nothing happens if <frame> is NULL.
   void addFlyEmDataFrame(ZFlyEmDataFrame *frame);
 
 public: /* Get useful widgets/objects */
   QProgressDialog* getProgressDialog();
   QProgressBar* getProgressBar();
-
   inline QUndoGroup* undoGroup() const { return m_undoGroup; }
 
 public: /* File and message dialogs */
-  QString getOpenFileName(const QString &caption,
-                          const QString &filter = QString());
-  QStringList getOpenFileNames(const QString &caption,
-                               const QString &filter = QString());
-  QString getSaveFileName(const QString &caption,
-                          const QString &filter = QString());
-  QString getSaveFileName(const QString &caption,
-                          const QString &filter,
-                          const QString &dir);
+  QString getOpenFileName(const QString &caption, const QString &filter = QString());
+  QStringList getOpenFileNames(const QString &caption, const QString &filter = QString());
+  QString getSaveFileName(const QString &caption, const QString &filter = QString());
+  QString getSaveFileName(const QString &caption, const QString &filter, const QString &dir);
   QString getDirectory(const QString &caption);
-
-  void report(const std::string &title, const std::string &msg,
-              NeuTube::EMessageType msgType);
+  void report(const std::string &title, const std::string &msg, NeuTube::EMessageType msgType);
   bool ask(const std::string &title, const std::string &msg);
 
 public:
   bool initBodySplitProject();
-
   static void createWorkDir();
-
   QAction* getBodySplitAction() const;
   void runBodySplit();
-
   void processArgument(const QString &arg);
 
 public: //Testing routines
@@ -158,61 +142,36 @@ public slots:
   void presentStackFrame(ZStackFrame *frame);
   void openFile(const QString &fileName);
   void openFile(const QStringList &fileNameList);
-
   void dump(const ZWidgetMessage &msg);
-
   void initProgress(int maxValue);
   void advanceProgress(double dp);
   void startProgress(const QString &title, int nticks);
   void startProgress();
   void endProgress();
-
   void updateAction();
   void updateMenu();
   void updateStatusBar();
   void runRoutineCheck();
-
   void on_actionTile_Manager_2_triggered();
   void cancelDvidRequest();
 
   //Report the problem when a file cannot be opened correctly.
-  void reportFileOpenProblem(const QString &filePath,
-                             const QString &reason = "");
-
-
+  void reportFileOpenProblem(const QString &filePath, const QString &reason = "");
   ZStackFrame* createEmptyStackFrame(ZStackFrame *parentFrame = NULL);
-
-  ZStackFrame* createStackFrame(
-      ZStack *stack,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
-      ZStackFrame *parentFrame = NULL);
-
-  ZStackFrame* createStackFrame(
-      Stack *stack,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
-      ZStackFrame *parentFrame = NULL);
-
-  ZStackFrame* createStackFrame(
-      ZStackDocReader *reader, ZStackFrame *parentFrame = NULL);
-  ZStackFrame* createStackFrame(
-      const ZStackDocReader &reader,
-      NeuTube::Document::ETag tag = NeuTube::Document::NORMAL);
-
+  ZStackFrame* createStackFrame(ZStack *stack, NeuTube::Document::ETag tag = NeuTube::Document::NORMAL, ZStackFrame *parentFrame = NULL);
+  ZStackFrame* createStackFrame(Stack *stack, NeuTube::Document::ETag tag = NeuTube::Document::NORMAL, ZStackFrame *parentFrame = NULL);
+  ZStackFrame* createStackFrame(ZStackDocReader *reader, ZStackFrame *parentFrame = NULL);
+  ZStackFrame* createStackFrame(const ZStackDocReader &reader, NeuTube::Document::ETag tag = NeuTube::Document::NORMAL);
   ZStackFrame* createStackFrame(ZStackDocPtr doc);
-
-  void showStackFrame(
-      const QStringList &fileList, bool opening3DWindow = false);
   void createDvidFrame();
   void createStackFrameFromDocReader(ZStackDocReader *reader);
-
   void launchSplit(const QString &str);
 
 private:
   Ui::MainWindow *m_ui;
-
   void setActionActivity();
-
   void initDialog();
   void checkVersion();
-
   void testProgressBarFunc();
 
 protected:
@@ -221,9 +180,7 @@ protected:
   virtual void closeEvent(QCloseEvent *event);
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
-
   void createActionMap();
-
   ZStackDocReader* openFileFunc(const QString &filePath);
   void openFileFunc2(const QString &filePath);
   void openFileListFunc(const QStringList fileList);
@@ -231,7 +188,6 @@ protected:
 
 private slots:
   // slots for 'File' menu
-  //void on_actionProjectToggle_triggered();
   void connectedThreshold(int x, int y, int z);
   void on_actionConnected_Threshold_triggered();
   void on_actionCanny_Edge_triggered();
@@ -241,7 +197,6 @@ private slots:
   void on_actionAutoMerge_triggered();
   void on_actionLoad_from_a_file_triggered();
   void on_actionSave_As_triggered();
-  //void on_actionFrom_SWC_triggered();
   void on_actionAdd_Reference_triggered();
   void on_actionLoad_triggered();
   void on_actionSave_triggered();
@@ -249,7 +204,6 @@ private slots:
   void on_actionAbout_iTube_triggered();
   void on_actionBrightnessContrast_triggered();
   void on_actionProject_triggered();
-  //void on_actionRefine_Ends_triggered();
   void on_actionRemove_Small_triggered();
   void on_actionUpdate_triggered();
   void on_actionAutomatic_triggered();
@@ -264,34 +218,23 @@ private slots:
   void on_action3DView_triggered();
   void save();
   void saveAs();
-
-  //void openTrace();
   void openRecentFile();
   void expandCurrentFrame();
 
   // for 'File->Export'
-  //void exportSwc();
   void exportBinary();
   void exportChainFileList();
-  //void exportTubeConnection();
-  //void exportTubeConnectionFeat();
   void exportSvg();
   void exportTraceProject();
   void exportPuncta();
 
   // for 'File->Import'
-  //void openTraceProject();
   void importBinary();
   void importSwc();
-  //void importGoodTube();
-  //void importBadTube();
-  //void importTubeConnection();
   void importPuncta();
   void importImageSequence();
 
   // slots for 'Edit' menu
-//  void undo();
-//  void redo();
 
   // slots for 'View' menu
   void updateViewMode(QAction *action);
@@ -304,7 +247,6 @@ private slots:
   // slots for 'Tools' menu
   void activateInteractiveTrace(QAction *action);
   void activateInteractiveMarkPuncta(QAction *action);
-  //void buildConn();
   void manageObjs();
   void binarize();
   void bwsolid();
@@ -327,13 +269,11 @@ private slots:
   void addStackFrame(ZStack *stack);
   void updateViewMenu(ZInteractiveContext::ViewMode viewMode);
   void stretchStackFrame(ZStackFrame *frame);
-
   void updateBcDlg(const ZStackFrame *frame);
   void updateBcDlg();
   void bcAdjust();
   void autoBcAdjust();
   void on_actionMedian_Filter_triggered();
-
   void on_actionDistance_Map_triggered();
   void on_actionShortest_Path_Flow_triggered();
   void on_actionExpand_Region_triggered();
@@ -412,75 +352,40 @@ private slots:
   void on_actionSplit_Region_triggered();
   void on_actionLoad_Body_with_Grayscale_triggered();
   void on_actionFlyEmSettings_triggered();
-
   void on_actionView_Labeled_Regions_triggered();
-
   void on_actionLoad_Large_Body_triggered();
-
   void on_actionBody_Split_Project_triggered();
-
   void on_actionSplit_Body_triggered();
-
   void on_actionUpdate_Skeletons_triggered();
-
   void on_actionCreate_Databundle_triggered();
-
   void on_actionCreate_Thumbnails_triggered();
-  
   void on_actionCreate_ROI_triggered();
-
   void on_actionFlyEmROI_triggered();
-
   void on_actionShape_Matching_triggered();
-
   void on_actionOne_Column_triggered();
-
   void on_actionOperateDvid_triggered();
-
   void on_actionGenerate_Local_Grayscale_triggered();
-
   void on_actionExport_Segmentation_Result_triggered();
-
   void on_actionBody_Touching_Analysis_triggered();
-
   void on_actionImportBoundBox_triggered();
-
   void on_actionImportSeeds_triggered();
-
   void on_actionUpload_Annotations_triggered();
-
   void on_actionMerge_Body_Project_triggered();
-
   void on_actionHierarchical_Split_triggered();
-
   void on_actionSegmentation_Project_triggered();
-
   void on_actionHackathonConfigure_triggered();
-
   void on_actionLoad_Named_Bodies_triggered();
-
   void on_actionHackathonSimmat_triggered();
-
   void on_actionHackathonEvaluate_triggered();
-
   void on_actionProof_triggered();
-
   void on_actionSubtract_Background_triggered();
-
   void on_actionImport_Sparsevol_Json_triggered();
-
   void on_actionNeuroMorpho_triggered();
-
   void on_actionTrace_Mask_triggered();
-
   void on_actionSeed_Mask_triggered();
-
   void on_actionFlip_Y_triggered();
-
   void on_actionDendrogram_SVG_triggered();
-
   void on_actionSubtract_Background_Adaptive_2_triggered();
-
   void on_actionColor_Gray_triggered();
 
 private:
@@ -491,11 +396,9 @@ private:
   void createToolActions();
   void createTraceActions();
   void createSwcActions();
-
   void updateActionGroup(QActionGroup *group, QAction *triggeredAction);
   void updateObjectDisplayStyle(ZStackFrame *frame, QAction *action);
   void updateTraceMode(ZStackFrame *frame, QAction *action);
-
   void customizeActions();
   void createMenus();
   void createContextMenu();
@@ -505,70 +408,47 @@ private:
   void writeSettings();
   bool okToContinue();
   void saveFile(const QString &fileName);
-  //void openTraceProject(QString fileName);
   void setCurrentFile(const QString &fileName);
   void updateRecentFileActions();
   QString strippedName(const QString &fullFileName);
-
   static QSettings& getSettings();
-
   void enableStackActions(bool b);
   void createUndoView();
-  //bool loadTraceFile(const QString &fileName);
 
   //Record <path> as the path (could be a file or directory) opened last time.
   void recordLastOpenPath(const QString &path);
 
   //Get the path opened last time.
   QString getLastOpenPath() const;
-
-  ZStackDocReader* hotSpotDemo(int bodyId, const QString &dvidAddress,
-                           const QString &dvidUuid);
+  ZStackDocReader* hotSpotDemo(int bodyId, const QString &dvidAddress, const QString &dvidUuid);
   /*!
    * \brief Hotspot demo for false split
    */
-  ZStackDocReader *hotSpotDemoFs(uint64_t bodyId, const QString &dvidAddress,
-                           const QString &dvidUuid);
-
+  ZStackDocReader *hotSpotDemoFs(uint64_t bodyId, const QString &dvidAddress, const QString &dvidUuid);
   ZStackDoc* importHdf5Body(int bodyId, const QString &hdf5Path);
-  ZStackDoc* importHdf5BodyM(const std::vector<int> &bodyIdArray,
-                             const QString &hdf5Path,
-                             const std::vector<int> &downsampleInterval);
-
-  ZStackDocReader* readDvidGrayScale(const QString &dvidAddress,
-                                       const QString &dvidUuid,
-                                       int x, int y, int z,
-                                       int width, int height, int depth);
-
+  ZStackDoc* importHdf5BodyM(const std::vector<int> &bodyIdArray, const QString &hdf5Path, const std::vector<int> &downsampleInterval);
+  ZStackDocReader* readDvidGrayScale(const QString &dvidAddress, const QString &dvidUuid, int x, int y, int z, int width, int height, int depth);
   void autoTrace(ZStackFrame *frame);
-
-  void setSkeletonizer(
-      ZStackSkeletonizer &skeletonizer,
-      const FlyEmSkeletonizationDialog &dlg);
+  void setSkeletonizer(ZStackSkeletonizer &skeletonizer, const FlyEmSkeletonizationDialog &dlg);
 
 private:
   QMdiArea *mdiArea;
-
   QStringList recentFiles;
   QString curFile;
   QString m_lastOpenedFilePath;
-
   enum { MaxRecentFiles = 10 };
   QAction *recentFileActions[MaxRecentFiles];
   QAction *separatorAction;
-
   QMenu *exportMenu;
   QMenu *importMenu;
   QMenu *objectViewMenu;
   QMenu *traceMenu;
-//  QMenu *processMenu;
 
   // toolbars
   QToolBar *fileToolBar;
   QToolBar *editToolBar;
 
-  // 'File' menu: 'New', 'Open', 'Import', 'Export', 'Save', 'Save As',
-  //              'Close', 'Exit'
+  // 'File' menu: 'New', 'Open', 'Import', 'Export', 'Save', 'Save As', 'Close', 'Exit'
   QActionGroup *m_readActionGroup;
   QActionGroup *m_writeActionGroup;
   QActionGroup *m_viewActionGroup;
@@ -584,8 +464,6 @@ private:
   QAction *connExportAction;
   QAction *connFeatExportAction;
   QAction *chainSourceExportAction;
-  //QAction *projectExportAction;
-  //QAction *projectImportAction;
   QAction *bnImportAction;
   QAction *swcImportAction;
   QAction *gtImportAction;
@@ -605,11 +483,8 @@ private:
   //   'Objects' ('Hide', 'Normal', 'Solid', 'Surface', 'Skeleton')
   //   'Document'
   QActionGroup *viewMode;
-  //QAction *normalAction;
-  //QAction *projAction;
   QAction *zoomAction;
   QActionGroup *objectView;
-  //QAction *objectViewHideAction;
   QAction *objectViewNormalAction;
   QAction *objectViewSolidAction;
   QAction *objectViewSurfaceAction;
@@ -631,28 +506,19 @@ private:
   QActionGroup *interactiveMarkPuncta;
   QAction *noMarkPunctaAction;
   QAction *markPunctaAction;
-
   QAction *buildConnAction;
   QAction *processBinarizeAction;
   QAction *processBwsolidAction;
-
   QAction *manageObjsAction;
-
   // 'Options' menu: 'Settings'
   QAction *settingAction;
-
   // 'Help' menu: 'About'
-  //QAction *aboutAction;
-  //QAction *aboutQtAction;
   QAction *testAction;
   QAction *testAction2;
-
   QAction *openTraceAction;
-
   ZStackActionActivator m_stackActionActivator;
   ZSwcActionActivator m_swcActionActivator;
   QVector<ZActionActivator*> m_actionActivatorList;
-
   FrameInfoDialog *m_frameInfoDlg;
   QProgressDialog *m_progress;
   BcAdjustDialog *m_bcDlg;
@@ -660,29 +526,18 @@ private:
   DiagnosisDialog *m_DiagnosisDlg;
   ResolutionDialog *m_resDlg;
   ZFlyEmHackathonConfigDlg *m_hackathonConfigDlg;
-
-
   // undo redo
   QUndoGroup *m_undoGroup;
   QUndoView *m_undoView;
-
   Z3DCanvas *m_sharedContext;
-
   ZMessageReporter *m_reporter;
-
   int m_frameCount;
-
-
   MovieDialog *m_movieDlg;
   AutosaveSwcListDialog *m_autosaveSwcDialog;
-
   PenWidthDialog *m_penWidthDialog;
-
   QMap<QString, QAction*> m_actionMap;
-
   ZDvidClient *m_dvidClient;
   ZStackFrame *m_dvidFrame;
-  //DvidObjectDialog *m_dvidObjectDlg;
   DvidImageDialog *m_dvidImageDlg;
   TileManager *m_tileDlg;
   FlyEmBodyIdDialog *m_bodyDlg;
@@ -702,29 +557,18 @@ private:
   ProjectionDialog *m_projDlg;
   FlyEmSkeletonizationDialog *m_skeletonDlg;
   ZSwcExportSvgDialog *m_swcExportSvgDlg;
-
   ZStackViewManager *m_stackViewManager;
   ZFlyEmProjectManager *m_flyemProjectManager;
   ZFlyEmDataLoader *m_flyemDataLoader;
   //new project main window
   NewProjectMainWindow *m_newProject;
-
-  //FlyEmNeuronThumbnailDialog *m_thumbnailDlg;
   QFileDialog::Options m_fileDialogOption;
-
-  //QSettings m_settings;
   QString m_version;
-
-//  ZProgressManager *m_progressManager;
-//  ZQtBarProgressReporter m_specialProgressReporter;
-
   ZMessageManager *m_messageManager;
   ZTestDialog *m_testDlg;
   ZTestDialog2 *m_testDlg2;
   ZWindowFactory m_3dWindowFactory;
-
   QTimer *m_autoCheckTimer;
-  //ZStackDocReader *m_docReader;
 };
 
 #endif // MAINWINDOW_H

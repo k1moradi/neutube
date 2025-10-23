@@ -1,6 +1,7 @@
 #include "zglew.h"
 #include "z3dlinerenderer.h"
 #include "z3dgpuinfo.h"
+#include "z3d_attrib_locations.h"
 
 Z3DLineRenderer::Z3DLineRenderer(QObject *parent)
   : Z3DPrimitiveRenderer(parent)
@@ -197,6 +198,7 @@ void Z3DLineRenderer::renderPickingUsingOpengl()
 
 void Z3DLineRenderer::render(Z3DEye eye)
 {
+CHECK_GL_ERROR_NOTE("Z3DLineRenderer::render start");
   if (!m_initialized)
     return;
 
@@ -213,13 +215,14 @@ void Z3DLineRenderer::render(Z3DEye eye)
   m_rendererBase->setGlobalShaderParameters(shader, eye);
   shader.setUniformValue("pos_scale", getCoordScales());
   shader.setUniformValue("no_alpha", false);
+  const int attr_vertex = Z3DAttr::loc(Z3DAttr::Attr::Vertex);
+  const int attr_color  = Z3DAttr::loc(Z3DAttr::Attr::Color);
 
   if (m_hardwareSupportVAO) {
+    bool vaoNew = ensureVAOsForCurrentContext();
+    if (vaoNew) m_dataChanged = true;
     if (m_dataChanged) {
       glBindVertexArray(m_VAO);
-      GLint attr_vertex = shader.attributeLocation("attr_vertex");
-      GLint attr_color = shader.attributeLocation("attr_color");
-
       glEnableVertexAttribArray(attr_vertex);
       glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[0]);
       glBufferData(GL_ARRAY_BUFFER, m_linesPt->size()*3*sizeof(GLfloat),
@@ -254,20 +257,12 @@ void Z3DLineRenderer::render(Z3DEye eye)
     glBindVertexArray(0);
 
   } else {
-    GLint attr_vertex = shader.attributeLocation("attr_vertex");
-    GLint attr_color = shader.attributeLocation("attr_color");
-
     glEnableVertexAttribArray(attr_vertex);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[0]);
     if (m_dataChanged)
       glBufferData(GL_ARRAY_BUFFER, m_linesPt->size()*3*sizeof(GLfloat),
                    &((*m_linesPt)[0]), GL_STATIC_DRAW);
     glVertexAttribPointer(attr_vertex, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-#ifdef _DEBUG_2
-    std::cout << "alpha: " << colors[0][3] << std::endl;
-#endif
-
     glEnableVertexAttribArray(attr_color);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[1]);
     if (m_dataChanged)
@@ -299,6 +294,7 @@ void Z3DLineRenderer::render(Z3DEye eye)
   glPointSize(1.0);
 
   m_lineShaderGrp.release();
+CHECK_GL_ERROR_NOTE("Z3DLineRenderer::render end");
 }
 
 void Z3DLineRenderer::renderPicking(Z3DEye eye)
@@ -318,13 +314,12 @@ void Z3DLineRenderer::renderPicking(Z3DEye eye)
   m_rendererBase->setGlobalShaderParameters(shader, eye);
   shader.setUniformValue("pos_scale", getCoordScales());
   shader.setUniformValue("no_alpha", true);
+  const int attr_vertex = Z3DAttr::loc(Z3DAttr::Attr::Vertex);
+  const int attr_color  = Z3DAttr::loc(Z3DAttr::Attr::Color);
 
   if (m_hardwareSupportVAO) {
     if (m_pickingDataChanged) {
       glBindVertexArray(m_pickingVAO);
-      GLint attr_vertex = shader.attributeLocation("attr_vertex");
-      GLint attr_color = shader.attributeLocation("attr_color");
-
       glEnableVertexAttribArray(attr_vertex);
       if (m_dataChanged) {
         glBindBuffer(GL_ARRAY_BUFFER, m_pickingVBOs[0]);
@@ -353,9 +348,6 @@ void Z3DLineRenderer::renderPicking(Z3DEye eye)
     glBindVertexArray(0);
 
   } else {
-    GLint attr_vertex = shader.attributeLocation("attr_vertex");
-    GLint attr_color = shader.attributeLocation("attr_color");
-
     glEnableVertexAttribArray(attr_vertex);
     if (m_dataChanged) {
       glBindBuffer(GL_ARRAY_BUFFER, m_pickingVBOs[0]);

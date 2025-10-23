@@ -2,6 +2,7 @@
 #define ZCLOSEDCURVETEST_H
 
 #include "ztestheader.h"
+#include "../zfspath.h"
 #include "zlinesegment.h"
 #include "zclosedcurve.h"
 

@@ -236,26 +236,23 @@ void ShapePaperDialog::on_dendrogramPushButton_clicked()
 
       if (QFile::copy(simmatFile, targetFilePath)) {
         QString output = getDendrogramPath();
-        QProcess::execute("/Applications/MATLAB.app/bin/matlab < "
-                          "/Users/zhaot/Work/SLAT/matlab/SLAT/run/flyem/tz_run_flyem_dendrogram_command.m "
-                          "-nodesktop -nosplash");
-
+        QProcess process;
+        process.setProgram("/Applications/MATLAB.app/bin/matlab");
+        process.setArguments(QStringList() << "-nodesktop" << "-nosplash");
+        process.setStandardInputFile("/Users/zhaot/Work/SLAT/matlab/SLAT/run/flyem/tz_run_flyem_dendrogram_command.m");
+        process.start();
+        process.waitForFinished(-1);
         //Create name file
         std::string neuronNameFilePath = GET_DATA_DIR + "/tmp/neuron_name.txt";
         ZFlyEmDataBundle *bundle = m_frame->getDataBundle();
-
         std::vector<ZFlyEmNeuron> neuronArray = bundle->getNeuronArray();
-
         std::ofstream stream(neuronNameFilePath.c_str());
-        for (std::vector<ZFlyEmNeuron>::const_iterator iter = neuronArray.begin();
-             iter != neuronArray.end(); ++iter) {
+        for (std::vector<ZFlyEmNeuron>::const_iterator iter = neuronArray.begin(); iter != neuronArray.end(); ++iter) {
           const ZFlyEmNeuron &neuron = *iter;
           stream << neuron.getName() << std::endl;
         }
         stream.close();
-
         ZDendrogram dendrogram;
-
         ZMatrix Z;
         Z.importTextFile(GET_DATA_DIR + "/tmp/Z.txt");
         for (int i = 0; i < Z.getRowNumber(); ++i) {
@@ -263,10 +260,8 @@ void ShapePaperDialog::on_dendrogramPushButton_clicked()
         }
         dendrogram.loadLeafName(neuronNameFilePath);
         std::string svgString = dendrogram.toSvgString(15.0);
-
         ZSvgGenerator svgGenerator(0, 0, 1000, 6000);
         svgGenerator.write(output.toStdString().c_str(), svgString);
-
         dump(output + " saved.");
       }
     }
@@ -279,20 +274,6 @@ void ShapePaperDialog::on_predictPushButton_clicked()
   simmat.importTextFile(getSimmatPath().toStdString());
   int nrows = simmat.getRowNumber();
   int ncols = simmat.getColumnNumber();
-
-  //Normalize
-  /*
-  for (int i = 1; i < nrows; ++i) {
-    int neuronIndex = i - 1;
-    for (int j = 0; j < ncols; ++j) {
-      if (neuronIndex != j) {
-        simmat.set(neuronIndex, j, simmat.at(neuronIndex, j) /
-                   std::max(simmat.at(neuronIndex, neuronIndex), simmat.at(j, j)));
-      }
-    }
-  }
-  */
-
   //Find maximum score
   int correctNumber = 0;
   for (int i = 1; i < nrows; ++i) {
@@ -307,17 +288,10 @@ void ShapePaperDialog::on_predictPushButton_clicked()
         }
       }
     }
-
     const ZFlyEmNeuron *neuron1 = m_frame->getNeuronFromIndex(neuronIndex);
     const ZFlyEmNeuron *neuron2 = m_frame->getNeuronFromIndex(matchedIndex);
     if (neuron1->getType() == neuron2->getType()) {
       ++correctNumber;
-    } else {
-      /*
-      dump(QString("Wrong predction: %1 -> %2; (s = %3)").
-           arg(neuron1->getName().c_str()).
-           arg(neuron2->getClass().c_str()).arg(maxScore), true);
-           */
     }
   }
 
@@ -349,7 +323,6 @@ std::map<std::string, int> ShapePaperDialog::getClassIdMap()
   if (getDataBundle() != NULL) {
     return getDataBundle()->getClassIdMap();
   }
-
   return std::map<std::string, int>();
 }
 
@@ -357,79 +330,14 @@ void ShapePaperDialog::predictFromOrtAdjustment()
 {
   ZMatrix featmat;
   featmat.importTextFile(getFeaturePath().toStdString() + ".txt");
-
   ZDoubleVector ratioArray(featmat.getRowNumber());
   for (size_t i = 0; i < ratioArray.size(); ++i) {
     ratioArray[i] = log(featmat.at(i, 9) / featmat.at(i, 10));
-//    ratioArray[i] = log(featmat.at(i, 7));
   }
-
-//  const double mu1 = -1.3302;
-//  const double mu2 = 0.3322;
-//  const double var1 = 0.2944;
-//  const double var2 = 1.0380;
-
-//  const double mu1 = -1.4074;
-//  const double mu2 = 0.11518;
-//  const double var1 = 0.11213;
-//  const double var2 = 1.0489;
-
-//  const double mu1 = -1.4144;
-//  const double mu2 = 0.13755;
-//  const double var1 = 0.11133;
-//  const double var2 = 1.0146;
-
-//  const double mu1 = -1.4083;
-//  const double mu2 = 0.11153;
-//  const double var1 = 0.11168;
-//  const double var2 = 1.0514;
-
-//  const double mu1 = -1.4009;
-//  const double mu2 = 0.14225;
-//  const double var1 = 0.11591;
-//  const double var2 = 1.031;
-
-//  const double mu1 = -1.3287;
-//  const double mu2 = 0.23399;
-//  const double var1 = 0.2902;
-//  const double var2 = 1.1109;
-
   const double mu1 = -1.3304;
   const double mu2 = 0.23895;
   const double var1 = 0.28891;
   const double var2 = 1.1047;
-
-//    const double mu1 = -1.4041;
-//    const double mu2 = 0.1346;
-//    const double var1 = 0.1140;
-//    const double var2 = 1.0343;
-//    const double mu1 = -1.111;
-//    const double mu2 = 0.077144;
-//    const double var1 = 0.057516;
-//    const double var2 = 0.55438;
-
-//  const double mu1 = -1.4061;
-//  const double mu2 = 0.0867;
-//  const double var1 = 0.1135;
-//  const double var2 = 1.0798;
-
-
-//  const double mu1 = -1.3813;
-//  const double mu2 = 0.2738;
-//  const double var1 = 0.1277;
-//  const double var2 = 0.9292;
-
-//  const double mu1 = -0.9830;
-//  const double mu2 = 0.2135;
-//  const double var2 = 1.0312;
-//  const double var1 = 0.2932;
-
-//  const double mu1 = -1.1103;
-//  const double mu2 = 0.2637;
-//  const double var1 = 0.1003;
-//  const double var2 = 0.7663;
-
-
   ZMatrix simmat;
   simmat.importTextFile(getSimmatPath().toStdString());
   int nrows = simmat.getRowNumber();
@@ -443,30 +351,20 @@ void ShapePaperDialog::predictFromOrtAdjustment()
     int matchedIndex = neuronIndex;
     for (int j = 0; j < ncols; ++j) {
       if (neuronIndex != j) {
-        double k = computeRatioDiff(ratioArray[neuronIndex],
-                                            ratioArray[j], mu1, var1,
-                                            mu2, var2);
-        double score = simmat.at(i, j) * sqrt(k); /// (1 + exp((0.5 - k) * 5));
+        double k = computeRatioDiff(ratioArray[neuronIndex], ratioArray[j], mu1, var1, mu2, var2);
+        double score = simmat.at(i, j) * sqrt(k);
         if (maxScore < score) {
           maxScore = score;
           matchedIndex = j;
         }
       }
     }
-
     const ZFlyEmNeuron *neuron1 = m_frame->getNeuronFromIndex(neuronIndex);
     const ZFlyEmNeuron *neuron2 = m_frame->getNeuronFromIndex(matchedIndex);
     if (neuron1->getType() == neuron2->getType()) {
       ++correctNumber;
-    } else {
-      /*
-      dump(QString("Wrong predction: %1 -> %2; (s = %3)").
-           arg(neuron1->getName().c_str()).
-           arg(neuron2->getClass().c_str()).arg(maxScore), true);
-           */
     }
   }
-
   dump(QString("Accurate count (ratio adjusted): %1").arg(correctNumber), true);
 }
 
@@ -474,27 +372,20 @@ void ShapePaperDialog::computeFeatureMatrix()
 {
   //Compute features
   if (m_frame != NULL) {
-    ZSwcGlobalFeatureAnalyzer::EFeatureSet setName =
-        ZSwcGlobalFeatureAnalyzer::NGF3;
+    ZSwcGlobalFeatureAnalyzer::EFeatureSet setName = ZSwcGlobalFeatureAnalyzer::NGF3;
     ZFlyEmDataBundle *bundle = m_frame->getDataBundle();
     ZFlyEmNeuronArray &neuronArray = bundle->getNeuronArray();
-    ZMatrix featmat(neuronArray.size(),
-                    ZSwcGlobalFeatureAnalyzer::getFeatureNumber(setName));
+    ZMatrix featmat(neuronArray.size(), ZSwcGlobalFeatureAnalyzer::getFeatureNumber(setName));
     int row = 0;
     std::vector<std::string> neuronName;
-    for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
-         iter != neuronArray.end(); ++iter, ++row) {
+    for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin(); iter != neuronArray.end(); ++iter, ++row) {
       ZFlyEmNeuron &neuron = *iter;
-      std::vector<double> featureSet =
-          ZSwcGlobalFeatureAnalyzer::computeFeatureSet(
-            *(neuron.getModel()), setName);
+      std::vector<double> featureSet = ZSwcGlobalFeatureAnalyzer::computeFeatureSet(*(neuron.getModel()), setName);
       neuronName.push_back(neuron.getName());
       featmat.setRowValue(row, featureSet);
     }
-
     featmat.exportCsv(getFeaturePath().toStdString() + ".txt");
-    featmat.exportCsv(getFeaturePath().toStdString(), neuronName,
-                      ZSwcGlobalFeatureAnalyzer::getFeatureNameArray(setName));
+    featmat.exportCsv(getFeaturePath().toStdString(), neuronName, ZSwcGlobalFeatureAnalyzer::getFeatureNameArray(setName));
     dump(getFeaturePath() + " saved.", true);
   }
 }
@@ -513,19 +404,12 @@ double ShapePaperDialog::computeRatioDiff(
   double zy2 = (y - mu2) * (y - mu2) / var2 / 2.0;
   double rx = exp(zx2 - zx1) * sqrt(var2 / var1);
   double ry = exp(zy2 - zy1) * sqrt(var2 / var1);
-
   double k = 1.0;
   if (rx > 0.0 || ry > 0.0) {
     double t = (rx * ry + 1) / (rx + ry);
     k = t / (1 + t);
   }
-
   return k;
-
-      /*
-  return std::fabs((x - y) * ((x + y - mu1 - mu1) /var1 -
-                   (x + y - mu2 - mu2)/var2));
-                       */
 }
 
 void ShapePaperDialog::updateButtonState()
@@ -535,7 +419,6 @@ void ShapePaperDialog::updateButtonState()
 
 void ShapePaperDialog::computeConfusionMatrix()
 {
-
 }
 
 QString ShapePaperDialog::getPath(EResult result) const
@@ -569,7 +452,6 @@ QString ShapePaperDialog::getPath(EResult result) const
 bool ShapePaperDialog::exists(EResult result) const
 {
   QString path = getPath(result);
-
   return QFile(path).exists();
 }
 
@@ -588,7 +470,6 @@ void ShapePaperDialog::exportClassLabel()
       int id = classIdMap[neuron.getType()];
       idArray.push_back(id);
     }
-
     //Save labels to a text file
     QString filePath = getTrueClassLabelPath();
     std::ofstream stream;
@@ -610,34 +491,27 @@ void ShapePaperDialog::exportNeuronInfo()
     //foreach neuron
     int index = 1;
     ZJsonArray neuronArrayObj;
-
-    for (ZFlyEmNeuronArray::const_iterator iter = neuronArray->begin();
-         iter != neuronArray->end(); ++iter, ++index) {
+    for (ZFlyEmNeuronArray::const_iterator iter = neuronArray->begin(); iter != neuronArray->end(); ++iter, ++index) {
       const ZFlyEmNeuron neuron = *iter;
-
       ZJsonObject neuronObj;
       neuronObj.setEntry("index", index);
       neuronObj.setEntry("class", classIdMap[neuron.getType()]);
       neuronObj.setEntry("id", neuron.getId());
       neuronObj.setEntry("name", neuron.getName());
       neuronObj.setEntry("path", neuron.getModelPath());
-
       neuronArrayObj.append(neuronObj);
     }
 
     ZJsonArray classArrayObj;
-    for (std::map<std::string, int>::const_iterator iter = classIdMap.begin();
-         iter != classIdMap.end(); ++iter) {
+    for (std::map<std::string, int>::const_iterator iter = classIdMap.begin(); iter != classIdMap.end(); ++iter) {
       ZJsonObject classMapObj;
       classMapObj.setEntry("label", iter->second);
       classMapObj.setEntry("name", iter->first);
       classArrayObj.append(classMapObj);
     }
-
     ZJsonObject headObj;
     headObj.setEntry("neuron", neuronArrayObj);
     headObj.setEntry("class", classArrayObj);
-
     headObj.dump(getPath(RESULT_NEURON_INFO).toStdString());
   }
 }
@@ -686,31 +560,20 @@ void ShapePaperDialog::on_allResultPushButton_clicked()
     dump("No data available.");
     return;
   }
-
   //Generate similarity matrix
   tryOutput(RESULT_SIMMAT);
-
   //Generate neuron class labels
   tryOutput(RESULT_TRUE_CLASS_LABEL);
-
   tryOutput(RESULT_CONFMAT);
-
   //Generate neuron IDs
-
   //Generate neuron Names
-
   //Generate feature matrix
   tryOutput(RESULT_PRED_CLASS_LABEL);
-
   //Generate confusion matrix
-
   //Generate layer features
   tryOutput(RESULT_LAYER_FEATMAT);
-
   tryOutput(RESULT_MODEL_SOURCE);
-
   tryOutput(RESULT_NEURON_INFO);
-
   dump("Done");
 }
 
@@ -724,7 +587,6 @@ void ShapePaperDialog::on_clusteringPushButton_clicked()
       if (targetFile.exists()) {
         targetFile.remove();
       }
-
       if (QFile::copy(simmatFile, targetFilePath)) {
         ZMatlabProcess process;
         if (process.findMatlab()) {
@@ -740,13 +602,10 @@ void ShapePaperDialog::on_clusteringPushButton_clicked()
                 if (file.exists()) {
                   file.remove();
                 }
-
                 QFile::copy(outputFile, getPath(RESULT_CLUSTERING));
                 dump(getPath(RESULT_CLUSTERING) + " saved.");
-
                 ZMatrix mat;
                 mat.importTextFile(getPath(RESULT_CLUSTERING).toStdString());
-
                 QString examplarDirPath = m_resultDir->get() + "/examplars";
                 QStringList nameFilter("*.swc");
                 QDir examplarDir(examplarDirPath);
@@ -754,14 +613,12 @@ void ShapePaperDialog::on_clusteringPushButton_clicked()
                 foreach (QString swcFile, oldSwcFileList) {
                   QFile(examplarDir.absoluteFilePath(swcFile)).remove();
                 }
-
                 ZFlyEmNeuronArray *neuronArray = getNeuronArray();
                 for (int i = 0; i < mat.getRowNumber(); ++i) {
                   int isExamplar = iround(mat.at(i, 1));
                   if (isExamplar == 1) {
                     ZFlyEmNeuron &neuron = (*neuronArray)[i];
-                    neuron.getModel()->save(examplarDirPath.toStdString() +
-                          "/" + ZString::getBaseName(neuron.getModelPath()));
+                    neuron.getModel()->save(examplarDirPath.toStdString() + "/" + ZString::getBaseName(neuron.getModelPath()));
                   }
                 }
                 dump(examplarDirPath + " updated.", true);
@@ -777,14 +634,6 @@ void ShapePaperDialog::on_clusteringPushButton_clicked()
         } else {
           dump("No Matlab found. This function requires Matlab.");
         }
-        /*
-        QProcess::execute(
-              "/Applications/MATLAB.app/bin/matlab < "
-              "/Users/zhaot/Work/SLAT/matlab/SLAT/run/flyem/tz_run_flyem_clustering_command.m "
-              "-nodesktop -nosplash");
-
-        frame->assignClass(GET_DATA_DIR + "/tmp/labels.txt");
-        */
       } else {
         dump("Unable to generate similarity matrix");
       }

@@ -41,12 +41,6 @@ then
   done
 
   all_lib=(libopencv_core.2.4.dylib libopencv_ml.2.4.dylib)
-  #all_lib=(libjansson.4.dylib libpng15.15.dylib libhdf5.7.3.0.dylib libopencv_core.2.4.dylib libopencv_ml.2.4.dylib)
-
-  #cp ../shell/assert_succ.sh ../app/trace_package
-
-  #cp ../../../c/lib/libneurolabi.dylib lib
-  #install_name_tool -id @executable_path/../lib/libneurolabi.dylib lib/libneurolabi.dylib
 
   for lib in ${all_lib[@]}
   do
@@ -67,11 +61,6 @@ then
   done
   install_name_tool -change lib/libopencv_core.2.4.dylib @executable_path/../lib/libopencv_core.2.4.dylib lib/libopencv_ml.2.4.dylib 
 
-  #cp /usr/lib/libGLEW.1.9.0.dylib lib/libGLEW.1.9.0.dylib
-  #chmod a+w lib/libGLEW.1.9.0.dylib
-  #install_name_tool -id @executable_path/../lib/libGLEW.1.9.0.dylib lib/libGLEW.1.9.0.dylib
-  #install_name_tool -change /usr/lib/libGLEW.1.9.0.dylib @executable_path/../lib/libGLEW.1.9.0.dylib MacOS/neuTube
-
   #To avoid 'Class Q* is implemented in both ...' error
   cp ../../../gui/qt.conf Resources
 elif [ $os = "Linux" ]
@@ -82,7 +71,7 @@ then
     exit 1
   fi
 
-  extlib=(libfftw3 libfftw3f libxml2 libpng15 libneurolabi libjansson libc libGLEW libQtNetwork libQtSvg libQtXml libQtOpenGL libQtGui libQtCore libQtDBus)
+  extlib=(libfftw3 libfftw3f libxml2 libpng15 libneurolabi libjansson libc libQtNetwork libQtSvg libQtXml libQtOpenGL libQtGui libQtCore libQtDBus)
   input_dir=$1
   output_dir=$2
   if [ ! -d $output_dir ]

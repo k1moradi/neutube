@@ -2,6 +2,7 @@
 #define ZFLYEMNEURONMATCHTEST_H
 
 #include "ztestheader.h"
+#include "../zfspath.h"
 #include "neutubeconfig.h"
 #include "flyem/zflyemneuronlayermatcher.h"
 #include "flyem/zflyemdatabundle.h"
@@ -11,8 +12,7 @@
 TEST(ZFlyEmNeuronMatch, Layer) {
 #if 0
   ZFlyEmDataBundle dataBundle;
-  dataBundle.loadJsonFile(GET_TEST_DATA_DIR +
-                          "/flyem/TEM/data_release/bundle1/data_bundle.json");
+  dataBundle.loadJsonFile((fs::path(GET_TEST_DATA_DIR)/"flyem"/"TEM"/"data_release"/"bundle1"/"data_bundle.json").string());
   ZFlyEmNeuron *neuron1 = dataBundle.getNeuron(209);
   ZFlyEmNeuron *neuron2 = dataBundle.getNeuron(214);
 

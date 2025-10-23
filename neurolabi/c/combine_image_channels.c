@@ -159,8 +159,8 @@ int main(int argc, char *argv[])
     printf("%d images\n", nblueimage);
   }
 
-  qsort(redgreenfilepath, nblueimage, sizeof(char*), compare_string_by_num);
-  qsort(bluefilepath, nblueimage, sizeof(char*), compare_string_by_num);
+  std::sort(redgreenfilepath, nblueimage, sizeof(char*), compare_string_by_num);
+  std::sort(bluefilepath, nblueimage, sizeof(char*), compare_string_by_num);
 
   char prefix[500];
   char outfilepath[500];

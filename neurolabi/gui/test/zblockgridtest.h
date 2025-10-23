@@ -2,6 +2,7 @@
 #define ZBLOCKGRIDTEST_H
 
 #include "ztestheader.h"
+#include "../zfspath.h"
 #include "neutubeconfig.h"
 #include "bigdata/zstackblockgrid.h"
 #include "bigdata/zblockgrid.h"
@@ -95,7 +96,7 @@ TEST(ZStackBlockGrid, basic)
   grid.consumeStack(ZIntPoint(2, 2, 1), stack);
 
   ZStack *out = grid.toStack();
-  out->save(GET_TEST_DATA_DIR + "/test.tif");
+  out->save((fs::path(GET_TEST_DATA_DIR) / "test.tif").string());
 
   ASSERT_EQ(1, grid.getValue(39, 78, 73));
 

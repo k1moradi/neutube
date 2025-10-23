@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QElapsedTimer>
 
+#include "zqtheader.h"
 #include "neutubeconfig.h"
 #include "flyem/zflyemneuron.h"
 #include "zclosedcurve.h"
@@ -20,7 +21,6 @@
 #include "neutube.h"
 #include "dvid/libdvidheader.h"
 #include "flyem/zflyemtodoitem.h"
-
 
 ZDvidWriter::ZDvidWriter(QObject *parent) :
   QObject(parent)
@@ -1024,7 +1024,7 @@ void ZDvidWriter::parseStandardOutput()
 
   if (!m_standardOutout.isEmpty()) {
     QStringList output =
-        m_standardOutout.split(QRegExp("[\n\r]"), QString::SkipEmptyParts);
+        m_standardOutout.split(QRegularExpression("[\n\r]"), ZQT_SKIP_EMPTY);
     qDebug() << output.back();
 
     foreach (QString str, output) {

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdlib>
 
 #include "zmessagereporter.h"
 #if defined(_FLYEM_)
@@ -334,8 +335,15 @@ private:
 };
 
 #define GET_DATA_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::DATA))
-#if defined(PROJECT_PATH)
-#  define GET_TEST_DATA_DIR (std::string(PROJECT_PATH) + "/../data")
+// ---- Test data directory resolution ----
+// Prefer env override NEUTUBE_TEST_DATA_DIR; fallback to "<exe>/data".
+inline std::string _resolve_test_data_dir() {
+  const char* env = std::getenv("NEUTUBE_TEST_DATA_DIR");
+  if (env && *env) return std::string(env);
+  return NeutubeConfig::getInstance().getApplicatinDir() + "/data";
+}
+#ifndef GET_TEST_DATA_DIR
+#  define GET_TEST_DATA_DIR _resolve_test_data_dir()
 #endif
 
 #ifndef GET_TEST_DATA_DIR

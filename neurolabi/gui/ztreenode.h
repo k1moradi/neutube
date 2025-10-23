@@ -54,22 +54,25 @@ public:
     int getSiblingIndex() const;
 
 public:
+
     bool isRoot() const;
+    bool isRoot(bool) const;                    // wrapper to existing isRoot()
     bool isLastChild() const;
     bool isLeaf() const;
     bool isBranchPoint() const;
     bool isContinuation() const;
     bool isSpur() const;
     bool isSibling(const ZTreeNode<T> *node) const;
+    bool isRegular(bool = true) const;          // generic nodes: treat as regular
 
     /*!
      * \brief A node is an orphan if it has no linked node.
      */
     bool isOrphan() const;
 
-
     ZTreeNode<T>* addChild(ZTreeNode<T> *node);
     ZTreeNode<T>* addChild(const T& data);
+    ZTreeNode<T>* getNext() const;              // preorder “next”
     void removeChild(ZTreeNode<T> *child);
     void replaceChild(ZTreeNode<T> *oldChild, ZTreeNode<T> *newChild);
 

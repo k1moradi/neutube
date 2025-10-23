@@ -2,6 +2,7 @@
 #define Z3DINTERACTTEST_H
 
 #include "ztestheader.h"
+#include "../zfspath.h"
 #include "neutubeconfig.h"
 #include "geometry/zgeo3dtransform.h"
 #include "zstack.hxx"
@@ -11,7 +12,7 @@
 TEST(3DPaint, Basic)
 {
   ZStack stack;
-  stack.readStack(GET_TEST_DATA_DIR + "/ball.tif");
+  stack.readStack((fs::path(GET_TEST_DATA_DIR) / "ball.tif").string());
   ZGeo3dScalarField *field;
 
   ZGeo3dTransform transform;
