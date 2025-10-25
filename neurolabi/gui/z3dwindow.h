@@ -1,5 +1,13 @@
 #ifndef Z3DWINDOW_H
 #define Z3DWINDOW_H
+#include "zparameter.h"
+#include "znumericparameter.h"
+#include "zglmutils.h"
+#include "z3dcameraparameter.h"
+#include "zactionactivator.h"
+#include "z3dvolumeraycasterrenderer.h"
+#include "zsharedpointer.h"
+#include "z3dgpuinfo.h"
 
 #include <QMainWindow>
 #include <QTabWidget>
@@ -12,15 +20,6 @@
 #include <vector>
 #include <set>
 #include <map>
-
-#include "zparameter.h"
-#include "znumericparameter.h"
-#include "zglmutils.h"
-#include "z3dcameraparameter.h"
-#include "zactionactivator.h"
-#include "z3dvolumeraycasterrenderer.h"
-#include "zsharedpointer.h"
-#include "z3dgpuinfo.h"
 
 class ZStackDoc;
 class Z3DTrackballInteractionHandler;
