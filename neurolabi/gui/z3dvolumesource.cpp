@@ -1,38 +1,31 @@
 #include "z3dvolumesource.h"
-#include "zstack.hxx"
-#include "zstackdoc.h"
+#include <QtGlobal>
+#include <cmath>
+#include "neutubeconfig.h"
 #include "tz_stack_attribute.h"
 #include "z3dgpuinfo.h"
 #include "zsparseobject.h"
-#include "neutubeconfig.h"
 #include "zsparsestack.h"
-
-#include <QtGlobal>
-
-#include <cmath>
-
+#include "zstack.hxx"
+#include "zstackdoc.h"
 const size_t Z3DVolumeSource::m_nChannelSupport = 10;
 constexpr int kHardMaxTextureClamp = 1024;
 // Use when you know if the texture will be 3D (volume) or 2D
-inline int clampedMaxTextureSize(bool is3D, int hardCap = kHardMaxTextureClamp)
-{
+inline int clampedMaxTextureSize(bool is3D, int hardCap = kHardMaxTextureClamp) {
   int v = is3D ? Z3DGpuInfoInstance.getMax3DTextureSize() : Z3DGpuInfoInstance.getMaxTextureSize();
 #ifdef _DEBUG_
   Q_ASSERT(v > 0);
 #else
-  if (v <= 0) v = hardCap;   // conservative fallback in Release
+  if(v <= 0) v = hardCap; // conservative fallback in Release
 #endif
-  if (v > hardCap) v = hardCap;
+  if(v > hardCap) v = hardCap;
   return v;
 }
-
 // Convenience overload when you only have depth on hand
-inline int clampedMaxTextureSizeByDepth(int depth, int hardCap = kHardMaxTextureClamp)
-{
+inline int clampedMaxTextureSizeByDepth(int depth, int hardCap = kHardMaxTextureClamp) {
   return clampedMaxTextureSize(depth > 1, hardCap);
 }
-
-Z3DVolumeSource::Z3DVolumeSource(ZStackDoc *doc, size_t maxVoxelNumber)
+Z3DVolumeSource::Z3DVolumeSource(ZStackDoc* doc, size_t maxVoxelNumber)
   : Z3DProcessor()
   , m_stackOutputPort("Stack")
   , m_xScale("X Scale", 1.0f, 0.1f, 50.f)
@@ -42,11 +35,10 @@ Z3DVolumeSource::Z3DVolumeSource(ZStackDoc *doc, size_t maxVoxelNumber)
   , m_isSubVolume("Is Subvolume", false)
   , m_zoomInViewSize("Zoom In View Size", 256, 128, 512)
   , m_doc(doc)
-  , m_widgetsGroup(NULL)
-{
+  , m_widgetsGroup(NULL) {
   m_maxVoxelNumber = maxVoxelNumber;
-  for (size_t i=0; i<m_nChannelSupport; i++) {
-    QString name = QString("Volume%1").arg(i+1);
+  for(size_t i = 0; i < m_nChannelSupport; i++) {
+    QString name = QString("Volume%1").arg(i + 1);
     m_outputPorts.push_back(new Z3DOutputPort<Z3DVolume>(name));
     addPort(m_outputPorts[i]);
   }
@@ -66,48 +58,41 @@ Z3DVolumeSource::Z3DVolumeSource(ZStackDoc *doc, size_t maxVoxelNumber)
   connect(&m_zScale, SIGNAL(valueChanged()), this, SLOT(changeZScale()));
   connect(&m_zoomInViewSize, SIGNAL(valueChanged()), this, SLOT(changeZoomInViewSize()));
 }
-
-Z3DVolumeSource::~Z3DVolumeSource()
-{
-  for (size_t i=0; i<m_outputPorts.size(); i++)
+Z3DVolumeSource::~Z3DVolumeSource() {
+  for(size_t i = 0; i < m_outputPorts.size(); i++)
     delete m_outputPorts[i];
 }
-
-void Z3DVolumeSource::loadData()
-{
-  if (m_doc != NULL) {
-    if (m_doc->hasStackData()) {
-      if (m_doc->hasPlayer(ZStackObjectRole::ROLE_3DPAINT)) {
+void Z3DVolumeSource::loadData() {
+  if(m_doc != NULL) {
+    if(m_doc->hasStackData()) {
+      if(m_doc->hasPlayer(ZStackObjectRole::ROLE_3DPAINT)) {
         readVolumesWithObject();
       } else {
         readVolumes();
       }
-    } else if (m_doc->hasStack() && m_doc->hasSparseObject()) {
-      if (m_doc->hasPlayer(ZStackObjectRole::ROLE_3DPAINT)) {
+    } else if(m_doc->hasStack() && m_doc->hasSparseObject()) {
+      if(m_doc->hasPlayer(ZStackObjectRole::ROLE_3DPAINT)) {
         readSparseVolumeWithObject();
       } else {
         readSparseVolume();
       }
-    } else if (m_doc->hasStack()) {
-      if (m_doc->hasSparseStack()) {
+    } else if(m_doc->hasStack()) {
+      if(m_doc->hasSparseStack()) {
         readSparseStack();
       }
     }
   }
 }
-
 void Z3DVolumeSource::process(Z3DEye) {}
-
-void Z3DVolumeSource::initialize()
-{
+void Z3DVolumeSource::initialize() {
   CHECK_GL_ERROR_NOTE("Z3DVolumeSource::initialize start");
   Z3DProcessor::initialize();
   Z3DGpuInfoInstance.probeCurrentIfNeeded();
 #ifdef _DEBUG_
-  Q_ASSERT(Z3DGpuInfoInstance.isReady());  // caps must be ready at this point
+  Q_ASSERT(Z3DGpuInfoInstance.isReady()); // caps must be ready at this point
 #endif
   // Only pick an auto budget if caller didn’t specify one in the ctor.
-  if (m_maxVoxelNumber == 0) {
+  if(m_maxVoxelNumber == 0) {
     const int texKB = Z3DGpuInfoInstance.getAvailableTextureMemory();
     m_maxVoxelNumber = (texKB != -1 && texKB <= 256000) ? (256 * 256 * 256 * 2) : (512 * 512 * 512 * 1);
   }
@@ -115,33 +100,28 @@ void Z3DVolumeSource::initialize()
   sendData();
   CHECK_GL_ERROR_NOTE("Z3DVolumeSource::initialize end");
 }
-
-void Z3DVolumeSource::deinitialize()
-{
+void Z3DVolumeSource::deinitialize() {
   clearVolume();
   clearZoomInVolume();
   CHECK_GL_ERROR;
   Z3DProcessor::deinitialize();
 }
-
-void Z3DVolumeSource::readVolumes()
-{
-  if (m_doc == NULL) {
+void Z3DVolumeSource::readVolumes() {
+  if(m_doc == NULL) {
     return;
   }
   clearVolume();
-  int nchannel = m_doc->hasStackData() ?
-        m_doc->getStack()->channelNumber() : 0;
-  if (nchannel > 0) {
-    for (int i=0; i<nchannel; i++) {
-      Stack *stack = m_doc->getStack()->c_stack(i);
-      //Under deveopment
+  int nchannel = m_doc->hasStackData() ? m_doc->getStack()->channelNumber() : 0;
+  if(nchannel > 0) {
+    for(int i = 0; i < nchannel; i++) {
+      Stack* stack = m_doc->getStack()->c_stack(i);
+      // Under deveopment
       ZPoint offset(m_doc->getStack()->getOffset().getX() * m_xScale.get(),
-                    m_doc->getStack()->getOffset().getY() * m_yScale.get(),
-                    m_doc->getStack()->getOffset().getZ() * m_zScale.get());
-      if (m_doc->getStack()->getVoxelNumber() * nchannel > m_maxVoxelNumber) { //Downsample big stack
+        m_doc->getStack()->getOffset().getY() * m_yScale.get(),
+        m_doc->getStack()->getOffset().getZ() * m_zScale.get());
+      if(m_doc->getStack()->getVoxelNumber() * nchannel > m_maxVoxelNumber) { // Downsample big stack
         m_isVolumeDownsampled.set(true);
-        double scale = std::sqrt((m_maxVoxelNumber*1.0) /
+        double scale = std::sqrt((m_maxVoxelNumber * 1.0) /
                                  (m_doc->getStack()->getVoxelNumber() * nchannel));
         int height = std::ceil(stack->height * scale);
         int width = std::ceil(stack->width * scale);
@@ -150,38 +130,37 @@ void Z3DVolumeSource::readVolumes()
         double heightScale = 1.0;
         double depthScale = 1.0;
         const int maxTextureSize = clampedMaxTextureSizeByDepth(depth);
-        if (height > maxTextureSize) {
+        if(height > maxTextureSize) {
           heightScale = (double)maxTextureSize / height;
           height = std::ceil(height * heightScale);
         }
-        if (width > maxTextureSize) {
+        if(width > maxTextureSize) {
           widthScale = (double)maxTextureSize / width;
           width = std::ceil(width * widthScale);
         }
-        if (depth > maxTextureSize) {
+        if(depth > maxTextureSize) {
           depthScale = (double)maxTextureSize / depth;
           depth = std::ceil(depth * depthScale);
         }
         widthScale *= scale;
         heightScale *= scale;
-        Stack *stack2 = Resize_Stack(stack, width, height, depth);
+        Stack* stack2 = Resize_Stack(stack, width, height, depth);
         Translate_Stack(stack2, GREY, 1);
-        if (m_doc->getStack()->isBinary()) {
+        if(m_doc->getStack()->isBinary()) {
           size_t volume = Stack_Voxel_Number(stack2);
-          for (size_t voxelIndex = 0; voxelIndex < volume; ++voxelIndex) {
-            if (stack2->array[voxelIndex] == 1) {
+          for(size_t voxelIndex = 0; voxelIndex < volume; ++voxelIndex) {
+            if(stack2->array[voxelIndex] == 1) {
               stack2->array[voxelIndex] = 255;
             }
           }
         }
-        Z3DVolume *vh = new Z3DVolume(
+        Z3DVolume* vh = new Z3DVolume(
           stack2,
-          glm::vec3(1.f/widthScale, 1.f/heightScale, 1.f/depthScale),
+          glm::vec3(1.f / widthScale, 1.f / heightScale, 1.f / depthScale),
           glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get()),
-          glm::vec3(offset.x(), offset.y(), offset.z())
-        );
+          glm::vec3(offset.x(), offset.y(), offset.z()));
         m_volumes.push_back(vh);
-      } else { //small stack
+      } else { // small stack
         double widthScale = 1.0;
         double heightScale = 1.0;
         double depthScale = 1.0;
@@ -189,64 +168,61 @@ void Z3DVolumeSource::readVolumes()
         int width = C_Stack::width(stack);
         int depth = C_Stack::depth(stack);
         const int maxTextureSize = clampedMaxTextureSizeByDepth(depth);
-        if (height > maxTextureSize) {
+        if(height > maxTextureSize) {
           heightScale = (double)maxTextureSize / height;
           height = std::ceil(height * heightScale);
         }
-        if (width > maxTextureSize) {
+        if(width > maxTextureSize) {
           widthScale = (double)maxTextureSize / width;
           width = std::ceil(width * widthScale);
         }
-        if (depth > maxTextureSize) {
+        if(depth > maxTextureSize) {
           depthScale = (double)maxTextureSize / depth;
           depth = std::ceil(depth * depthScale);
         }
-        Stack *stack2;
-        if (widthScale != 1.0 || heightScale != 1.0 || depthScale != 1.0) {
+        Stack* stack2;
+        if(widthScale != 1.0 || heightScale != 1.0 || depthScale != 1.0) {
           stack2 = C_Stack::resize(stack, width, height, depth);
         } else {
           stack2 = Copy_Stack(stack);
         }
-        if (stack->kind == GREY && m_doc->getStack()->isBinary()) {
-          size_t volume = C_Stack::voxelNumber(stack2); //m_doc->getStack()->getVoxelNumber();
-          for (size_t voxelIndex = 0; voxelIndex < volume; ++voxelIndex) {
-            if (stack2->array[voxelIndex] == 1) {
+        if(stack->kind == GREY && m_doc->getStack()->isBinary()) {
+          size_t volume = C_Stack::voxelNumber(stack2); // m_doc->getStack()->getVoxelNumber();
+          for(size_t voxelIndex = 0; voxelIndex < volume; ++voxelIndex) {
+            if(stack2->array[voxelIndex] == 1) {
               stack2->array[voxelIndex] = 255;
             }
           }
         }
         Translate_Stack(stack2, GREY, 1);
-        Z3DVolume *vh = new Z3DVolume(
-            stack2,
-            glm::vec3(1.f/widthScale, 1.f/heightScale, 1.f/depthScale),
-            glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get()),
-            glm::vec3(offset.x(), offset.y(), offset.z())
-        );
+        Z3DVolume* vh = new Z3DVolume(
+          stack2,
+          glm::vec3(1.f / widthScale, 1.f / heightScale, 1.f / depthScale),
+          glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get()),
+          glm::vec3(offset.x(), offset.y(), offset.z()));
         m_volumes.push_back(vh);
       }
-    } //for each cannel
+    } // for each cannel
     std::vector<ZVec3Parameter*>& chCols = m_doc->getStack()->channelColors();
-    for (int i=0; i<nchannel; i++) {
+    for(int i = 0; i < nchannel; i++) {
       m_volumes[i]->setVolColor(chCols[i]->get());
     }
   }
 }
-
-void Z3DVolumeSource::readSparseStack()
-{
-  if (m_doc == NULL) { return; }
-  if (!m_doc->hasSparseStack()) { return; }
-  ZSparseStack *spStack = m_doc->getSparseStack();
-  if (spStack->getBoundBox().isEmpty()) { return; }
-  const ZStack *stackData = spStack->getStack();
-  if (stackData == NULL) { return; }
+void Z3DVolumeSource::readSparseStack() {
+  if(m_doc == NULL) { return; }
+  if(!m_doc->hasSparseStack()) { return; }
+  ZSparseStack* spStack = m_doc->getSparseStack();
+  if(spStack->getBoundBox().isEmpty()) { return; }
+  const ZStack* stackData = spStack->getStack();
+  if(stackData == NULL) { return; }
   clearVolume();
   int nchannel = stackData->channelNumber();
   const ZIntPoint dsIntv = spStack->getDownsampleInterval();
   double widthScale = 1.0;
   double heightScale = 1.0;
   double depthScale = 1.0;
-  if (dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
+  if(dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
     widthScale /= dsIntv.getX() + 1;
     heightScale /= dsIntv.getY() + 1;
     depthScale /= dsIntv.getZ() + 1;
@@ -255,20 +231,20 @@ void Z3DVolumeSource::readSparseStack()
   int height = stackData->height();
   int depth = stackData->depth();
   std::vector<Stack*> stackArray;
-  if (nchannel > 0) {
+  if(nchannel > 0) {
     const int maxTextureSize = clampedMaxTextureSizeByDepth(depth);
-    if (height > maxTextureSize) {
-      double alpha = (double) maxTextureSize / height;
+    if(height > maxTextureSize) {
+      double alpha = (double)maxTextureSize / height;
       heightScale *= alpha;
       height = std::ceil(height * alpha);
     }
-    if (width > maxTextureSize) {
-      double alpha = (double) maxTextureSize / width;
+    if(width > maxTextureSize) {
+      double alpha = (double)maxTextureSize / width;
       widthScale *= alpha;
       width = std::ceil(width * alpha);
     }
-    if (depth > maxTextureSize) {
-      double alpha = (double) maxTextureSize / depth;
+    if(depth > maxTextureSize) {
+      double alpha = (double)maxTextureSize / depth;
       depthScale *= alpha;
       depth = std::ceil(depth * alpha);
     }
@@ -276,10 +252,10 @@ void Z3DVolumeSource::readSparseStack()
     width /= dsIntv2.getX() + 1;
     height /= dsIntv2.getY() + 1;
     depth /= dsIntv2.getZ() + 1;
-    for (int i=0; i<nchannel; i++) {
-      const Stack *stack = stackData->c_stack(i);
-      Stack *stack2 = NULL;
-      if (C_Stack::width(stack) != width || C_Stack::height(stack) != height || C_Stack::depth(stack) != depth) {
+    for(int i = 0; i < nchannel; i++) {
+      const Stack* stack = stackData->c_stack(i);
+      Stack* stack2 = NULL;
+      if(C_Stack::width(stack) != width || C_Stack::height(stack) != height || C_Stack::depth(stack) != depth) {
         m_isVolumeDownsampled.set(true);
         int xIntv = C_Stack::width(stack) / width;
         int yIntv = C_Stack::height(stack) / height;
@@ -292,54 +268,51 @@ void Z3DVolumeSource::readSparseStack()
         stack2 = C_Stack::clone(stack);
       }
       Translate_Stack(stack2, GREY, 1);
-      if (C_Stack::isBinary(stack2)) {
+      if(C_Stack::isBinary(stack2)) {
         size_t volume = C_Stack::voxelNumber(stack2);
-        for (size_t voxelIndex = 0; voxelIndex < volume; ++voxelIndex) {
-          if (stack2->array[voxelIndex] == 1) {
+        for(size_t voxelIndex = 0; voxelIndex < volume; ++voxelIndex) {
+          if(stack2->array[voxelIndex] == 1) {
             stack2->array[voxelIndex] = 255;
           }
         }
       }
       stackArray.push_back(stack2);
-    } //for each cannel
+    } // for each cannel
     /**********************/
     int offset[3];
     offset[0] = -stackData->getOffset().getX() * (dsIntv.getX() + 1);
     offset[1] = -stackData->getOffset().getY() * (dsIntv.getY() + 1);
     offset[2] = -stackData->getOffset().getZ() * (dsIntv.getZ() + 1);
     QList<ZDocPlayer*> playerList = m_doc->getPlayerList(ZStackObjectRole::ROLE_3DPAINT);
-    foreach (const ZDocPlayer *player, playerList) {
-      if (player->getLabel() > 0 && player->getLabel() < 10) {
-        if (player->getLabel() >= (int) stackArray.size()) {
+    foreach(const ZDocPlayer* player, playerList) {
+      if(player->getLabel() > 0 && player->getLabel() < 10) {
+        if(player->getLabel() >= (int)stackArray.size()) {
           stackArray.push_back(C_Stack::make(GREY, stackData->width(), stackData->height(), stackData->depth()));
           C_Stack::setZero(stackArray.back());
         }
         player->labelStack(stackArray[player->getLabel()], offset, 255,
-            dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+          dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
       }
     }
-    for (size_t i = 0; i < stackArray.size(); ++i) {
-      Z3DVolume *vh = new Z3DVolume(
+    for(size_t i = 0; i < stackArray.size(); ++i) {
+      Z3DVolume* vh = new Z3DVolume(
         stackArray[i],
-        glm::vec3(1.f/widthScale, 1.f/heightScale, 1.f/depthScale),
+        glm::vec3(1.f / widthScale, 1.f / heightScale, 1.f / depthScale),
         glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get()),
-        glm::vec3(-offset[0] * m_xScale.get(), -offset[1] * m_yScale.get(), -offset[2] * m_zScale.get())
-      );
+        glm::vec3(-offset[0] * m_xScale.get(), -offset[1] * m_yScale.get(), -offset[2] * m_zScale.get()));
       m_volumes.push_back(vh);
     }
-    m_volumes[0]->setVolColor(glm::vec3(1.f,1.f,1.f));
+    m_volumes[0]->setVolColor(glm::vec3(1.f, 1.f, 1.f));
     ZLabelColorTable colorTable;
-    for (size_t i = 1; i < stackArray.size(); ++i) {
+    for(size_t i = 1; i < stackArray.size(); ++i) {
       QColor color = colorTable.getColor(i);
       m_volumes[i]->setVolColor(glm::vec3(color.redF(), color.greenF(), color.blueF()));
     }
     /**********************/
   }
 }
-
-void Z3DVolumeSource::readVolumesWithObject()
-{
-  if (m_doc == NULL) {
+void Z3DVolumeSource::readVolumesWithObject() {
+  if(m_doc == NULL) {
     return;
   }
   clearVolume();
@@ -352,13 +325,13 @@ void Z3DVolumeSource::readVolumesWithObject()
   ZLabelColorTable colorTable;
   std::vector<QColor> colorArray(m_nChannelSupport);
   colorArray[0] = QColor(255, 255, 255);
-  for (size_t i = 1; i < m_nChannelSupport; ++i) {
+  for(size_t i = 1; i < m_nChannelSupport; ++i) {
     colorArray[i] = colorTable.getColor(i);
   }
   QList<ZDocPlayer*> playerList = m_doc->getPlayerList(ZStackObjectRole::ROLE_3DPAINT);
-  foreach (const ZDocPlayer *player, playerList) {
-    if (player->getLabel() > 0 && player->getLabel() < 10) {
-      if (player->getLabel() >= (int) stackArray.size()) {
+  foreach(const ZDocPlayer* player, playerList) {
+    if(player->getLabel() > 0 && player->getLabel() < 10) {
+      if(player->getLabel() >= (int)stackArray.size()) {
         stackArray.push_back(C_Stack::make(GREY, m_doc->getStack()->width(), m_doc->getStack()->height(), m_doc->getStack()->depth()));
         C_Stack::setZero(stackArray.back());
       }
@@ -366,17 +339,17 @@ void Z3DVolumeSource::readVolumesWithObject()
     }
   }
   int nchannel = stackArray.size();
-  if (nchannel > 0) {
-    for (int i=0; i<nchannel; i++) {
-      Stack *stack = stackArray[i];
-      //Under deveopment
+  if(nchannel > 0) {
+    for(int i = 0; i < nchannel; i++) {
+      Stack* stack = stackArray[i];
+      // Under deveopment
       ZPoint offset = ZPoint(
-            m_doc->getStack()->getOffset().getX() * m_xScale.get(),
-            m_doc->getStack()->getOffset().getY() * m_yScale.get(),
-            m_doc->getStack()->getOffset().getZ() * m_zScale.get());
-      if (m_doc->getStack()->getVoxelNumber() * nchannel > m_maxVoxelNumber) { //Downsample big stack
+        m_doc->getStack()->getOffset().getX() * m_xScale.get(),
+        m_doc->getStack()->getOffset().getY() * m_yScale.get(),
+        m_doc->getStack()->getOffset().getZ() * m_zScale.get());
+      if(m_doc->getStack()->getVoxelNumber() * nchannel > m_maxVoxelNumber) { // Downsample big stack
         m_isVolumeDownsampled.set(true);
-        double scale = std::sqrt((m_maxVoxelNumber*1.0) / (m_doc->getStack()->getVoxelNumber() * nchannel));
+        double scale = std::sqrt((m_maxVoxelNumber * 1.0) / (m_doc->getStack()->getVoxelNumber() * nchannel));
         int height = std::ceil(stack->height * scale);
         int width = std::ceil(stack->width * scale);
         int depth = stack->depth;
@@ -384,38 +357,37 @@ void Z3DVolumeSource::readVolumesWithObject()
         double heightScale = 1.0;
         double depthScale = 1.0;
         const int maxTextureSize = clampedMaxTextureSizeByDepth(depth);
-        if (height > maxTextureSize) {
+        if(height > maxTextureSize) {
           heightScale = (double)maxTextureSize / height;
           height = std::ceil(height * heightScale);
         }
-        if (width > maxTextureSize) {
+        if(width > maxTextureSize) {
           widthScale = (double)maxTextureSize / width;
           width = std::ceil(width * widthScale);
         }
-        if (depth > maxTextureSize) {
+        if(depth > maxTextureSize) {
           depthScale = (double)maxTextureSize / depth;
           depth = std::ceil(depth * depthScale);
         }
         widthScale *= scale;
         heightScale *= scale;
-        Stack *stack2 = Resize_Stack(stack, width, height, depth);
+        Stack* stack2 = Resize_Stack(stack, width, height, depth);
         Translate_Stack(stack2, GREY, 1);
-        if (m_doc->getStack()->isBinary()) {
+        if(m_doc->getStack()->isBinary()) {
           size_t volume = Stack_Voxel_Number(stack2);
-          for (size_t voxelIndex = 0; voxelIndex < volume; ++voxelIndex) {
-            if (stack2->array[voxelIndex] == 1) {
+          for(size_t voxelIndex = 0; voxelIndex < volume; ++voxelIndex) {
+            if(stack2->array[voxelIndex] == 1) {
               stack2->array[voxelIndex] = 255;
             }
           }
         }
-        Z3DVolume *vh = new Z3DVolume(
+        Z3DVolume* vh = new Z3DVolume(
           stack2,
-          glm::vec3(1.f/widthScale, 1.f/heightScale, 1.f/depthScale),
+          glm::vec3(1.f / widthScale, 1.f / heightScale, 1.f / depthScale),
           glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get()),
-          glm::vec3(offset.x(), offset.y(), offset.z())
-        );
+          glm::vec3(offset.x(), offset.y(), offset.z()));
         m_volumes.push_back(vh);
-      } else { //small stack
+      } else { // small stack
         double widthScale = 1.0;
         double heightScale = 1.0;
         double depthScale = 1.0;
@@ -423,69 +395,66 @@ void Z3DVolumeSource::readVolumesWithObject()
         int width = C_Stack::width(stack);
         int depth = C_Stack::depth(stack);
         const int maxTextureSize = clampedMaxTextureSizeByDepth(depth);
-        if (height > maxTextureSize) {
+        if(height > maxTextureSize) {
           heightScale = (double)maxTextureSize / height;
           height = std::ceil(height * heightScale);
         }
-        if (width > maxTextureSize) {
+        if(width > maxTextureSize) {
           widthScale = (double)maxTextureSize / width;
           width = std::ceil(width * widthScale);
         }
-        if (depth > maxTextureSize) {
+        if(depth > maxTextureSize) {
           depthScale = (double)maxTextureSize / depth;
           depth = std::ceil(depth * depthScale);
         }
-        Stack *stack2;
-        if (widthScale != 1.0 || heightScale != 1.0 || depthScale != 1.0) {
+        Stack* stack2;
+        if(widthScale != 1.0 || heightScale != 1.0 || depthScale != 1.0) {
           stack2 = C_Stack::resize(stack, width, height, depth);
         } else {
           stack2 = Copy_Stack(stack);
         }
-        if (stack->kind == GREY && m_doc->getStack()->isBinary()) {
+        if(stack->kind == GREY && m_doc->getStack()->isBinary()) {
           size_t volume = C_Stack::voxelNumber(stack2); // m_doc->getStack()->getVoxelNumber();
-          for (size_t voxelIndex = 0; voxelIndex < volume; ++voxelIndex) {
-            if (stack2->array[voxelIndex] == 1) {
+          for(size_t voxelIndex = 0; voxelIndex < volume; ++voxelIndex) {
+            if(stack2->array[voxelIndex] == 1) {
               stack2->array[voxelIndex] = 255;
             }
           }
         }
         Translate_Stack(stack2, GREY, 1);
-        Z3DVolume *vh = new Z3DVolume(
+        Z3DVolume* vh = new Z3DVolume(
           stack2,
-          glm::vec3(1.f/widthScale, 1.f/heightScale, 1.f/depthScale),
+          glm::vec3(1.f / widthScale, 1.f / heightScale, 1.f / depthScale),
           glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get()),
-          glm::vec3(offset.x(), offset.y(), offset.z())
-        );
+          glm::vec3(offset.x(), offset.y(), offset.z()));
         m_volumes.push_back(vh);
       }
-    } //for each cannel
-    for (int i=0; i<nchannel; i++) {
-      QColor &color = colorArray[i];
+    } // for each cannel
+    for(int i = 0; i < nchannel; i++) {
+      QColor& color = colorArray[i];
       m_volumes[i]->setVolColor(glm::vec3(color.redF(), color.greenF(), color.blueF()));
     }
   }
-  for (std::vector<Stack*>::iterator iter = stackArray.begin(); iter != stackArray.end(); ++iter) {
+  for(std::vector<Stack*>::iterator iter = stackArray.begin(); iter != stackArray.end(); ++iter) {
     C_Stack::kill(*iter);
   }
-  //delete colorStack;
+  // delete colorStack;
 }
-
-void Z3DVolumeSource::readSparseVolume()
-{
-  if (m_doc == NULL) {
+void Z3DVolumeSource::readSparseVolume() {
+  if(m_doc == NULL) {
     return;
   }
-  if (!m_doc->hasStack() || m_doc->getSparseObjectList().isEmpty()) {
+  if(!m_doc->hasStack() || m_doc->getSparseObjectList().isEmpty()) {
     return;
   }
   clearVolume();
   ZSparseObject obj = *(m_doc->getSparseObjectList().front());
   QColor color = obj.getColor();
   int nchannel = 1;
-  if (color.green() > 0) {
+  if(color.green() > 0) {
     nchannel = 2;
   }
-  if (color.blue() > 0) {
+  if(color.blue() > 0) {
     nchannel = 3;
   }
   ZIntPoint dsIntv = misc::getDsIntvFor3DVolume(m_doc->getStack()->getBoundBox());
@@ -496,13 +465,13 @@ void Z3DVolumeSource::readSparseVolume()
   int height = m_doc->getStack()->height();
   int depth = m_doc->getStack()->depth();
   const int maxTextureSize = clampedMaxTextureSizeByDepth(depth);
-  if (height > maxTextureSize) {
+  if(height > maxTextureSize) {
     yIntv += height / maxTextureSize;
   }
-  if (width > maxTextureSize) {
+  if(width > maxTextureSize) {
     xIntv += width / maxTextureSize;
   }
-  if (depth > maxTextureSize) {
+  if(depth > maxTextureSize) {
     zIntv += depth / maxTextureSize;
   }
   obj.downsampleMax(xIntv, yIntv, zIntv);
@@ -511,31 +480,28 @@ void Z3DVolumeSource::readSparseVolume()
   rgb[0] = color.red();
   rgb[1] = color.green();
   rgb[2] = color.blue();
-  for (int i = 0; i < nchannel; ++i) {
-    Stack *stack2 = obj.toStack(offset, rgb[i]);
+  for(int i = 0; i < nchannel; ++i) {
+    Stack* stack2 = obj.toStack(offset, rgb[i]);
     ZPoint finalOffset;
-    finalOffset.set(offset[0]* m_xScale.get() * (xIntv + 1), offset[1] * m_yScale.get() * (yIntv + 1), offset[2] * m_zScale.get() * (zIntv + 1));
-    Z3DVolume *vh = new Z3DVolume(
+    finalOffset.set(offset[0] * m_xScale.get() * (xIntv + 1), offset[1] * m_yScale.get() * (yIntv + 1), offset[2] * m_zScale.get() * (zIntv + 1));
+    Z3DVolume* vh = new Z3DVolume(
       stack2,
       glm::vec3(xIntv + 1, yIntv + 1, zIntv + 1),
       glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get()),
-      glm::vec3(finalOffset.x(), finalOffset.y(), finalOffset.z())
-    );
+      glm::vec3(finalOffset.x(), finalOffset.y(), finalOffset.z()));
     m_volumes.push_back(vh);
   }
-  m_volumes[0]->setVolColor(glm::vec3(1.f,0.f,0.f));
-  if (m_volumes.size() > 1) {
-    m_volumes[1]->setVolColor(glm::vec3(0.f,1.f,0.f));
+  m_volumes[0]->setVolColor(glm::vec3(1.f, 0.f, 0.f));
+  if(m_volumes.size() > 1) {
+    m_volumes[1]->setVolColor(glm::vec3(0.f, 1.f, 0.f));
   }
-  if (m_volumes.size() > 2) {
-    m_volumes[2]->setVolColor(glm::vec3(0.f,0.f,1.f));
+  if(m_volumes.size() > 2) {
+    m_volumes[2]->setVolColor(glm::vec3(0.f, 0.f, 1.f));
   }
 }
-
-void Z3DVolumeSource::readSparseVolumeWithObject()
-{
-  if (m_doc == NULL) { return; }
-  if (!m_doc->hasStack() || m_doc->getSparseObjectList().isEmpty()) { return; }
+void Z3DVolumeSource::readSparseVolumeWithObject() {
+  if(m_doc == NULL) { return; }
+  if(!m_doc->hasStack() || m_doc->getSparseObjectList().isEmpty()) { return; }
   clearVolume();
   ZSparseObject obj = *(m_doc->getSparseObjectList().front());
   QColor color = obj.getColor();
@@ -544,17 +510,17 @@ void Z3DVolumeSource::readSparseVolumeWithObject()
   int xIntv = dsIntv.getX();
   int yIntv = dsIntv.getY();
   int zIntv = dsIntv.getZ();
-  int width  = m_doc->getStack()->width();
+  int width = m_doc->getStack()->width();
   int height = m_doc->getStack()->height();
   int depth = m_doc->getStack()->depth();
   const int maxTextureSize = clampedMaxTextureSizeByDepth(depth);
-  if (height > maxTextureSize) {
+  if(height > maxTextureSize) {
     yIntv += height / maxTextureSize;
   }
-  if (width > maxTextureSize) {
+  if(width > maxTextureSize) {
     xIntv += width / maxTextureSize;
   }
-  if (depth > maxTextureSize) {
+  if(depth > maxTextureSize) {
     zIntv += depth / maxTextureSize;
   }
   obj.downsampleMax(xIntv, yIntv, zIntv);
@@ -564,152 +530,134 @@ void Z3DVolumeSource::readSparseVolumeWithObject()
   rgb[1] = color.green();
   rgb[2] = color.blue();
   std::vector<Stack*> stackArray(3);
-  for (int i = 0; i < nchannel; ++i) {
+  for(int i = 0; i < nchannel; ++i) {
     stackArray[i] = obj.toStack(offset, rgb[i]);
     ZPoint finalOffset;
     finalOffset.set(
-        offset[0] * m_xScale.get() * (xIntv + 1),
-        offset[1] * m_yScale.get() * (yIntv + 1),
-        offset[2] * m_zScale.get() * (zIntv + 1)
-    );
-    Z3DVolume *vh = new Z3DVolume(
+      offset[0] * m_xScale.get() * (xIntv + 1),
+      offset[1] * m_yScale.get() * (yIntv + 1),
+      offset[2] * m_zScale.get() * (zIntv + 1));
+    Z3DVolume* vh = new Z3DVolume(
       stackArray[i],
       glm::vec3(xIntv + 1, yIntv + 1, zIntv + 1),
       glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get()),
-      glm::vec3(finalOffset.x(), finalOffset.y(), finalOffset.z())
-    );
+      glm::vec3(finalOffset.x(), finalOffset.y(), finalOffset.z()));
     m_volumes.push_back(vh);
   }
   int originalOffset[3];
   originalOffset[0] = offset[0] * (xIntv + 1);
   originalOffset[1] = offset[1] * (yIntv + 1);
   originalOffset[2] = offset[2] * (zIntv + 1);
-  QList<ZObject3d*>objList = m_doc->getObj3dList();
-  foreach(ZObject3d *obj, objList) {
+  QList<ZObject3d*> objList = m_doc->getObj3dList();
+  foreach(ZObject3d* obj, objList) {
     obj->drawStack(stackArray, originalOffset, xIntv, yIntv, zIntv);
   }
-  m_volumes[0]->setVolColor(glm::vec3(1.f,0.f,0.f));
-  if (m_volumes.size() > 1) {
-    m_volumes[1]->setVolColor(glm::vec3(0.f,1.f,0.f));
+  m_volumes[0]->setVolColor(glm::vec3(1.f, 0.f, 0.f));
+  if(m_volumes.size() > 1) {
+    m_volumes[1]->setVolColor(glm::vec3(0.f, 1.f, 0.f));
   }
-  if (m_volumes.size() > 2) {
-    m_volumes[2]->setVolColor(glm::vec3(0.f,0.f,1.f));
+  if(m_volumes.size() > 2) {
+    m_volumes[2]->setVolColor(glm::vec3(0.f, 0.f, 1.f));
   }
 }
-
-void Z3DVolumeSource::readSubVolumes(int left, int top, int front, int width, int height, int depth)
-{
-  if (m_doc == NULL) {
+void Z3DVolumeSource::readSubVolumes(int left, int top, int front, int width, int height, int depth) {
+  if(m_doc == NULL) {
     return;
   }
   clearZoomInVolume();
   int nchannel = m_doc->hasStackData() ? m_doc->getStack()->channelNumber() : 0;
-  if (nchannel > 0) {
+  if(nchannel > 0) {
     glm::vec3 scaleSpacing = glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get());
     glm::vec3 downsampleSpacing = glm::vec3(1.f, 1.f, 1.f);
     glm::vec3 offset = glm::vec3(left, top, front) * scaleSpacing + getVolume(0)->getOffset();
-    for (int i=0; i<nchannel; i++) {
-      Stack *stack = m_doc->getStack()->c_stack(i);
-      Stack *subStack = Crop_Stack(stack, left, top, front, width, height, depth, NULL);
-      if (subStack->kind == GREY) {
-        Z3DVolume *vh = new Z3DVolume(subStack, downsampleSpacing, scaleSpacing, offset, getVolume(0)->getPhysicalToWorldMatrix());
+    for(int i = 0; i < nchannel; i++) {
+      Stack* stack = m_doc->getStack()->c_stack(i);
+      Stack* subStack = Crop_Stack(stack, left, top, front, width, height, depth, NULL);
+      if(subStack->kind == GREY) {
+        Z3DVolume* vh = new Z3DVolume(subStack, downsampleSpacing, scaleSpacing, offset, getVolume(0)->getPhysicalToWorldMatrix());
         vh->setParentVolumeDimensions(glm::uvec3(stack->width, stack->height, stack->depth));
         vh->setParentVolumeOffset(getVolume(0)->getOffset());
         m_zoomInVolumes.push_back(vh);
       } else {
         Translate_Stack(subStack, GREY, 1);
-        Z3DVolume *vh = new Z3DVolume(subStack, downsampleSpacing, scaleSpacing, offset, getVolume(0)->getPhysicalToWorldMatrix());
+        Z3DVolume* vh = new Z3DVolume(subStack, downsampleSpacing, scaleSpacing, offset, getVolume(0)->getPhysicalToWorldMatrix());
         vh->setParentVolumeDimensions(glm::uvec3(stack->width, stack->height, stack->depth));
         vh->setParentVolumeOffset(getVolume(0)->getOffset());
         m_zoomInVolumes.push_back(vh);
       }
     }
     std::vector<ZVec3Parameter*>& chCols = m_doc->getStack()->channelColors();
-    for (int i=0; i<nchannel; i++) {
+    for(int i = 0; i < nchannel; i++) {
       m_zoomInVolumes[i]->setVolColor(chCols[i]->get());
     }
   }
 }
-
-void Z3DVolumeSource::sendData()
-{
-  for (size_t i=0; i<m_volumes.size(); i++) {
-    if (i < m_nChannelSupport) {
+void Z3DVolumeSource::sendData() {
+  for(size_t i = 0; i < m_volumes.size(); i++) {
+    if(i < m_nChannelSupport) {
       m_outputPorts[i]->setData(m_volumes[i], false);
     }
   }
-  for (size_t i=m_volumes.size(); i<m_outputPorts.size(); i++) {
+  for(size_t i = m_volumes.size(); i < m_outputPorts.size(); i++) {
     m_outputPorts[i]->setData(NULL);
   }
-  if (m_volumes.size() > 0) {
+  if(m_volumes.size() > 0) {
     m_stackOutputPort.setData(m_doc->getStack());
   }
 }
-
-void Z3DVolumeSource::sendZoomInVolumeData()
-{
-  if (m_doc == NULL) { return; }
-  for (size_t i=0; i<m_zoomInVolumes.size(); i++) {
-    if (i < m_nChannelSupport) {
+void Z3DVolumeSource::sendZoomInVolumeData() {
+  if(m_doc == NULL) { return; }
+  for(size_t i = 0; i < m_zoomInVolumes.size(); i++) {
+    if(i < m_nChannelSupport) {
       m_outputPorts[i]->setData(m_zoomInVolumes[i], false);
     }
   }
-  for (size_t i=m_zoomInVolumes.size(); i<m_outputPorts.size(); i++) {
+  for(size_t i = m_zoomInVolumes.size(); i < m_outputPorts.size(); i++) {
     m_outputPorts[i]->setData(NULL);
   }
-  if (m_volumes.size() > 0) {
+  if(m_volumes.size() > 0) {
     m_stackOutputPort.setData(m_doc->getStack());
   }
 }
-
-void Z3DVolumeSource::changeXScale()
-{
-  if (m_volumes.empty()) return;
-  for (size_t i=0; i<m_volumes.size(); i++) {
+void Z3DVolumeSource::changeXScale() {
+  if(m_volumes.empty()) return;
+  for(size_t i = 0; i < m_volumes.size(); i++) {
     m_volumes[i]->setScaleSpacing(glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get()));
   }
-  for (size_t i=0; i<m_zoomInVolumes.size(); i++) {
+  for(size_t i = 0; i < m_zoomInVolumes.size(); i++) {
     m_zoomInVolumes[i]->setScaleSpacing(glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get()));
   }
   emit xScaleChanged();
 }
-
-void Z3DVolumeSource::changeYScale()
-{
-  if (m_volumes.empty()) return;
-  for (size_t i=0; i<m_volumes.size(); i++) {
+void Z3DVolumeSource::changeYScale() {
+  if(m_volumes.empty()) return;
+  for(size_t i = 0; i < m_volumes.size(); i++) {
     m_volumes[i]->setScaleSpacing(glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get()));
   }
-  for (size_t i=0; i<m_zoomInVolumes.size(); i++) {
+  for(size_t i = 0; i < m_zoomInVolumes.size(); i++) {
     m_zoomInVolumes[i]->setScaleSpacing(glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get()));
   }
   emit yScaleChanged();
 }
-
-void Z3DVolumeSource::changeZScale()
-{
-  if (m_volumes.empty()) return;
-  for (size_t i=0; i<m_volumes.size(); i++) {
+void Z3DVolumeSource::changeZScale() {
+  if(m_volumes.empty()) return;
+  for(size_t i = 0; i < m_volumes.size(); i++) {
     m_volumes[i]->setScaleSpacing(glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get()));
   }
-  for (size_t i=0; i<m_zoomInVolumes.size(); i++) {
+  for(size_t i = 0; i < m_zoomInVolumes.size(); i++) {
     m_zoomInVolumes[i]->setScaleSpacing(glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get()));
   }
   emit zScaleChanged();
 }
-
-void Z3DVolumeSource::changeZoomInViewSize()
-{
-  if (m_zoomInVolumes.empty()) return;
+void Z3DVolumeSource::changeZoomInViewSize() {
+  if(m_zoomInVolumes.empty()) return;
   exitZoomInView();
   openZoomInView(m_zoomInPos);
 }
-
-void Z3DVolumeSource::exitZoomInView()
-{
-  if (m_zoomInVolumes.empty()) return;
+void Z3DVolumeSource::exitZoomInView() {
+  if(m_zoomInVolumes.empty()) return;
   // copy transform matrix from sub volume, in case it is changed
-  for (size_t i=0; i<m_volumes.size(); i++) {
+  for(size_t i = 0; i < m_volumes.size(); i++) {
     m_volumes[i]->setPhysicalToWorldMatrix(m_zoomInVolumes[i]->getPhysicalToWorldMatrix());
   }
   clearZoomInVolume();
@@ -717,113 +665,95 @@ void Z3DVolumeSource::exitZoomInView()
   m_isSubVolume.set(false);
   m_isVolumeDownsampled.set(true);
 }
-
-void Z3DVolumeSource::clearVolume()
-{
-  for (size_t i=0; i<m_volumes.size(); i++) {
+void Z3DVolumeSource::clearVolume() {
+  for(size_t i = 0; i < m_volumes.size(); i++) {
     delete m_volumes[i];
   }
   m_volumes.clear();
 }
-
-void Z3DVolumeSource::clearZoomInVolume()
-{
-  for (size_t i=0; i<m_zoomInVolumes.size(); i++) {
+void Z3DVolumeSource::clearZoomInVolume() {
+  for(size_t i = 0; i < m_zoomInVolumes.size(); i++) {
     delete m_zoomInVolumes[i];
   }
   m_zoomInVolumes.clear();
 }
-
-void Z3DVolumeSource::reloadVolume()
-{
-  if (!isInitialized()) return;
+void Z3DVolumeSource::reloadVolume() {
+  if(!isInitialized()) return;
   clearVolume();
   clearZoomInVolume();
   loadData();
   sendData();
 }
-
-bool Z3DVolumeSource::openZoomInView(const glm::ivec3& volPos)
-{
-  if (m_doc == NULL) { return false; }
-  if (!m_isVolumeDownsampled.get()) return false;
-  if (!m_doc->hasStackData()) return false;
-  if (!volumeNeedDownsample()) return false;
-  if (getVolume(0) == NULL) return false;
+bool Z3DVolumeSource::openZoomInView(const glm::ivec3& volPos) {
+  if(m_doc == NULL) { return false; }
+  if(!m_isVolumeDownsampled.get()) return false;
+  if(!m_doc->hasStackData()) return false;
+  if(!volumeNeedDownsample()) return false;
+  if(getVolume(0) == NULL) return false;
   glm::ivec3 voldim = glm::ivec3(getVolume(0)->getCubeSize());
-  if (!(volPos[0] >= 0 && volPos[0] < voldim.x &&
-        volPos[1] >= 0 && volPos[1] < voldim.y &&
-        volPos[2] >= 0 && volPos[2] < voldim.z)) {
+  if(!(volPos[0] >= 0 && volPos[0] < voldim.x &&
+       volPos[1] >= 0 && volPos[1] < voldim.y &&
+       volPos[2] >= 0 && volPos[2] < voldim.z)) {
     return false;
   }
   glm::vec3 offset = getVolume(0)->getOffset();
   m_zoomInPos = volPos;
-  if (m_zoomInViewSize.get() % 2 != 0) m_zoomInViewSize.set(m_zoomInViewSize.get()+1);
+  if(m_zoomInViewSize.get() % 2 != 0) m_zoomInViewSize.set(m_zoomInViewSize.get() + 1);
   int halfsize = m_zoomInViewSize.get() / 2;
-  int left = std::max(volPos[0]-halfsize+1, 0);
-  int right = std::min(volPos[0]+halfsize, m_doc->getStack()->width()-1);
+  int left = std::max(volPos[0] - halfsize + 1, 0);
+  int right = std::min(volPos[0] + halfsize, m_doc->getStack()->width() - 1);
   int width = right - left + 1;
-  int up = std::max(volPos[1]-halfsize+1, 0);
-  int down = std::min(volPos[1]+halfsize, m_doc->getStack()->height()-1);
+  int up = std::max(volPos[1] - halfsize + 1, 0);
+  int down = std::min(volPos[1] + halfsize, m_doc->getStack()->height() - 1);
   int height = down - up + 1;
   int front = 0;
   int depth = m_doc->getStack()->depth();
   m_zoomInBound.clear();
-  m_zoomInBound.push_back(left*m_xScale.get() + offset.x);
-  m_zoomInBound.push_back(right*m_xScale.get() + offset.x);
-  m_zoomInBound.push_back(up*m_yScale.get() + offset.y);
-  m_zoomInBound.push_back(down*m_yScale.get() + offset.y);
-  m_zoomInBound.push_back(front*m_zScale.get() + offset.z);
-  m_zoomInBound.push_back(depth*m_zScale.get() + offset.z);
+  m_zoomInBound.push_back(left * m_xScale.get() + offset.x);
+  m_zoomInBound.push_back(right * m_xScale.get() + offset.x);
+  m_zoomInBound.push_back(up * m_yScale.get() + offset.y);
+  m_zoomInBound.push_back(down * m_yScale.get() + offset.y);
+  m_zoomInBound.push_back(front * m_zScale.get() + offset.z);
+  m_zoomInBound.push_back(depth * m_zScale.get() + offset.z);
   readSubVolumes(left, up, front, width, height, depth);
   sendZoomInVolumeData();
   m_isSubVolume.set(true);
   m_isVolumeDownsampled.set(false);
   return true;
 }
-
-Z3DVolume *Z3DVolumeSource::getVolume(size_t index)
-{
-  if (index < m_volumes.size()) {
+Z3DVolume* Z3DVolumeSource::getVolume(size_t index) {
+  if(index < m_volumes.size()) {
     return m_volumes[index];
   } else {
     return NULL;
   }
 }
-
-bool Z3DVolumeSource::isEmpty()
-{
+bool Z3DVolumeSource::isEmpty() {
   return m_volumes.empty();
 }
-
-bool Z3DVolumeSource::volumeNeedDownsample() const
-{
-  if (m_doc == NULL) {
+bool Z3DVolumeSource::volumeNeedDownsample() const {
+  if(m_doc == NULL) {
     return false;
   }
-  if (m_doc->getStack()->getVoxelNumber() * m_doc->getStack()->channelNumber() <= m_maxVoxelNumber) {
+  if(m_doc->getStack()->getVoxelNumber() * m_doc->getStack()->channelNumber() <= m_maxVoxelNumber) {
     return false;
   } else {
     return true;
   }
 }
-
-bool Z3DVolumeSource::isVolumeDownsampled() const
-{
+bool Z3DVolumeSource::isVolumeDownsampled() const {
   return m_isVolumeDownsampled.get();
 }
-
-ZWidgetsGroup *Z3DVolumeSource::getWidgetsGroup()
-{
-  if (!m_widgetsGroup) {
+ZWidgetsGroup* Z3DVolumeSource::getWidgetsGroup() {
+  if(!m_widgetsGroup) {
     m_widgetsGroup = new ZWidgetsGroup("Volume Source", NULL, 1);
-    new ZWidgetsGroup(&m_zScale, m_widgetsGroup, 3);
     new ZWidgetsGroup(&m_xScale, m_widgetsGroup, 3);
     new ZWidgetsGroup(&m_yScale, m_widgetsGroup, 3);
+    new ZWidgetsGroup(&m_zScale, m_widgetsGroup, 3);
     new ZWidgetsGroup(&m_isVolumeDownsampled, m_widgetsGroup, 3);
     new ZWidgetsGroup(&m_isSubVolume, m_widgetsGroup, 3);
     new ZWidgetsGroup(&m_zoomInViewSize, m_widgetsGroup, 3);
-    m_widgetsGroup->setBasicAdvancedCutoff(4);
+    m_widgetsGroup->setBasicAdvancedCutoff(1);
   }
   return m_widgetsGroup;
 }
