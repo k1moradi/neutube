@@ -1,10 +1,8 @@
 #include "zwidgetsgroup.h"
 #include <QtGui>
+#include <QtWidgets>
 #include "z3dcameraparameter.h"
 #include "zparameter.h"
-#ifdef _QT5_
-#include <QtWidgets>
-#endif
 ZWidgetsGroup::ZWidgetsGroup(QWidget* widget, ZWidgetsGroup* parentGroup, int visibleLevel, QObject* parent)
   : QObject(parent)
   , m_type(WIDGET)
@@ -15,8 +13,7 @@ ZWidgetsGroup::ZWidgetsGroup(QWidget* widget, ZWidgetsGroup* parentGroup, int vi
   , m_visibleLevel(visibleLevel)
   , m_isSorted(true)
   , m_isVisible(true) {
-  if(parentGroup)
-    parentGroup->addChildGroup(this);
+  if(parentGroup) parentGroup->addChildGroup(this);
 }
 ZWidgetsGroup::ZWidgetsGroup(const QString& groupName, ZWidgetsGroup* parentGroup, int visibleLevel, QObject* parent)
   : QObject(parent)
@@ -29,8 +26,7 @@ ZWidgetsGroup::ZWidgetsGroup(const QString& groupName, ZWidgetsGroup* parentGrou
   , m_isSorted(false)
   , m_cutOffbetweenBasicAndAdvancedLevel(1)
   , m_isVisible(true) {
-  if(parentGroup)
-    parentGroup->addChildGroup(this);
+  if(parentGroup) parentGroup->addChildGroup(this);
 }
 ZWidgetsGroup::ZWidgetsGroup(ZParameter* parameter, ZWidgetsGroup* parentGroup, int visibleLevel, QObject* parent)
   : QObject(parent)
@@ -42,8 +38,7 @@ ZWidgetsGroup::ZWidgetsGroup(ZParameter* parameter, ZWidgetsGroup* parentGroup, 
   , m_visibleLevel(visibleLevel)
   , m_isSorted(true)
   , m_isVisible(true) {
-  if(parentGroup)
-    parentGroup->addChildGroup(this);
+  if(parentGroup) parentGroup->addChildGroup(this);
 }
 ZWidgetsGroup::~ZWidgetsGroup() {
   if(m_parent)
@@ -72,26 +67,25 @@ void ZWidgetsGroup::setVisible(bool visible) {
   }
 }
 const QList<ZWidgetsGroup*>& ZWidgetsGroup::getChildGroups() {
-  if(!m_isSorted)
-    sortChildGroups();
+  if(!m_isSorted) sortChildGroups();
   return m_childGroups;
 }
 void ZWidgetsGroup::addChildGroup(ZWidgetsGroup* child, bool atEnd) {
   if(child->m_parent && child->m_parent != this)
     child->m_parent->removeChildGroup(child);
   child->m_parent = this;
-  if(atEnd)
+  if(atEnd) {
     m_childGroups.push_back(child);
-  else
+  } else {
     m_childGroups.push_front(child);
+  }
   connect(child, SIGNAL(widgetsGroupChanged()), this, SLOT(emitWidgetsGroupChangedSignal()));
   m_isSorted = false;
 }
 void ZWidgetsGroup::removeChildGroup(ZWidgetsGroup* child) {
   int num = m_childGroups.removeAll(child);
   child->m_parent = NULL;
-  if(num > 0)
-    child->disconnect(this);
+  if(num > 0) child->disconnect(this);
 }
 void ZWidgetsGroup::mergeGroup(ZWidgetsGroup* other, bool atEnd) {
   if(other->m_type != GROUP) {
@@ -110,16 +104,14 @@ void ZWidgetsGroup::mergeGroup(ZWidgetsGroup* other, bool atEnd) {
 }
 QWidget* ZWidgetsGroup::createWidget(QMainWindow* mainWin, bool createBasic) {
   QLayout* lw = createLayout(mainWin, createBasic);
-  // if is boxLayout, add strech to fill the space
+  // if is boxLayout, add stretch to fill the space
   QBoxLayout* blo = qobject_cast<QBoxLayout*>(lw);
-  if(blo)
-    blo->addStretch();
+  if(blo) blo->addStretch();
   QWidget* widget = new QWidget();
   widget->setLayout(lw);
   QScrollArea* sa = new QScrollArea();
   sa->setWidgetResizable(true);
   sa->setWidget(widget);
-  //  sa->setVisible(isVisible());
   return sa;
 }
 QLayout* ZWidgetsGroup::createLayout(QMainWindow* mainWin, bool createBasic) {
@@ -159,8 +151,9 @@ QLayout* ZWidgetsGroup::createLayout(QMainWindow* mainWin, bool createBasic) {
           QGroupBox* groupBox = new QGroupBox(m_childGroups[i]->getGroupName());
           groupBox->setLayout(lw);
           vbl->addWidget(groupBox);
-        } else
+        } else {
           vbl->addLayout(lw);
+        }
       }
       if(i < m_childGroups.size()) {
         QPushButton* pb = new QPushButton("Advanced...");
@@ -175,8 +168,9 @@ QLayout* ZWidgetsGroup::createLayout(QMainWindow* mainWin, bool createBasic) {
           QGroupBox* groupBox = new QGroupBox(m_childGroups[i]->getGroupName());
           groupBox->setLayout(lw);
           vbl->addWidget(groupBox);
-        } else
+        } else {
           vbl->addLayout(lw);
+        }
       }
     }
     return vbl;
