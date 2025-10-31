@@ -7,10 +7,8 @@
 
 #include "zjsonvalue.h"
 #include "tz_stdint.h"
-
 #define ZJsonObject_foreach(jsonObject, key, value) \
-  json_object_foreach(jsonObject.getValue(), key, value)
-
+  json_object_foreach((jsonObject).getValue(), key, value)
 class ZJsonObject : public ZJsonValue
 {
 public:

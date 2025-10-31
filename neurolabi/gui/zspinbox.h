@@ -27,6 +27,7 @@ signals:
 
 public slots:
   void setDataRange(int min, int max);
+  void setSuffix(const QString& s) { QSpinBox::setSuffix(s); }
 
 protected:
   virtual void focusInEvent(QFocusEvent *e);
@@ -40,12 +41,12 @@ class ZDoubleSpinBox : public QDoubleSpinBox
   Q_OBJECT
 public:
   ZDoubleSpinBox(QWidget* parent = 0);
-
   virtual QSize sizeHint() const;
   virtual QSize minimumSizeHint() const;
 
 public slots:
   void setDataRange(double min, double max);
+  void setSuffix(const QString& s) { QDoubleSpinBox::setSuffix(s); }
 
 protected:
   virtual void focusInEvent(QFocusEvent *e);

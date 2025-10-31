@@ -1,0 +1,36 @@
+---
+Language: Cpp
+BasedOnStyle: LLVM
+ColumnLimit: 0
+IndentWidth: 2
+ContinuationIndentWidth: 2
+UseTab: Never
+MaxEmptyLinesToKeep: 0
+CompactNamespaces: true
+FixNamespaceComments: false
+BreakBeforeBraces: Attach
+AllowShortFunctionsOnASingleLine: All
+AllowShortLoopsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortBlocksOnASingleLine: Always
+PackConstructorInitializers: Never        # always one-per-line
+BreakConstructorInitializers: BeforeComma # comma-first look
+ConstructorInitializerIndentWidth: 2      # optional; matches your indent style
+SpaceBeforeParens: Never
+AlignAfterOpenBracket: DontAlign
+PointerAlignment: Left
+NamespaceIndentation: None
+IndentCaseBlocks: false
+BreakBeforeBinaryOperators: None
+BinPackArguments: true
+IncludeBlocks: Merge
+IncludeCategories:
+  - Regex: '^<.*'
+    Priority: 1
+  - Regex: '^".*'
+    Priority: 2
+  - Regex: '.*'
+    Priority: 3
+IncludeIsMainRegex: '([-_](test|unittest))?$'
+InsertNewlineAtEOF: true
+TabWidth: 2

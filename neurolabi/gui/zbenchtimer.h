@@ -27,33 +27,31 @@
 #include <iostream>
 #include <limits>
 #include <sstream>
-
-
-#define BENCH(TIMER,TRIES,REP,CODE,FUNCNAME) { \
-  TIMER.reset(); \
-  TIMER.setName(FUNCNAME); \
-  for(int i=0; i<TRIES; ++i){ \
-    TIMER.start(); \
-    for(int j=0; j<REP; ++j){ \
-      CODE; \
-    } \
-    TIMER.stop(); \
-  } \
-}
-
-#define BENCHANDPRINT(TIMER,TRIES,REP,CODE,FUNCNAME) { \
-  TIMER.reset(); \
-  TIMER.setName(FUNCNAME); \
-  for(int i=0; i<TRIES; ++i){ \
-    TIMER.start(); \
-    for(int j=0; j<REP; ++j){ \
-      CODE; \
-    } \
-    TIMER.stop(); \
-  } \
-  TIMER.print(); \
-}
-
+#define BENCH(TIMER, TRIES, REP, CODE, FUNCNAME) \
+  {                                              \
+    (TIMER).reset();                             \
+    (TIMER).setName(FUNCNAME);                   \
+    for(int i = 0; i < (TRIES); ++i) {           \
+      (TIMER).start();                           \
+      for(int j = 0; j < (REP); ++j) {           \
+        CODE;                                    \
+      }                                          \
+      (TIMER).stop();                            \
+    }                                            \
+  }
+#define BENCHANDPRINT(TIMER, TRIES, REP, CODE, FUNCNAME) \
+  {                                                      \
+    (TIMER).reset();                                     \
+    (TIMER).setName(FUNCNAME);                           \
+    for(int i = 0; i < (TRIES); ++i) {                   \
+      (TIMER).start();                                   \
+      for(int j = 0; j < (REP); ++j) {                   \
+        CODE;                                            \
+      }                                                  \
+      (TIMER).stop();                                    \
+    }                                                    \
+    (TIMER).print();                                     \
+  }
 class ZBenchTimer
 {
 public:

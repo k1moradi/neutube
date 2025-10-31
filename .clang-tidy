@@ -1,0 +1,24 @@
+---
+Checks: >
+  -*,
+  readability-braces-around-statements,
+  bugprone-unused-raii,
+  bugprone-suspicious-semicolon,
+  bugprone-suspicious-memset-usage,
+  bugprone-suspicious-string-compare,
+  bugprone-swapped-arguments,
+  bugprone-sizeof-expression,
+  bugprone-sizeof-container,
+  bugprone-string-constructor,
+  bugprone-macro-parentheses,
+  bugprone-misplaced-widening-cast
+
+CheckOptions:
+  - key: readability-braces-around-statements.ShortStatementLines
+    value: '1'
+
+WarningsAsErrors: >
+  readability-braces-around-statements
+
+FormatStyle: file
+HeaderFilterRegex: '.*'
