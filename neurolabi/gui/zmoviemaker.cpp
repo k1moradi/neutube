@@ -1,137 +1,110 @@
 #include "zmoviemaker.h"
-
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-#include "z3dwindow.h"
-#include "zfiletype.h"
-#include "zswcmovieactor.h"
-#include "zswctree.h"
-#include "zstackdoc.h"
-#include "z3dinteractionhandler.h"
 #include "tz_error.h"
+#include "z3dcompositor.h"
+#include "z3dinteractionhandler.h"
 #include "z3dswcfilter.h"
-#include "zstack.hxx"
-#include "zstackmovieactor.h"
 #include "z3dvolumeraycaster.h"
 #include "z3dvolumeraycasterrenderer.h"
-#include "zpunctamovieactor.h"
-#include "zmoviestage.h"
-#include "z3dcompositor.h"
-#include "zpunctum.h"
 #include "z3dvolumesource.h"
+#include "z3dwindow.h"
+#include "zfiletype.h"
+#include "zmoviestage.h"
+#include "zpunctamovieactor.h"
+#include "zpunctum.h"
 #include "zpunctumio.h"
-
+#include "zstack.hxx"
+#include "zstackdoc.h"
+#include "zstackmovieactor.h"
+#include "zswcmovieactor.h"
+#include "zswctree.h"
+#include <iomanip>
+#include <iostream>
+#include <sstream>
 using namespace std;
-
-ZMovieMaker::ZMovieMaker() : m_stage(NULL),
-  m_width(1024), m_height(1024), m_frameInterval(50)
-{
+ZMovieMaker::ZMovieMaker()
+  : m_stage(NULL)
+  , m_width(1024)
+  , m_height(1024)
+  , m_frameInterval(50) {
 }
-
-ZMovieMaker::~ZMovieMaker()
-{
+ZMovieMaker::~ZMovieMaker() {
   delete m_stage;
   dismissCast();
 }
-
-void ZMovieMaker::dismissCast()
-{
-  for (std::vector<ZMovieActor*>::iterator iter = m_cast.begin();
-       iter != m_cast.end(); ++iter) {
+void ZMovieMaker::dismissCast() {
+  for(std::vector<ZMovieActor*>::iterator iter = m_cast.begin(); iter != m_cast.end(); ++iter) {
     delete *iter;
   }
 }
-
-void ZMovieMaker::prepareStage()
-{
-  Z3DWindow *window = new Z3DWindow(m_academy, Z3DWindow::INIT_NORMAL,
-                                    false, NULL);
+void ZMovieMaker::prepareStage() {
+  Z3DWindow* window = new Z3DWindow(m_academy, Z3DWindow::INIT_NORMAL, false, NULL);
   m_stage = new ZMovieStage(window);
-
   m_photographer.setStage(m_stage);
   window->getVolumeSource()->setMaxVoxelNumber(1024 * 1024 * 512);
   window->getVolumeSource()->reloadVolume();
-
   window->show();
   window->getSwcFilter()->setColorMode("Intrinsic");
   window->getVolumeRaycaster()->getRenderer()->setOpaque(true);
-  window->getVolumeRaycaster()->hideBoundBox();
+  //window->getVolumeRaycaster()->hideBoundBox();
   window->getVolumeRaycasterRenderer()->setCompositeMode("Direct Volume Rendering");
-  window->getVolumeRaycasterRenderer()->setTextureFilterMode("Nearest");
+  window->getVolumeRaycasterRenderer()->setTextureFilterMode(GL_NEAREST, GL_NEAREST);
   window->getCompositor()->setBackgroundFirstColor(
-        glm::vec3(m_backgroundColor.redF(), m_backgroundColor.greenF(),
-                  m_backgroundColor.blueF()));
+    glm::vec3(m_backgroundColor.redF(), m_backgroundColor.greenF(),
+      m_backgroundColor.blueF()));
   window->getCompositor()->setBackgroundSecondColor(
-        glm::vec3(m_backgroundColor.redF(), m_backgroundColor.greenF(),
-                  m_backgroundColor.blueF()));
-
-   //stage->getVolumeSource()->setZScale(zScale);
-  //m_clipperState.init(window);
-
-  for (std::vector<ZMovieActor*>::iterator iter = m_cast.begin();
-       iter != m_cast.end(); ++iter) {
+    glm::vec3(m_backgroundColor.redF(), m_backgroundColor.greenF(),
+      m_backgroundColor.blueF()));
+  for(std::vector<ZMovieActor*>::iterator iter = m_cast.begin();
+    iter != m_cast.end(); ++iter) {
     (*iter)->setStage(m_stage);
   }
 }
-
-void ZMovieMaker::recruitCast()
-{
+void ZMovieMaker::recruitCast() {
   std::map<string, string> cast = m_script.getCast();
-
-  ZStackDoc *academy = getAcademy();
-
+  ZStackDoc* academy = getAcademy();
   academy->blockSignals(true);
-  for (std::map<string, string>::const_iterator iter = cast.begin();
-       iter != cast.end(); ++iter) {
-    switch (ZFileType::fileType(iter->second)) {
-    case ZFileType::SWC_FILE:
-    {
-      ZSwcTree *tree = new ZSwcTree;
+  for(std::map<string, string>::const_iterator iter = cast.begin();
+    iter != cast.end(); ++iter) {
+    switch(ZFileType::fileType(iter->second)) {
+    case ZFileType::SWC_FILE: {
+      ZSwcTree* tree = new ZSwcTree;
       tree->load(iter->second.c_str());
       tree->setVisible(false);
       academy->addObject(tree);
-      ZSwcMovieActor *actor = new ZSwcMovieActor;
+      ZSwcMovieActor* actor = new ZSwcMovieActor;
       actor->setActor(tree);
       actor->setId(iter->first);
       actor->setVisible(false);
       m_cast.push_back(actor);
-    }
-      break;
-    case ZFileType::TIFF_FILE:
-    {
-      ZStack *stack = new ZStack();
+    } break;
+    case ZFileType::TIFF_FILE: {
+      ZStack* stack = new ZStack();
       stack->load(iter->second);
-
-      if (academy->getStack() != NULL) {
+      if(academy->getStack() != NULL) {
         cout << "Warning: " << "multiple volume detected. Only one allowed."
              << endl;
       } else {
         academy->loadStack(stack);
       }
-      ZStackMovieActor *actor = new ZStackMovieActor;
+      ZStackMovieActor* actor = new ZStackMovieActor;
       actor->setVisible(false);
       actor->setId(iter->first);
       actor->setActor(stack);
       m_cast.push_back(actor);
-    }
-      break;
-    case ZFileType::V3D_MARKER_FILE:
-    {
+    } break;
+    case ZFileType::V3D_MARKER_FILE: {
       QList<ZPunctum*> punctaList =
-          ZPunctumIO::load(iter->second.c_str());
-      for (int i=0; i<punctaList.size(); i++) {
+        ZPunctumIO::load(iter->second.c_str());
+      for(int i = 0; i < punctaList.size(); i++) {
         punctaList[i]->setVisible(false);
-//        academy->addObject(punctaList[i]);
       }
       academy->addPunctum(punctaList);
-
-      ZPunctaMovieActor *actor = new ZPunctaMovieActor;
+      ZPunctaMovieActor* actor = new ZPunctaMovieActor;
       actor->setVisible(false);
       actor->setId(iter->first);
       vector<ZPunctum*> puncta;
-      for (QList<ZPunctum*>::const_iterator iter = punctaList.begin();
-           iter != punctaList.end(); ++iter) {
+      for(QList<ZPunctum*>::const_iterator iter = punctaList.begin();
+        iter != punctaList.end(); ++iter) {
         puncta.push_back(*iter);
       }
       actor->setActor(puncta);
@@ -143,212 +116,135 @@ void ZMovieMaker::recruitCast()
   }
   academy->blockSignals(false);
 }
-
-string ZMovieMaker::getFramePath(const string &dirPath, int index)
-{
+string ZMovieMaker::getFramePath(const string& dirPath, int index) {
   ostringstream stream;
   stream << dirPath << '/' << std::setw(5) << std::setfill('0') << index << ".tif";
-
   return stream.str();
 }
-
-int ZMovieMaker::make(const std::string &filePath)
-{  
-  //prepareStage();
+int ZMovieMaker::make(const std::string& filePath) {
   recruitCast();
   prepareStage();
-
 #ifdef _DEBUG_
   printSummary();
 #endif
-
   int index = 0;
-
-  //m_stage->getVolumeRaycaster()->setZCutLower(30);
-
   bool takingPicture = true;
-
   bool hasMoreScene = true;
-
-  while (hasMoreScene) {
+  while(hasMoreScene) {
     cout << "Frame " << index << endl;
-
     int state = updateScene();
-
     hasMoreScene = state > 0;
     takingPicture = state == 2;
-
-    if (takingPicture) {
+    if(takingPicture) {
       m_photographer.takePicture(getFramePath(filePath, index),
-                                 getMovieWidth(), getMovieHeight());
+        getMovieWidth(), getMovieHeight());
     }
-
-    if (index == 0) { //Initialize the clipper from the first scene
-                      //***Need improvement***
+    if(index == 0) { // TODO: Initialize the clipper from the first scene
       m_clipperState.init(m_stage->getWindow());
     }
-
-    if (takingPicture) {
+    if(takingPicture) {
       ++index;
     }
-    //cout << "Z cut value after:" << m_stage->getVolumeEntryExitPoints()->zCutLowerValue() << endl;
-    TZ_ASSERT(index < 10000, "Too many frames");
-
-    //cout << "Z cut value: :" << m_stage->getVolumeRaycaster()->zCutLowerValue() << endl;
-
-    //m_stage->updateDisplay();
-    /*
-    const Z3DRotation& rotation = m_script.getCurrentScene()->getCameraRotation();
-    if (rotation.getAngle() > 0.0) {
-      glm::vec3 axis(rotation.getAxis().x(), rotation.getAxis().y(), rotation.getAxis().z());
-      m_stage->getInteractionHandler()->getTrackball()->rotate(axis, rotation.getAngle());
-    }
-    */
-
-    //cout << "Z cut value after:" << m_stage->getVolumeRaycaster()->zCutLowerValue() << endl;
   }
-
   return index;
 }
-
-void ZMovieMaker::makeSlideShow(const string &filePath)
-{
-  //under development
+void ZMovieMaker::makeSlideShow(const string& filePath) {
+  // under development
   UNUSED_PARAMETER(filePath.c_str());
 }
-
-int ZMovieMaker::updateAction()
-{
+int ZMovieMaker::updateAction() {
   int actionNumber = 1;
   int timeStep = 0;
-
-  if (m_script.isStarted()) {
+  if(m_script.isStarted()) {
     actionNumber = getFrameInterval() / getActionTimeStep();
     timeStep = getActionTimeStep();
   }
-
-  ZMovieScene *scene = NULL;
-  for (int i = 0; i < actionNumber; ++i) {
+  ZMovieScene* scene = NULL;
+  for(int i = 0; i < actionNumber; ++i) {
     scene = m_script.nextScene(timeStep);
-
-    if (scene == NULL) {
+    if(scene == NULL) {
       return 0;
     }
-
 #ifdef _DEBUG_2
     scene->print();
 #endif
-
     scene->updateCamera(m_stage->getWindow(), timeStep);
-
     scene->updateClip(m_stage->getWindow(), &m_clipperState, timeStep);
-
     setupAction(*scene);
     act(timeStep);
   }
-
-  if (scene->isBackground()) {
+  if(scene->isBackground()) {
     return 1;
   }
-
   return 2;
 }
-
-int ZMovieMaker::updateScene()
-{
+int ZMovieMaker::updateScene() {
   int state = updateAction();
-
   m_stage->updateWindow();
-
   return state;
 }
-
-ZMovieActor* ZMovieMaker::getActor(string id)
-{
-  ZMovieActor *actor = NULL;
-  for (vector<ZMovieActor*>::iterator iter = m_cast.begin();
-       iter != m_cast.end(); ++iter) {
-    if ((*iter)->getId() == id) {
+ZMovieActor* ZMovieMaker::getActor(string id) {
+  ZMovieActor* actor = NULL;
+  for(vector<ZMovieActor*>::iterator iter = m_cast.begin();
+    iter != m_cast.end(); ++iter) {
+    if((*iter)->getId() == id) {
       actor = *iter;
       break;
     }
   }
-
   return actor;
 }
-
-void ZMovieMaker::setupAction(const ZMovieScene &scene)
-{
-  for (vector<ZMovieActor*>::iterator iter = m_cast.begin();
-       iter != m_cast.end(); ++iter) {
+void ZMovieMaker::setupAction(const ZMovieScene& scene) {
+  for(vector<ZMovieActor*>::iterator iter = m_cast.begin();
+    iter != m_cast.end(); ++iter) {
     (*iter)->setActive(false);
   }
-
-  for (size_t i = 0; i < scene.getActionNumber(); ++i) {
+  for(size_t i = 0; i < scene.getActionNumber(); ++i) {
     MovieAction action = scene.getAction(i);
-    ZMovieActor *actor = getActor(action.actorId);
-
-    if (actor != NULL) {
-      if (scene.isNewScene()) {
-        if (action.settingAlpha) {
+    ZMovieActor* actor = getActor(action.actorId);
+    if(actor != NULL) {
+      if(scene.isNewScene()) {
+        if(action.settingAlpha) {
           actor->takeAlpha(action.alpha);
         }
-        if (action.settingColor) {
+        if(action.settingColor) {
           actor->takeColor(action.red, action.green, action.blue);
         }
         actor->reset();
       }
 #ifdef _DEBUG_
-      if (actor->getId() == "slice_colored") {
+      if(actor->getId() == "slice_colored") {
         cout << "debug here" << endl;
       }
 #endif
       actor->setActive(true);
       actor->setVisible(action.isVisible);
       actor->setMovingOffset(action.movingOffset);
-
       actor->setFadingFactor(action.fadingFactor);
       actor->setTransitFactor(action.transitFactor[0], action.transitFactor[1],
-          action.transitFactor[2]);
+        action.transitFactor[2]);
     } else {
       cout << "Cannot find actor " << action.actorId << endl;
     }
   }
 }
-
-void ZMovieMaker::act(int timeStep)
-{
-  for (vector<ZMovieActor*>::const_iterator iter = m_cast.begin();
-       iter != m_cast.end(); ++iter) {
+void ZMovieMaker::act(int timeStep) {
+  for(vector<ZMovieActor*>::const_iterator iter = m_cast.begin();
+    iter != m_cast.end(); ++iter) {
     (*iter)->perform(timeStep);
   }
 }
-
-ZStackDoc* ZMovieMaker::getAcademy()
-{
-  if (!m_academy) {
+ZStackDoc* ZMovieMaker::getAcademy() {
+  if(!m_academy) {
     m_academy = ZSharedPointer<ZStackDoc>(new ZStackDoc);
   }
-
   return m_academy.get();
 }
-
-void ZMovieMaker::printSummary()
-{
-  //cout << "Academy: " << getAcademy()->toString().toStdString();
+void ZMovieMaker::printSummary() {
   cout << "Stage: " << m_stage << endl;
-
   cout << m_cast.size() << " actors";
-
-  for (vector<ZMovieActor*>::const_iterator iter = m_cast.begin();
-       iter != m_cast.end(); ++iter) {
+  for(vector<ZMovieActor*>::const_iterator iter = m_cast.begin();
+    iter != m_cast.end(); ++iter) {
     cout << "  " << (*iter)->getId() << endl;
   }
-  /*
-  ZMovieScript m_script;
-  ZMoviePhotographer m_photographer;
-  int m_width;
-  int m_height;
-  double m_frameInterval;
-  */
 }
