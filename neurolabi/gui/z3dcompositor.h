@@ -35,26 +35,18 @@ protected:
 
 private:
   // little helper function
-  void renderGeometries(const std::vector<Z3DGeometryFilter*>& filters,
-    Z3DRenderOutputPort& port, Z3DEye eye);
-  void renderGeomsBlendDelayed(const std::vector<Z3DGeometryFilter*>& filters,
-    Z3DRenderOutputPort& port, Z3DEye eye);
-  void renderGeomsBlendNoDepthMask(const std::vector<Z3DGeometryFilter*>& filters,
-    Z3DRenderOutputPort& port, Z3DEye eye);
-  void renderGeomsOIT(const std::vector<Z3DGeometryFilter*>& filters,
-    Z3DRenderOutputPort& port, Z3DEye eye, const QString& method);
-  void renderOpaque(const std::vector<Z3DGeometryFilter*>& filters,
-    Z3DRenderOutputPort& port, Z3DEye eye);
-  void renderTransparentDDP(const std::vector<Z3DGeometryFilter*>& filters,
-    Z3DRenderOutputPort& port, Z3DEye eye);
+  void renderGeometries(const std::vector<Z3DGeometryFilter*>& filters, Z3DRenderOutputPort& port, Z3DEye eye);
+  void renderGeomsBlendDelayed(const std::vector<Z3DGeometryFilter*>& filters, Z3DRenderOutputPort& port, Z3DEye eye);
+  void renderGeomsBlendNoDepthMask(const std::vector<Z3DGeometryFilter*>& filters, Z3DRenderOutputPort& port, Z3DEye eye);
+  void renderGeomsOIT(const std::vector<Z3DGeometryFilter*>& filters, Z3DRenderOutputPort& port, Z3DEye eye, const QString& method);
+  void renderOpaque(const std::vector<Z3DGeometryFilter*>& filters, Z3DRenderOutputPort& port, Z3DEye eye);
+  void renderTransparentDDP(const std::vector<Z3DGeometryFilter*>& filters, Z3DRenderOutputPort& port, Z3DEye eye);
   bool createDDPRenderTarget(glm::ivec2 size);
-  void renderTransparentWA(const std::vector<Z3DGeometryFilter*>& filters,
-    Z3DRenderOutputPort& port, Z3DEye eye);
+  void renderTransparentWA(const std::vector<Z3DGeometryFilter*>& filters, Z3DRenderOutputPort& port, Z3DEye eye);
   bool createWARenderTarget(glm::ivec2 size);
   // if image inport has more than 1 image, blend use tempport3 and tempport4,
   // send output to colorTex and depthTex
-  void renderImages(Z3DRenderInputPort& currentInport, Z3DRenderOutputPort& currentOutport,
-    Z3DEye eye, const Z3DTexture*& colorTex, const Z3DTexture*& depthTex);
+  void renderImages(Z3DRenderInputPort& currentInport, Z3DRenderOutputPort& currentOutport, Z3DEye eye, const Z3DTexture*& colorTex, const Z3DTexture*& depthTex);
 
 private:
   Z3DTextureBlendRenderer* m_alphaBlendRenderer;
