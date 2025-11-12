@@ -90,8 +90,7 @@ void Z3DCamera::resetCamera(const std::vector<double>& bound, ResetCameraOptions
     // point, do not draw all the way to the view plane). Then draw the radius
     // from the tangent point to the center of the circle. You will note that
     // this forms a right triangle with one side being the radius, another being
-    // the target distance for the camera, then just find the target dist using
-    // a sin.
+    // the target distance for the camera, then just find the target dist using a sin.
     double angle = m_fieldOfView;
     if(m_aspectRatio < 1.0) { // use horizontal angle to calculate
       angle = 2.0 * std::atan(std::tan(angle * 0.5) * m_aspectRatio);
