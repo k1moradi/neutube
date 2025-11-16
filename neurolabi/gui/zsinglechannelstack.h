@@ -7,10 +7,6 @@ class ZStack_Stat;
 class ZSingleChannelStack {
 public:
   ZSingleChannelStack();
-  //  ZSingleChannelStack(int kind, int width, int height, int depth,
-  //                      bool isVirtual = false);
-  //  ZSingleChannelStack(Stack *stack, C_Stack::Stack_Decllocator *delloc);
-  //  ZSingleChannelStack(const ZSingleChannelStack &src);
   virtual ~ZSingleChannelStack();
 
 public:
@@ -38,8 +34,6 @@ public:
   void deprecateDependent(EComponent component);
   void deprecate(EComponent component);
   bool isDeprecated(EComponent component) const;
-  // release ownership if it has, otherwise return false
-  // bool releaseOwnership();
   //  subtract most common value of the histogram from this stack, use Stack_Sub_Common
   void subMostCommonValue();
   /* A stack is virtual if its data array is null */
@@ -69,7 +63,6 @@ public:
   inline float* array32() { return m_data.array32; }
   inline double* array64() { return m_data.array64; }
   inline color_t* arrayc() { return m_data.arrayc; }
-  // inline void incrStamp() { m_stamp++; }
   // shift image based on offset
   void shiftLocation(int* offset, int width = -1, int height = -1, int depth = -1);
   bool hasSameValue(size_t index1, size_t index2);
@@ -84,6 +77,7 @@ public: /* operations */
   void* projection(Proj_Mode mode, Stack_Axis axis = Z_AXIS);
   void bcAdjustHint(double* scale, double* offset);
   bool isBinary();
+
 public: /* processing routines */
   bool binarize(int threshold = 0);
   bool bwsolid();
@@ -113,7 +107,6 @@ public:
     if(m_proj != NULL) { Kill_Image(m_proj); }
   }
   void update(Stack* stack, ZSingleChannelStack::Proj_Mode mode);
-  // void update(Stack *stack, int stamp);
   inline void* data() { return (void*)m_proj->array; }
 
 private:
