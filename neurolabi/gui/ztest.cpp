@@ -1,24 +1,22 @@
 #include "ztest.h"
-
-#include <QFile>
+#include <QDateTime>
 #include <QDir>
 #include <QDomDocument>
 #include <QDomElement>
+#include <QElapsedTimer>
+#include <QFile>
+#include <QImage>
+#include <QPainter>
+#include <QProcess>
 #include <QUndoCommand>
 #include <QUndoStack>
-#include <QImage>
-#include <QDateTime>
-#include <QPainter>
-#include <QElapsedTimer>
-#include <QProcess>
+#include <QtCore>
+#include <fstream>
 #include <iostream>
 #include <ostream>
-#include <fstream>
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <QtCore>
-
 #ifdef __GLIBCXX__
 #include <tr1/memory>
 using namespace std::tr1;
@@ -26,271 +24,258 @@ using namespace std::tr1;
 #include <memory>
 using namespace std;
 #endif
-#include <string>
 #include <set>
-#include "zopencv_header.h"
+#include <string>
 #include "neutube.h"
-#include "zstackprocessor.h"
-#include "zfilelist.h"
 #include "tz_sp_grow.h"
+#include "tz_stack_attribute.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_stat.h"
-#include "tz_stack_attribute.h"
+#include "zfilelist.h"
+#include "zopencv_header.h"
 #include "zspgrowparser.h"
-//#include "zvoxelarray.h"
-#include "tz_stack_objlabel.h"
-#include "tz_stack_threshold.h"
-#include "zsuperpixelmaparray.h"
-#include "zsegmentmaparray.h"
-#include "tz_xml_utils.h"
-#include "zswctree.h"
-#include "zswcforest.h"
-#include "znormcolormap.h"
+#include "zstackprocessor.h"
+// #include "zvoxelarray.h"
+#include "dialogs/flyemskeletonizationdialog.h"
+#include "tz_graph.h"
 #include "tz_graph_defs.h"
 #include "tz_graph_utils.h"
+#include "tz_stack_objlabel.h"
+#include "tz_stack_threshold.h"
 #include "tz_workspace.h"
-#include "tz_graph.h"
-#include "dialogs/flyemskeletonizationdialog.h"
-//#include "zstackaccessor.h"
-#include "zmatrix.h"
-#include "zswcbranch.h"
-#include "zswctreematcher.h"
-#include "dialogs/ztestdialog.h"
-#include "dialogs/parameterdialog.h"
-#include "zstring.h"
-#include "zdialogfactory.h"
-#include "zrandomgenerator.h"
-#include "zjsonobject.h"
-#include "zpoint.h"
-#include "zpixmap.h"
-#include "flyem/zfileparser.h"
-#include "zstackpatch.h"
-#include "zswcgenerator.h"
-#include "zpunctumio.h"
-#include "tz_stack_math.h"
-#include "flyem/zsynapseannotationarray.h"
-#include "flyem/zfileparser.h"
-#include "flyem/zsynapseannotationanalyzer.h"
-#include "flyem/zneuronnetwork.h"
-#include "tz_geo3d_utils.h"
-#include "zsvggenerator.h"
-#include "flyem/zfileparser.h"
-#include "zdendrogram.h"
-#include "zobject3dscanarray.h"
-#include "zcuboid.h"
-#include "zstringparameter.h"
-#include "zswcsizefeatureanalyzer.h"
-#include "zobject3darray.h"
-#include "zswcshollfeatureanalyzer.h"
-#include "zswcspatialfeatureanalyzer.h"
-#include "swctreenode.h"
-#include "zparameterarray.h"
-#include "zswcnetwork.h"
-#include "zdoublevector.h"
-#include "zswcdisttrunkanalyzer.h"
-#include "zswcbranchingtrunkanalyzer.h"
-#include "flyem/zflyemroiproject.h"
-#include "tz_error.h"
-#include "flyem/zsynapselocationmatcher.h"
-#include "flyem/zsynapselocationmetric.h"
-#include "zstackfile.h"
-#include "c_stack.h"
-#include "zstack.hxx"
-#include "zwindowfactory.h"
-#include "flyem/zsegmentationanalyzer.h"
-#include "flyem/zsegmentationbundle.h"
-#include "flyem/zflyemneuronmatchtaskmanager.h"
-#include "zstackblender.h"
-#include "zgraph.h"
-#include "zarray.h"
-#include "tz_iarray.h"
-#include "zintpairmap.h"
-#include "tz_u8array.h"
-#include "zfiletype.h"
-#include "tz_geometry.h"
-#include "z3dgraph.h"
-#include "zpunctum.h"
-#include "zswctreenodeselector.h"
-#include "zswcsizetrunkanalyzer.h"
-#include "zswcweighttrunkanalyzer.h"
-#include "zstackbinarizer.h"
-#include "zoptionparameter.h"
-#include "zdebug.h"
-#include "tz_color.h"
-#include "zhdf5reader.h"
-#include "tz_farray.h"
-#include "zxmldoc.h"
-#include "neutubeconfig.h"
-#include "tz_darray.h"
-#include "zhdf5writer.h"
-#include "flyem/zbcfset.h"
-#include "flyem/zflyemstackframe.h"
-#include "zmoviemaker.h"
-#include "z3dmesh.h"
-#include "zstackdoc.h"
+#include "tz_xml_utils.h"
+#include "znormcolormap.h"
+#include "zsegmentmaparray.h"
+#include "zsuperpixelmaparray.h"
+#include "zswcforest.h"
+#include "zswctree.h"
+// #include "zstackaccessor.h"
+#include "bigdata/zdvidblockgrid.h"
 #include "bigdata/zstackblockgrid.h"
-#include "z3dwindow.h"
+#include "c_stack.h"
+#include "dialogs/parameterdialog.h"
+#include "dialogs/ztestdialog.h"
+#include "dvid/zdvidbufferreader.h"
+#include "dvid/zdvidinfo.h"
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidwriter.h"
+#include "flyem/zbcfset.h"
+#include "flyem/zfileparser.h"
+#include "flyem/zflyembodyanalyzer.h"
+#include "flyem/zflyembookmark.h"
+#include "flyem/zflyembookmarkarray.h"
+#include "flyem/zflyemcoordinateconverter.h"
+#include "flyem/zflyemdatabundle.h"
+#include "flyem/zflyemneuronarray.h"
+#include "flyem/zflyemneuronexporter.h"
+#include "flyem/zflyemneuronfeatureanalyzer.h"
+#include "flyem/zflyemneuronmatchtaskmanager.h"
+#include "flyem/zflyemroiproject.h"
+#include "flyem/zflyemservice.h"
+#include "flyem/zflyemstackframe.h"
 #include "flyem/zhotspot.h"
 #include "flyem/zhotspotarray.h"
 #include "flyem/zhotspotfactory.h"
-#include "z3dswcfilter.h"
-#include "z3dinteractionhandler.h"
-#include "z3dcompositor.h"
-#include "z3dvolumeraycaster.h"
-#include "zjsonfactory.h"
-#include "z3dvolumeraycasterrenderer.h"
-#include "z3dvolumesource.h"
-#include "z3dpunctafilter.h"
-#include "tz_stack.h"
-#include "zswclayerfeatureanalyzer.h"
-#include "flyem/zflyemdatabundle.h"
+#include "flyem/zneuronnetwork.h"
+#include "flyem/zsegmentationanalyzer.h"
+#include "flyem/zsegmentationbundle.h"
+#include "flyem/zsynapseannotationanalyzer.h"
+#include "flyem/zsynapseannotationarray.h"
+#include "flyem/zsynapselocationmatcher.h"
+#include "flyem/zsynapselocationmetric.h"
 #include "mainwindow.h"
-#include "zmoviescriptgenerator.h"
-#include "zobject3dscan.h"
-#include "zswclayertrunkanalyzer.h"
-#include "zswclayershollfeatureanalyzer.h"
-#include "zstackgraph.h"
-#include "zgraphcompressor.h"
-#include "zswcpositionadjuster.h"
-#include "zgraph.h"
-#include "tz_cuboid_i.h"
-#include "zswcglobalfeatureanalyzer.h"
-#include "zlogmessagereporter.h"
-#include "zerror.h"
-#include "zmatlabprocess.h"
-#include "flyem/zflyemneuronexporter.h"
-#include "flyem/zflyemneuronarray.h"
-#include "flyem/zflyembodyanalyzer.h"
-#include "swc/zswcresampler.h"
-#include "flyem/zflyemneuronfeatureanalyzer.h"
-#include "swc/zswcnodedistselector.h"
-#include "zmultitaskmanager.h"
-#include "dvid/zdvidbufferreader.h"
 #include "misc/miscutility.h"
-#include "test/zjsontest.h"
-#include "test/zswctreetest.h"
-#include "test/zsttransformtest.h"
-#include "test/zobject3dscantest.h"
-#include "test/zswcpathtest.h"
-#include "test/zgraphtest.h"
-#include "test/zstackgraphtest.h"
-#include "test/zstringtest.h"
-#include "test/zobject3dtest.h"
-#include "test/zswcanalyzertest.h"
-#include "test/zellipsoidtest.h"
-#include "test/zstitchgridtest.h"
+#include "neutubeconfig.h"
+#include "swc/zswcnodedistselector.h"
+#include "swc/zswcresampler.h"
+#include "swc/zswcterminalsurfacemetric.h"
+#include "swctreenode.h"
+#include "test/z3dgraphtest.h"
+#include "test/zblockgridtest.h"
 #include "test/zcuboidtest.h"
+#include "test/zdocplayertest.h"
+#include "test/zdvidtest.h"
+#include "test/zellipsoidtest.h"
+#include "test/zflyemneuronfiltertest.h"
+#include "test/zflyemneuronimagefactorytest.h"
+#include "test/zflyemneuronmatchtest.h"
+#include "test/zflyemneuronrangetest.h"
 #include "test/zflyemqualitycontroltest.h"
 #include "test/zflyemsynaseannotationtest.h"
-#include "test/zstackdoctest.h"
-#include "test/ztreetest.h"
-#include "test/zprogresstest.h"
-#include "test/zswctreematchertest.h"
-#include "test/zswctreenodetest.h"
+#include "test/zgraphtest.h"
 #include "test/zhistogramtest.h"
-#include "test/zflyemneuronrangetest.h"
-#include "swc/zswcterminalsurfacemetric.h"
-#include "test/zflyemneuronfiltertest.h"
-#include "test/zswcmetrictest.h"
+#include "test/zimagetest.h"
+#include "test/zjsontest.h"
 #include "test/zmatrixtest.h"
 #include "test/zobject3dfactorytest.h"
-#include "test/zstacktest.h"
-#include "zswcgenerator.h"
-#include "zrect2d.h"
-#include "test/zswcgeneratortest.h"
-#include "test/zflyemneuronimagefactorytest.h"
-#include "test/zspgrowtest.h"
-#include "test/zflyemneuronmatchtest.h"
-#include "ztextlinecompositer.h"
-#include "zstackskeletonizer.h"
-#include "flyem/zflyemcoordinateconverter.h"
-#include "dvid/zdvidreader.h"
-#include "dvid/zdvidwriter.h"
-#include "dvid/zdvidinfo.h"
-#include "zstringarray.h"
-#include "zflyemdvidreader.h"
-#include "zstroke2d.h"
-#include "flyem/zflyemservice.h"
-#include "zintset.h"
-#include "test/zvoxelgraphicstest.h"
-#include "test/zdocplayertest.h"
+#include "test/zobject3dscantest.h"
+#include "test/zobject3dtest.h"
 #include "test/zopenvdbtest.h"
-#include "zsparseobject.h"
-#include "test/zdvidtest.h"
-#include "bigdata/zdvidblockgrid.h"
-#include "test/zblockgridtest.h"
+#include "test/zprogresstest.h"
 #include "test/zsparsestacktest.h"
-#include "test/zimagetest.h"
-#include "test/z3dgraphtest.h"
+#include "test/zspgrowtest.h"
+#include "test/zstackdoctest.h"
+#include "test/zstackgraphtest.h"
+#include "test/zstacktest.h"
+#include "test/zstitchgridtest.h"
+#include "test/zstringtest.h"
+#include "test/zsttransformtest.h"
+#include "test/zswcanalyzertest.h"
+#include "test/zswcgeneratortest.h"
+#include "test/zswcmetrictest.h"
+#include "test/zswcpathtest.h"
+#include "test/zswctreematchertest.h"
+#include "test/zswctreenodetest.h"
+#include "test/zswctreetest.h"
+#include "test/ztreetest.h"
 #include "test/zvoxelarraytest.h"
-#include "flyem/zflyembookmark.h"
-#include "flyem/zflyembookmarkarray.h"
-//#include "zcircle.h"
-#include "test/zlinesegmenttest.h"
-#include "test/zdvidiotest.h"
-#include "test/zclosedcurvetest.h"
-#include "dvid/libdvidheader.h"
-#include "test/zarraytest.h"
-#include "zstackwatershed.h"
-#include "flyem/zflyembodymerger.h"
-#include "test/zflyembodymergertest.h"
-#include "test/zstackobjectgrouptest.h"
-#include "z3daxis.h"
-#include "tz_int_histogram.h"
-#include "zsegmentationproject.h"
-#include "zstackviewmanager.h"
-#include "dvid/zdvidtile.h"
-#include "dvid/zdvidtileinfo.h"
-#include "flyem/zflyemneuronbodyinfo.h"
-#include "flyem/zflyemneurondensitymatcher.h"
-#include "flyem/zflyemneurondensity.h"
-#include "dvid/zdvidversiondag.h"
-#include "jneurontracer.h"
+#include "test/zvoxelgraphicstest.h"
+#include "tz_color.h"
+#include "tz_cuboid_i.h"
+#include "tz_darray.h"
+#include "tz_error.h"
+#include "tz_farray.h"
+#include "tz_geo3d_utils.h"
+#include "tz_geometry.h"
+#include "tz_iarray.h"
+#include "tz_stack.h"
+#include "tz_stack_math.h"
+#include "tz_u8array.h"
+#include "z3dcompositor.h"
+#include "z3dgraph.h"
+#include "z3dinteractionhandler.h"
+#include "z3dmesh.h"
+#include "z3dpunctafilter.h"
+#include "z3dswcfilter.h"
+#include "z3dvolumeraycaster.h"
+#include "z3dvolumeraycasterrenderer.h"
+#include "z3dvolumesource.h"
+#include "z3dwindow.h"
+#include "zarray.h"
+#include "zcuboid.h"
+#include "zdebug.h"
+#include "zdendrogram.h"
+#include "zdialogfactory.h"
+#include "zdoublevector.h"
+#include "zerror.h"
+#include "zfiletype.h"
+#include "zflyemdvidreader.h"
+#include "zgraph.h"
+#include "zgraphcompressor.h"
+#include "zhdf5reader.h"
+#include "zhdf5writer.h"
+#include "zintpairmap.h"
+#include "zintset.h"
+#include "zjsonfactory.h"
+#include "zjsonobject.h"
+#include "zlogmessagereporter.h"
+#include "zmatlabprocess.h"
+#include "zmatrix.h"
+#include "zmoviemaker.h"
+#include "zmoviescriptgenerator.h"
+#include "zmultitaskmanager.h"
+#include "zobject3darray.h"
+#include "zobject3dscan.h"
+#include "zobject3dscanarray.h"
+#include "zoptionparameter.h"
+#include "zparameterarray.h"
+#include "zpixmap.h"
+#include "zpoint.h"
+#include "zpunctum.h"
+#include "zpunctumio.h"
+#include "zrandomgenerator.h"
+#include "zrect2d.h"
+#include "zsparseobject.h"
+#include "zstack.hxx"
+#include "zstackbinarizer.h"
+#include "zstackblender.h"
+#include "zstackdoc.h"
+#include "zstackfile.h"
+#include "zstackgraph.h"
+#include "zstackpatch.h"
+#include "zstackskeletonizer.h"
+#include "zstring.h"
+#include "zstringarray.h"
+#include "zstringparameter.h"
+#include "zstroke2d.h"
+#include "zsvggenerator.h"
+#include "zswcbranch.h"
+#include "zswcbranchingtrunkanalyzer.h"
+#include "zswcdisttrunkanalyzer.h"
+#include "zswcgenerator.h"
+#include "zswcglobalfeatureanalyzer.h"
+#include "zswclayerfeatureanalyzer.h"
+#include "zswclayershollfeatureanalyzer.h"
+#include "zswclayertrunkanalyzer.h"
+#include "zswcnetwork.h"
+#include "zswcpositionadjuster.h"
+#include "zswcshollfeatureanalyzer.h"
+#include "zswcsizefeatureanalyzer.h"
+#include "zswcsizetrunkanalyzer.h"
+#include "zswcspatialfeatureanalyzer.h"
+#include "zswctreematcher.h"
+#include "zswctreenodeselector.h"
+#include "zswcweighttrunkanalyzer.h"
+#include "ztextlinecompositer.h"
+#include "zwindowfactory.h"
+#include "zxmldoc.h"
+// #include "zcircle.h"
 #include "biocytin/swcprocessor.h"
-#include "zcommandline.h"
-#include "z3dgraphfactory.h"
-#include "flyem/zflyemsupervisor.h"
-#include "flyem/zflyembody3ddoc.h"
-#include "zstackview.h"
-#include "flyem/zflyemproofdoc.h"
-#include "zswcfactory.h"
 #include "biocytin/zbiocytinprojmaskfactory.h"
-#include "zsleeper.h"
-#include "dvid/zdvidtileensemble.h"
+#include "dialogs/zswcexportsvgdialog.h"
+#include "dvid/libdvidheader.h"
+#include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"
+#include "dvid/zdvidtile.h"
+#include "dvid/zdvidtileensemble.h"
+#include "dvid/zdvidtileinfo.h"
+#include "dvid/zdvidversiondag.h"
+#include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyembodymerger.h"
+#include "flyem/zflyemneuronbodyinfo.h"
+#include "flyem/zflyemneurondensity.h"
+#include "flyem/zflyemneurondensitymatcher.h"
 #include "flyem/zflyemneuroninfo.h"
-#include "zlinesegmentobject.h"
-#include "zstackmvc.h"
-#include "misc/zstackyzmvc.h"
-#include "dvid/zdvidlabelslice.h"
-#include "flyem/zflyemproofmvc.h"
-#include "flyem/zflyemorthomvc.h"
 #include "flyem/zflyemorthodoc.h"
+#include "flyem/zflyemorthomvc.h"
 #include "flyem/zflyemorthowindow.h"
+#include "flyem/zflyemproofdoc.h"
+#include "flyem/zflyemproofmvc.h"
+#include "flyem/zflyemsupervisor.h"
+#include "jneurontracer.h"
+#include "misc/zstackyzmvc.h"
+#include "test/zarraytest.h"
+#include "test/zclosedcurvetest.h"
+#include "test/zdvidiotest.h"
+#include "test/zflyembodymergertest.h"
+#include "test/zlinesegmenttest.h"
+#include "test/zstackobjectgrouptest.h"
+#include "tz_int_histogram.h"
+#include "z3daxis.h"
+#include "z3dgraphfactory.h"
+#include "zcommandline.h"
+#include "zlinesegmentobject.h"
+#include "zsegmentationproject.h"
+#include "zsleeper.h"
+#include "zstackmvc.h"
+#include "zstackview.h"
+#include "zstackviewmanager.h"
+#include "zstackwatershed.h"
 #include "zswcconnector.h"
-#include "dialogs/zswcexportsvgdialog.h"
-
+#include "zswcfactory.h"
 using namespace std;
-
 ostream& ZTest::m_failureStream = cerr;
-
-ZTest::ZTest()
-{
+ZTest::ZTest() {
 }
-
 #ifdef _JANELIA_WORKSTATION_
 const static string dataPath("/groups/flyem/home/zhaot/Work/neutube_ws/neurolabi/data");
 #else
 const static string dataPath("/Users/zhaot/Work/neutube/neurolabi/data");
 #endif
-
-
-int ZTest::runUnitTest(int argc, char *argv[])
-{
+int ZTest::runUnitTest(int argc, char* argv[]) {
 #ifdef _USE_GTEST_
   ::testing::InitGoogleTest(&argc, argv);
-
   return RUN_ALL_TESTS();
 #else
   UNUSED_PARAMETER(argc);
@@ -298,11 +283,8 @@ int ZTest::runUnitTest(int argc, char *argv[])
   return 0;
 #endif
 }
-
-void ZTest::test(MainWindow *host)
-{
+void ZTest::test(MainWindow* host) {
   std::cout << "Start testing ..." << std::endl;
-
   UNUSED_PARAMETER(host);
 #if 0
   ZStackFrame *frame = (ZStackFrame *) mdiArea->currentSubWindow();
@@ -313,7 +295,6 @@ void ZTest::test(MainWindow *host)
       frame->height());
   }
 #endif
-
 #if 0
   ::testtrace();
   Stack *stack = Read_Stack("../data/diadem_e1.tif");
@@ -339,7 +320,6 @@ void ZTest::test(MainWindow *host)
   delete []ptarray;
   Kill_Stack(stack);
 #endif
-
 #if 0
   //The minimum and maximum is the number of steps in the operation for which this progress dialog shows progress.
   //for example here 0 and 100.
@@ -354,7 +334,6 @@ void ZTest::test(MainWindow *host)
   }
 //  delete progress;
 #endif
-
 #if 0
   m_progress->setRange(0, 0);
   m_progress->show();
@@ -363,7 +342,6 @@ void ZTest::test(MainWindow *host)
   currentStackFrame()->updateView();
   m_progress->reset();
 #endif
-
 #if 0
   QGraphicsScene *scene = new QGraphicsScene(0);
   scene->clear();
@@ -378,10 +356,7 @@ void ZTest::test(MainWindow *host)
 
   QGraphicsView *gv = new QGraphicsView(scene, 0);
   gv->show();
-
 #endif
-
-
 #if 0
   QProgressDialog *pd = new QProgressDialog("Testing", "Cancel", 0, 100, this);
 
@@ -415,15 +390,12 @@ void ZTest::test(MainWindow *host)
   QMessageBox::information(currentStackFrame(), "Testing Completed",
                            "No problem found.", QMessageBox::Ok);
 #endif
-
 #if 0
   BcAdjustDialog dlg;
   dlg.setRange(0, 255);
   dlg.setValue(10, 100);
   dlg.exec();
 #endif
-
-
 #if 0
   ZStackFrame *frame = new ZStackFrame(this);
   const char *filePath = "E:\\data\\diadem\\diadem1\\nc_01.tif";
@@ -436,7 +408,6 @@ void ZTest::test(MainWindow *host)
   setCurrentFile(filePath);
   addStackFrame(frame);
 #endif
-
 #if 0
   ZSwcTree tree1;
   tree1.load("/Users/zhaot/Work/neutube/neurolabi/data/tmp/result/swc2/C2_214.swc");
@@ -470,7 +441,6 @@ void ZTest::test(MainWindow *host)
   tree->resortId();
   tree->save("/Users/zhaot/Work/neutube/neurolabi/data/test.swc");
 #endif
-
 #if 0
   ZSwcTree tree1;
   tree1.load("/Users/zhaot/Work/neutube/neurolabi/data/demo/circuit/C2_214.swc");
@@ -583,8 +553,6 @@ void ZTest::test(MainWindow *host)
   tree3.save("/Users/zhaot/Work/neutube/neurolabi/data/test3.swc");
   connect_tree.save("/Users/zhaot/Work/neutube/neurolabi/data/test4.swc");
 #endif
-
-
 #if 0
   ZCuboid cuboid1(0, 0, 0, 2, 1, 3);
   ZCuboid cuboid2(0, 0, 0, 2, 1, 3);
@@ -601,7 +569,6 @@ void ZTest::test(MainWindow *host)
 
   stream.close();
 #endif
-
 #if 0
   ZCuboid b0(0, 0, 0, 2, 3, 10);
 
@@ -629,7 +596,6 @@ void ZTest::test(MainWindow *host)
 
   stream.close();
 #endif
-
 #if 0
   FlyEm::ZSwcNetwork network;
   network.import("/Users/zhaot/Work/neutube/neurolabi/data/test.txt");
@@ -639,7 +605,6 @@ void ZTest::test(MainWindow *host)
   network.exportSwcFile("/Users/zhaot/Work/neutube/neurolabi/data/test.swc",
                         209);
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load("/Users/zhaot/Work/neutube/neurolabi/data/tmp/result/swc3/adjusted/Y6_3_6097.swc");
@@ -649,7 +614,6 @@ void ZTest::test(MainWindow *host)
   tree.save("/Users/zhaot/Work/neutube/neurolabi/data/test.swc");
   delete branch;
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load("/Users/zhaot/Work/neutube/neurolabi/data/tmp/result/swc3/adjusted/C2_214.swc");
@@ -698,7 +662,6 @@ void ZTest::test(MainWindow *host)
   tree.save("/Users/zhaot/Work/neutube/neurolabi/data/test.swc");
   delete branch;
 #endif
-
 #if 0
   FlyEm::ZSwcNetwork network;
   //network.import(
@@ -714,9 +677,7 @@ void ZTest::test(MainWindow *host)
 
   network.exportSwcFile("/Users/zhaot/Work/neutube/neurolabi/data/test.swc",
                         209, FlyEm::ZSwcNetwork::EXPORT_ALL);
-
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load("/Users/zhaot/Work/neutube/neurolabi/data/tmp/swc3/adjusted/L1_209.swc");
@@ -727,7 +688,6 @@ void ZTest::test(MainWindow *host)
   tree.resortId();
   tree.save("/Users/zhaot/Work/neutube/neurolabi/data/test.swc");
 #endif
-
 #if 0
   ZSwcTree tree1;
   ZSwcTree tree2;
@@ -782,7 +742,6 @@ void ZTest::test(MainWindow *host)
 
   tree.save("/Users/zhaot/Work/neutube/neurolabi/data/test.swc");
 #endif
-
 #if 0
   ZObject3dArray objArray;
   ZObject3d obj;
@@ -798,7 +757,6 @@ void ZTest::test(MainWindow *host)
   objArray.writeIndex("/Users/zhaot/Work/neutube/neurolabi/data/test.txt",
                       100, 100, 100);
 #endif
-
 #if 0
   ZObject3dArray objArray;
   objArray.readIndex("/Users/zhaot/Work/neutube/neurolabi/data/test.txt",
@@ -808,7 +766,6 @@ void ZTest::test(MainWindow *host)
   objArray.writeIndex("/Users/zhaot/Work/neutube/neurolabi/data/test2.txt",
                       100, 100, 100);
 #endif
-
 #if 0
   ZString str("L1_209.swc");
   std::vector<std::string> parts = str.fileParts();
@@ -866,7 +823,6 @@ void ZTest::test(MainWindow *host)
     std::cout << *iter << std::endl;
   }
 #endif
-
 #if 0
   ZString str("L1_209.swc");
   cout << str.changeExt("tif") << endl;
@@ -892,7 +848,6 @@ void ZTest::test(MainWindow *host)
   str = "/test.test/";
   cout << str.changeExt("tif") << endl;
 #endif
-
 #if 0
   ZString str("L1_209.swc");
   cout << str.changeDirectory("test") << endl;
@@ -918,7 +873,6 @@ void ZTest::test(MainWindow *host)
   str = "/test.test/";
   cout << str.changeDirectory("/test") << endl;
 #endif
-
 #if 0
   //Read a tree
   ZSwcTree tree;
@@ -950,7 +904,6 @@ void ZTest::test(MainWindow *host)
 
   //Compare each random tree with the original tree
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load("/Users/zhaot/Work/neutube/neurolabi/data/benchmark/swc/breadth_first.swc");
@@ -963,9 +916,7 @@ void ZTest::test(MainWindow *host)
   Swc_Tree_Node *tn = tree.queryNode(2);
   cout << SwcTreeNode::downstreamSize(tn,
                                       SwcTreeNode::labelDifference) << endl;
-
 #endif
-
 #if 0
   ZSwcTree *tree1;
   ZSwcTree *tree2;
@@ -1124,7 +1075,6 @@ void ZTest::test(MainWindow *host)
   for (size_t i = 0; i < treeArray.size(); i++) {
     delete treeArray[i];
   }
-
 #if 0
   ZSwcTree tree;
   tree.merge(tree1.data(), false);
@@ -1171,9 +1121,7 @@ void ZTest::test(MainWindow *host)
 
   tree.save("/Users/zhaot/Work/neutube/neurolabi/data/test.swc");
 #endif
-
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load("/Users/zhaot/Work/neutube/neurolabi/data/benchmark/swc/compare/compare1.swc");
@@ -1185,7 +1133,6 @@ void ZTest::test(MainWindow *host)
 
   tree.save("/Users/zhaot/Work/neutube/neurolabi/data/test.swc");
 #endif
-
 #if 0
   //Load all swc files
   ZFileList fileList;
@@ -1219,27 +1166,21 @@ void ZTest::test(MainWindow *host)
   }
 
   ratio.exportDataFile("/Users/zhaot/Work/neutube/neurolabi/data/test.bn");
-
 #endif
-
 #if 0
   //json project test
-
 #endif
-
 #if 0
   if (testTreeIterator()) {
     cout << "Testing passed." << endl;
   }
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load("/Users/zhaot/Work/neutube/neurolabi/data/benchmark/swc/breadth_first.swc");
   ZSwcDistTrunkAnalyzer trunkAnalyzer;
   tree.labelTrunkLevel(&trunkAnalyzer);
 #endif
-
 #if 0
   ZCuboid cuboid1;
   ZCuboid cuboid2;
@@ -1265,7 +1206,6 @@ void ZTest::test(MainWindow *host)
   cuboid1.print();
   cuboid2.print();
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load("/Users/zhaot/Work/neutube/neurolabi/data/test/flyem/adjusted/test_65535.swc");
@@ -1276,9 +1216,7 @@ void ZTest::test(MainWindow *host)
 
   double corner[6];
   tree.boundBox(corner);
-
 #endif
-
 #if 0
   tr1::shared_ptr<int> a(new int[2]);
   cout << a.use_count() << endl;
@@ -1297,9 +1235,7 @@ void ZTest::test(MainWindow *host)
   cout << a.use_count() << endl;
   cout << b.use_count() << endl;
   cout << c.use_count() << endl;
-
 #endif
-
 #if 0
   ZString str("/home/zhaot/test/test.tif");
   cout << str.toDirPath() << endl;
@@ -1313,7 +1249,6 @@ void ZTest::test(MainWindow *host)
   str2 = "Test3.tif";
   cout << str2 << endl;
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray sa1;
   FlyEm::ZSynapseAnnotationArray sa2;
@@ -1396,7 +1331,6 @@ void ZTest::test(MainWindow *host)
 
   overallPsdMatcher.exportPerformance(dataPath + "/test.html");
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray sa;
   sa.loadJson(dataPath +
@@ -1404,7 +1338,6 @@ void ZTest::test(MainWindow *host)
   ZIntTree mtbar = sa.buildTbarSequence(10.0);
   mtbar.print();
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray sa;
   sa.loadJson(dataPath +
@@ -1418,7 +1351,6 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray sa1;
   FlyEm::ZSynapseAnnotationArray sa2;
@@ -1477,7 +1409,6 @@ void ZTest::test(MainWindow *host)
 
   }
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray sa;
   sa.loadJson("/Users/zhaot/Work/neutube/neurolabi/cpp/psd/test/"
@@ -1497,7 +1428,6 @@ void ZTest::test(MainWindow *host)
 
   sa.exportJsonFile(dataPath + "/test2.json", &selected);
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray sa;
   sa.loadJson("/Users/zhaot/Work/neutube/neurolabi/cpp/psd/test/"
@@ -1522,9 +1452,7 @@ void ZTest::test(MainWindow *host)
     }
   }
   cout << count << endl;
-
 #endif
-
 #if 0
   ZStackFile sf;
   sf.import(dataPath + "/*.tif");
@@ -1537,7 +1465,6 @@ void ZTest::test(MainWindow *host)
   stack->save((dataPath + "/test.tif").c_str());
   */
 #endif
-
 #if 0
   ZSuperpixelMapArray mapArray;
   mapArray.load(dataPath +
@@ -1553,7 +1480,6 @@ void ZTest::test(MainWindow *host)
   mapArray.setBodyId(segMapArray);
   mapArray.print();
 #endif
-
 #if 0
   //string segPath = dataPath + "/flyem/segmentation/assignments/assignment_2";
   string segPath = dataPath + "/flyem/segmentation/ground_truth";
@@ -1588,7 +1514,6 @@ void ZTest::test(MainWindow *host)
   delete stack;
   delete newStack;
 #endif
-
 #if 0
   FlyEm::ZSegmentationAnalyzer analyzer;
   analyzer.compare(trueSeg, testSeg);
@@ -1600,7 +1525,6 @@ void ZTest::test(MainWindow *host)
   ZStack *stack = analyzer.createErrorStack(superpixel);
   stack->save("../data/test.tif");
 #endif
-
 #if 0
   ZStackFile file;
   string groundTruthPath = dataPath + "/flyem/segmentation/ground_truth";
@@ -1610,9 +1534,7 @@ void ZTest::test(MainWindow *host)
   ZStackProcessor processor;
   processor.mexihatFilter(stack, 3.0);
   stack->save(dataPath + "/test.tif");
-
 #endif
-
 #if 0
   string groundTruthPath = dataPath + "/flyem/segmentation/ground_truth";
   string testPath = dataPath + "/flyem/segmentation/assignments/assignment_2";
@@ -1671,7 +1593,6 @@ void ZTest::test(MainWindow *host)
   delete testStack; testStack = NULL;
   delete blending; blending = NULL;
 #endif
-
 #if 0
   FlyEm::ZSegmentationBundle bundle;
   bundle.importJsonFile(dataPath + "/benchmark/flyem/segmentation.json");
@@ -1692,7 +1613,6 @@ void ZTest::test(MainWindow *host)
 
   C_Stack::write(dataPath + "/test.tif", out);
 #endif
-
 #if 0
   FlyEm::ZSegmentationBundle bundle;
   bundle.importJsonFile(dataPath + "/flyem/TEM/slice_figure/segmentation/segmentation.json");
@@ -1709,7 +1629,6 @@ void ZTest::test(MainWindow *host)
 
   C_Stack::write(dataPath + "/flyem/TEM/slice_figure/segmentation/blend_body.tif", out);
 #endif
-
 #if 0
   ZGraph *graph  = new ZGraph(ZGraph::UNDIRECTED_WITHOUT_WEIGHT);
   graph->addEdge(0, 2);
@@ -1752,7 +1671,6 @@ void ZTest::test(MainWindow *host)
 
   delete graph; graph = NULL;
 #endif
-
 #if 0
   ZArray::Dimn_Type dims[2] = { 2, 3 };
   ZArray array(mylib::UINT8_TYPE, 2, dims);
@@ -1760,9 +1678,7 @@ void ZTest::test(MainWindow *host)
 
   ZArray array2 = array;
   array2.printInfo();
-
 #endif
-
 #if 0
   ZStackFile file;
   file.import(dataPath + "/flyem/segmentation/assignments/assignment_2/mask.tif");
@@ -1822,7 +1738,6 @@ void ZTest::test(MainWindow *host)
 
   delete stack;
 #endif
-
 #if 0
   ZIntPairMap pairMap;
   pairMap.incPairCount(1, 2);
@@ -1847,7 +1762,6 @@ void ZTest::test(MainWindow *host)
   bodyCorrespondence.print();
   bodyCorrespondence.print(ZIntMap::KEY_GROUP);
 #endif
-
 #if 0
   string testSegPath = dataPath + "/flyem/segmentation/assignments/assignment_2/segmentation.json";
   string trueSegPath = dataPath + "/flyem/segmentation/ground_truth/segmentation.json";
@@ -1878,7 +1792,6 @@ void ZTest::test(MainWindow *host)
   size_t volume = b1->getVoxelNumber();
 
   u8array_max2(array1, array2, volume);
-
 #ifdef _DEBUG_2
   printf("%p\n", testBodyStack->singleChannelStack()->array8());
   cout << *(testBodyStack->singleChannelStack()->array8() + 100) << endl;
@@ -1911,7 +1824,6 @@ void ZTest::test(MainWindow *host)
   ofstream testBodyStream((dataPath + "/test_body_size.txt").c_str());
 
   testBodySize.print(testBodyStream);
-
 #ifdef _DEBUG_2
   return;
 #endif
@@ -1928,7 +1840,6 @@ void ZTest::test(MainWindow *host)
   ZGraph *bodyGraph = testSegBundle.getBodyGraph();
   cout << "Body graph: " << endl;
   bodyGraph->exportDotFile(dataPath + "/test.dot");
-
 #ifdef _DEBUG_2
   bodyGraph->clean();
   //bodyGraph->addEdge(68206, 61888);
@@ -1974,7 +1885,6 @@ void ZTest::test(MainWindow *host)
   ZDoubleVector::exportTxtFile(feature, dataPath + "/feature.txt");
   */
 #endif
-
 #if 0
   vector<double> vec(10);
   for (size_t i = 0; i < vec.size(); ++i) {
@@ -1985,9 +1895,7 @@ void ZTest::test(MainWindow *host)
 
   ZDoubleVector::print(vec);
   ZDoubleVector::print(array2d);
-
 #endif
-
 #if 0
   Stack *stack = Read_Stack_U(
         (dataPath + "/benchmark/binary/2d/disk_n1.tif").c_str());
@@ -2003,7 +1911,6 @@ void ZTest::test(MainWindow *host)
   Geo3d_Orientation_Normal(direction[0], direction[1], &x, &y, &z);
   cout << x << " " << y << " " << z << endl;
 #endif
-
 #if 0
   ZJsonObject jsonObject;
   jsonObject.load(dataPath + "/test.json");
@@ -2014,7 +1921,6 @@ void ZTest::test(MainWindow *host)
          << endl;
   }
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationAnalyzer analyzer;
   analyzer.loadConfig(dataPath + "/config.txt");
@@ -2024,7 +1930,6 @@ void ZTest::test(MainWindow *host)
   analyzer.loadConfig(dataPath + "/config.json");
   analyzer.print();
 #endif
-
 #if 0
   //Test if a body is mitochondria
   FlyEm::ZSegmentationBundle bundle;
@@ -2106,7 +2011,6 @@ void ZTest::test(MainWindow *host)
     cout << endl;
   }
 #endif
-
 #if 0
   ZString str("test.tif");
   cout << str.endsWith("tif") << endl;
@@ -2132,7 +2036,6 @@ void ZTest::test(MainWindow *host)
 
   cout << ZFileType::typeName(ZFileType::fileType("threata.LSM")) << endl;
 #endif
-
 #if 0
   string testSegPath = dataPath + "/benchmark/flyem2/test/segmentation.json";
   //string trueSegPath = dataPath + "/benchmark/flyem2/truth/segmentation.json";
@@ -2149,9 +2052,7 @@ void ZTest::test(MainWindow *host)
        iter != bodyIndexMap->end(); ++iter) {
     cout << iter->first << " : " << iter->second << endl;
   }
-
 #endif
-
 #if 0
   string testSegPath = dataPath + "/benchmark/flyem3/test/segmentation.json";
   FlyEm::ZSegmentationBundle bundle;
@@ -2172,7 +2073,6 @@ void ZTest::test(MainWindow *host)
   */
   ZDoubleVector::print(bundle.getBodyStack()->color(0));
 #endif
-
 #if 0
   ZStack stack;
   ZStackFile stackFile;
@@ -2181,7 +2081,6 @@ void ZTest::test(MainWindow *host)
 
   stack.save(dataPath + "/test.tif");
 #endif
-
 #if 0
   ZStackFile stackFile;
   stackFile.import(dataPath + "/benchmark/fork_2d.tif");
@@ -2194,7 +2093,6 @@ void ZTest::test(MainWindow *host)
   ZDoubleVector::print(stack->color(10));
   ZDoubleVector::print(stack->color(10));
 #endif
-
 #if 0
   ZStack *stack = new ZStack(COLOR, 10, 10, 5, 1);
   stack->setValue(0, 0, 255);
@@ -2203,7 +2101,6 @@ void ZTest::test(MainWindow *host)
 
   stack->save(dataPath + "/test.tif");
 #endif
-
 #if 0
   //Calculate boundary features
   string boundaryFilePath =
@@ -2257,7 +2154,6 @@ void ZTest::test(MainWindow *host)
 
   newBodyGraph.exportTxtFile(graphFilePath);
 #endif
-
 #if 0
   ofstream script((dataPath + "/test.sh").c_str());
 
@@ -2276,17 +2172,14 @@ void ZTest::test(MainWindow *host)
 
   script.close();
 #endif
-
 #if 0
   ZJsonValue jValue;
   jValue.decodeString("{ \"test\": 1, \"value\": [1, 2, 3, 4] }");
   jValue.print();
 #endif
-
 #if 0
   FlyEm::ZFileParser::readVaa3dMarkerFile(dataPath + "/flyem/TEM/T4viz/T4_1_277709_2.marker");
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(dataPath + "/benchmark/flyem/annotations-synapse.json");
@@ -2305,7 +2198,6 @@ void ZTest::test(MainWindow *host)
     cout << markerArray[i].toString() << endl;
   }
 #endif
-
 #if 0
   ZPoint pt1(10, 0, 0);
   ZPoint pt2(0, 0, 0);
@@ -2313,7 +2205,6 @@ void ZTest::test(MainWindow *host)
 
   cout << pt.toString() << endl;
 #endif
-
 #if 0
   //string neuron = "T4_1_277709";
   //string neuron = "T4_2_386464";
@@ -2377,13 +2268,11 @@ void ZTest::test(MainWindow *host)
     FlyEm::ZFileParser::writeVaa3dMakerFile(outFile, newMarkerArray);
   }
 #endif
-
 #if 0
   ZStack stack;
   stack.load("/Users/feng/Downloads/For_Programming.lsm");
   stack.logLSMInfo();
 #endif
-
 #if 0
   string mi1ListFile = dataPath + "/flyem/TEM/mi1_list.txt";
   ZString str;
@@ -2401,7 +2290,6 @@ void ZTest::test(MainWindow *host)
   }
   fclose(fp);
 #endif
-
 #if 0
   string neuronArray[4] = { "T4_2_386464", "T4_17_547009", "T4_10_476680",
                             "T4_16_475117" };
@@ -2427,13 +2315,11 @@ void ZTest::test(MainWindow *host)
     output.close();
   }
 #endif
-
 #if 0
   Z3DGraph graph;
   graph.importJsonFile(dataPath + "/test.json");
   graph.print();
 #endif
-
 #if 0
   //string swcFile = dataPath + "/flyem/skeletonization/session2/len15/adjusted/T4_2_386464_trunk.swc";
   //string swcFile = dataPath + "/flyem/skeletonization/session2/len15/adjusted/T4_10_476680_trunk.swc";
@@ -2503,7 +2389,6 @@ void ZTest::test(MainWindow *host)
     out.close();
   }
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load((dataPath + "/benchmark/swc/forest1.swc").c_str());
@@ -2511,7 +2396,6 @@ void ZTest::test(MainWindow *host)
 
   tree.print();
 #endif
-
 #if 0
   vector<int> array(10);
   for (int i = 0; i < 10; i++) {
@@ -2522,7 +2406,6 @@ void ZTest::test(MainWindow *host)
 
   array.resize(5);
 #endif
-
 #if 0
   FlyEm::ZSegmentationBundle bundle;
   bundle.importJsonFile(dataPath + "/flyem/TEM/slice_figure/segmentation/segmentation.json");
@@ -2549,9 +2432,7 @@ void ZTest::test(MainWindow *host)
 
   //stream.close();
   cout << count << " superpixels" << endl;
-
 #endif
-
 #if 0
   vector<Swc_Tree_Node*> nodeArray(5);
   for (size_t i = 0; i < 5; ++i) {
@@ -2567,7 +2448,6 @@ void ZTest::test(MainWindow *host)
 
   tree.print();
 #endif
-
 #if 0
   ZSuperpixelMapArray mapArray;
   mapArray.append(0, 1, 2, 3);
@@ -2579,14 +2459,12 @@ void ZTest::test(MainWindow *host)
   mapArray.compressBodyId();
   mapArray.print();
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load((dataPath + "/benchmark/swc/compare/compare1.swc").c_str());
   tree.labelBranchLevelFromLeaf();
   tree.print();
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load((dataPath + "/flyem/TEM/T4_Axon/T4_2_w_axon_final.swc").c_str());
@@ -2596,7 +2474,6 @@ void ZTest::test(MainWindow *host)
 
   delete boxTree;
 #endif
-
 #if 0
   ZCuboid box(200, -400, 1000, 800, 600, 3000);
   ZSwcTree *boxTree = ZSwcTree::createCuboidSwc(box);
@@ -2629,9 +2506,7 @@ void ZTest::test(MainWindow *host)
   tickSwc.resortId();
 
   tickSwc.save((dataPath + "/test2.swc").c_str());
-
 #endif
-
 #if 0
   hid_t       file_id, dataset_id, dataspace_id;  /* identifiers */
   hsize_t     dims[2];
@@ -2658,9 +2533,7 @@ void ZTest::test(MainWindow *host)
 
   /* Close the file. */
   status = H5Fclose(file_id);
-
 #endif
-
 #if 0
   ZHdf5Reader reader;
   reader.open(dataPath + "/test.h5");
@@ -2669,7 +2542,6 @@ void ZTest::test(MainWindow *host)
   mylib::printArrayInfo(array);
   mylib::Print_Array(array, stdout, 0, "%d");
 #endif
-
 #if 0
   ZHdf5Reader reader(dataPath + "/flyem/segmentation/assignments/assignment_2/stack.h5");
 
@@ -2678,9 +2550,7 @@ void ZTest::test(MainWindow *host)
   mylib::Array *array = reader.readArray("/segment_superpixels");
   mylib::printArrayInfo(array);
 #endif
-
 #if 0
-
 #if defined(_USE_OPENCV_)
   int rowNumber, columnNumber;
   float *trainingArray = farray_load_matrix((dataPath + "/train.txt").c_str(), NULL,
@@ -2742,11 +2612,8 @@ void ZTest::test(MainWindow *host)
     cout << " " << testingLabelArray[i] << " " << (result > 0.5) << endl;
   }
 #endif
-
 #endif
-
 #if 0
-
 #if defined(_USE_OPENCV_)
   int rowNumber, columnNumber;
   float *trainingArray = farray_load_matrix((dataPath + "/flyem/train.txt").c_str(), NULL,
@@ -2788,11 +2655,8 @@ void ZTest::test(MainWindow *host)
   NeutubeConfig &config = NeutubeConfig::getInstance();
   rtree->save(config.getPath(NeutubeConfig::FLYEM_BODY_CONN_CLASSIFIER).c_str());
 #endif
-
 #endif
-
 #if 0
-
 #if defined(_USE_OPENCV_)
   int rowNumber, columnNumber;
   float *trainingArray = farray_load_matrix((dataPath + "/flyem/train.txt").c_str(), NULL,
@@ -2819,15 +2683,12 @@ void ZTest::test(MainWindow *host)
     cout << " " << trainingLabel.at<float>(i) << " " << (result > 0.5) << endl;
   }
 #endif
-
 #endif
-
 #if 0
   ZXmlDoc doc;
   doc.parseFile(dataPath + "/test.xml");
   doc.printInfo();
 #endif
-
 #if 0
   ZObject3d obj;
   obj.append(1, 1, 1);
@@ -2838,7 +2699,6 @@ void ZTest::test(MainWindow *host)
   cout << offset[0] << " " << offset[1] << " " << offset[2] << endl;
   C_Stack::write(dataPath + "/test.tif", stack);
 #endif
-
 #if 0
   ZObject3d obj;
   obj.append(1, 1, 1);
@@ -2858,7 +2718,6 @@ void ZTest::test(MainWindow *host)
   C_Stack::write(dataPath + "/test.tif", stack);
   */
 #endif
-
 #if 0
   FlyEm::ZSegmentationBundle bundle;
   std::string filePath = dataPath + "/flyem/segmentation/assignments/assignment_2/segmentation.json";
@@ -2871,8 +2730,7 @@ void ZTest::test(MainWindow *host)
   Stack *stack = objArray->toStack();
   C_Stack::write(dataPath + "/test.tif", stack);
 #endif
-
-#if 0 //test BCF
+#if 0 // test BCF
 
   FlyEm::ZSegmentationBundle bundle;
   std::string filePath = dataPath + "/benchmark/flyem2/test/segmentation.json";
@@ -2882,7 +2740,6 @@ void ZTest::test(MainWindow *host)
         bundle, 600, 800, FlyEm::ZSegmentationAnalyzer::BCF_RAYBURST);
   darray_print(&(feature[0]), feature.size());
 #endif
-
 #if 0
   FlyEm::ZSegmentationBundle bundle;
   std::string filePath = dataPath + "/flyem/segmentation/assignments/assignment_2/segmentation.json";
@@ -2913,7 +2770,6 @@ void ZTest::test(MainWindow *host)
         bundle, 66746, 58351, FlyEm::ZSegmentationAnalyzer::BCF_BOUNDARY_GROW);
   darray_print(&(feature[0]), feature.size());
 #endif
-
 #if 0
   ZObject3d *obj1 = new ZObject3d;
   obj1->append(1, 1, 1);
@@ -2939,7 +2795,6 @@ void ZTest::test(MainWindow *host)
   Stack *stack = objArray.toStack();
   C_Stack::write(dataPath + "/test.tif", stack);
 #endif
-
 #if 0
   ZHdf5Writer writer;
   writer.open(dataPath + "/test.h5");
@@ -2959,7 +2814,6 @@ void ZTest::test(MainWindow *host)
   reader.printInfo();
   reader.close();
 #endif
-
 #if 0
   ZMatrix matrix(3, 4);
   for (int i = 0; i < matrix.getRowNumber(); ++i) {
@@ -2974,7 +2828,6 @@ void ZTest::test(MainWindow *host)
   matrix.resize(3, 4);
   matrix.debugOutput();
 #endif
-
 #if 0
   ZHdf5Reader reader;
   reader.open(dataPath + "/benchmark/flyem2/test/Bcf/Boundary_Grow.h5");
@@ -2983,7 +2836,6 @@ void ZTest::test(MainWindow *host)
   mylib::Array *array = reader.readArray("Boundary_Grow");
   mylib::printArrayInfo(array);
 #endif
-
 #if 0
   FlyEm::ZBcfSet bcfSet(dataPath + "/benchmark/flyem2/test/Bcf");
   ZMatrix *matrix = bcfSet.load("Boundary_Grow");
@@ -2992,7 +2844,6 @@ void ZTest::test(MainWindow *host)
 
   delete matrix;
 #endif
-
 #if 0
   FlyEm::ZSegmentationBundle bundle;
   bundle.importJsonFile(dataPath + "/flyem/segmentation/assignments/assignment_1/segmentation.json");
@@ -3003,9 +2854,7 @@ void ZTest::test(MainWindow *host)
   id2 = 40999;
 
   cout << bundle.getGalaProbability(id1, id2) << endl;
-
 #endif
-
 #if 0
   ZString str("1geag");
   cout << str.containsDigit() << endl;
@@ -3016,14 +2865,12 @@ void ZTest::test(MainWindow *host)
   str = "feat2fe";
   cout << str.containsDigit() << endl;
 #endif
-
 #if 0
   NeutubeConfig &config = NeutubeConfig::getInstance();
   config.load(config.getConfigPath());
 
   ZFlyEmStackFrame::trainBodyConnection();
 #endif
-
 #if 0
   ZStackFile stackFile;
   string filePath = dataPath + "/test.json";
@@ -3034,7 +2881,6 @@ void ZTest::test(MainWindow *host)
 
   C_Stack::write(dataPath + "/test.tif", stackdata);
 #endif
-
 #if 0
   FlyEm::ZSegmentationBundle bundle;
   std::string filePath = dataPath + "/flyem/segmentation/assignments/assignment_1/segmentation.json";
@@ -3045,7 +2891,6 @@ void ZTest::test(MainWindow *host)
 
   C_Stack::write(dataPath + "/test.tif", stackdata);
 #endif
-
 #if 0
   ZMovieScript script;
 
@@ -3079,7 +2924,6 @@ void ZTest::test(MainWindow *host)
   director.setScript(script);
   director.make(dataPath + "/test/movie");
 #endif
-
 #if 0
   ZFileList fileList;
   fileList.load(dataPath + "/tmp/swc3/adjusted", "swc");
@@ -3118,9 +2962,7 @@ void ZTest::test(MainWindow *host)
     stage->takeScreenShot((*inputIter + ".tif").c_str(), 1024, 1024, MonoView);
     stage->close();
   }
-
 #endif
-
 #if 0
   Stack *stack = C_Stack::make(GREY, 250, 10, 1300);
   Zero_Stack(stack);
@@ -3131,7 +2973,6 @@ void ZTest::test(MainWindow *host)
   Write_Stack_U((dataPath + "/flyem/skeletonization/session3/scale_bar.tif").c_str(),
                 stack, NULL);
 #endif
-
 #if 0
   //Generate neuron figures
   std::string sessionDir = "flyem/skeletonization/session3";
@@ -3366,7 +3207,6 @@ void ZTest::test(MainWindow *host)
 
   cout << "Total: " << totalCellNumber << " neurons" << endl;
 #endif
-
 #if 0
   //Volume rendering snapshots
 
@@ -3452,7 +3292,6 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
 #if 0
   //Draw synapses
   ZFileList fileList;
@@ -3528,7 +3367,6 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
 #if 0
   ZMovieCamera camera;
 
@@ -3536,7 +3374,6 @@ void ZTest::test(MainWindow *host)
 
   scene.print();
 #endif
-
 #if 0
   ZMovieScript script;
   int frameNumber = 0;
@@ -3566,7 +3403,6 @@ void ZTest::test(MainWindow *host)
   }
   */
 #endif
-
 #if 0
   ZMovieScriptGenerator writer;
 
@@ -4217,7 +4053,6 @@ void ZTest::test(MainWindow *host)
   writer.writeSceneEnd(stream, 2);
   stream << ",";
   stream << endl;
-
 #if 0
   //Iterate through L1 neurons
   string sortedL1Neurons[] = {
@@ -4260,7 +4095,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
   //Rotate to the other side
-#  if 1
+#if 1
   writer.writeSceneStart(stream, 2);
   writer.writeDuration(stream, 2000, 3);
   stream << "," << endl;
@@ -4336,8 +4171,7 @@ void ZTest::test(MainWindow *host)
   connectedTm3Neurons.push_back("Tm3-r5-P");
   connectedTm3Neurons.push_back("Tm3-h7-A");
   connectedTm3Neurons.push_back("Tm3-f-P");
-
-#  if 0
+#if 0
   for (size_t i = 0; i < connectedTm3Neurons.size(); ++i) {
     if (i != 0) {
       stream << "," << endl;
@@ -4364,7 +4198,6 @@ void ZTest::test(MainWindow *host)
   stream << ",";
   stream << endl;
 #endif
-
 #if 0
   //Rotate back
   writer.writeSceneStart(stream, 2);
@@ -5290,9 +5123,7 @@ void ZTest::test(MainWindow *host)
   stream << endl;
 
   stream << "}";
-
 #endif
-
 #if 0 // for reconstruction movie
   ZMovieScriptGenerator writer;
   /*
@@ -5970,8 +5801,6 @@ void ZTest::test(MainWindow *host)
   actions.push_back("0.001");
   */
   //writer.writeShowAction(stream, 3);
-
-
 #if 0
   for (vector<string>::const_iterator iter = otherNeurons.begin();
        iter != otherNeurons.end(); ++iter) {
@@ -6090,10 +5919,8 @@ void ZTest::test(MainWindow *host)
   writer.writePlotEnd(cout, 1);
   */
 #endif
-
 #if 0
   ZMovieScript script;
-
 #if 0
   script.addActor(1, dataPath + "/tmp/swc3/adjusted/C2_214.swc");
   ZMovieScene scene;
@@ -6117,31 +5944,25 @@ void ZTest::test(MainWindow *host)
     cout << "Failed to load " << dataPath + "/test/L1_pathway.json" << endl;
   }
 #endif
-
 #if 0
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(dataPath + "/flyem/TEM/data_bundle.json");
   bundle.print();
 #endif
-
 #if 0
   ZFlyEmNeuron neuron;
   neuron.printJson(&cout, 2);
 #endif
-
 #if 0
   cout << setfill('x');
   cout << setw(10) << "" << endl;
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load((dataPath + "/test.swc").c_str());
   ZSwcTree *tree2 = tree.createBoundBoxSwc(100.0);
   tree2->save((dataPath + "/test2.swc").c_str());
-
 #endif
-
 #if 0
   ZSwcTree tree1;
   ZSwcTree tree2;
@@ -6166,7 +5987,6 @@ void ZTest::test(MainWindow *host)
 
   cout << "Score:  " << matcher.matchingScore() << endl;
 #endif
-
 #if 0
   ZSwcTree tree1;
   ZSwcTree tree2;
@@ -6189,7 +6009,6 @@ void ZTest::test(MainWindow *host)
   tree->resortId();
   tree->save((dataPath + "/test.swc").c_str());
 #endif
-
 #if 0
   ZSwcTree tree1;
   ZSwcTree tree2;
@@ -6227,7 +6046,6 @@ void ZTest::test(MainWindow *host)
 
   cout << "Score:  " << matcher.matchingScore() << endl;
 #endif
-
 #if 0
   string modelPath = dataPath +
       "/flyem/skeletonization/session3/len15/adjusted3";
@@ -6268,7 +6086,6 @@ void ZTest::test(MainWindow *host)
 
   stream.close();
 #endif
-
 #if 0
   ZSwcTree tree;
   cout << tree.className() << endl;
@@ -6276,7 +6093,6 @@ void ZTest::test(MainWindow *host)
   ZPoint pt;
   cout << pt.className() << endl;
 #endif
-
 #if 0
   Stack *stack = C_Stack::make(GREY, 1024, 1024, 1);
   Zero_Stack(stack);
@@ -6284,7 +6100,6 @@ void ZTest::test(MainWindow *host)
 
   C_Stack::write(dataPath + "/test.tif", stack);
 #endif
-
 #if 0
   tr1::shared_ptr<ZStackDoc> academy = tr1::shared_ptr<ZStackDoc>(new ZStackDoc);
   academy->loadFile((dataPath + "/flyem/TEM/gray_ds10_avg/xy-grayscale-01267.tif").c_str());
@@ -6296,7 +6111,6 @@ void ZTest::test(MainWindow *host)
   stack->load("/Users/zhaot/Work/neutube/neurolabi/data/flyem/TEM/movie/actor/colored_slice.tif");
   academy->loadStack(stack);
 #endif
-
 #if 0
   map<int, ZObject3dScan*> bodySet;
   Stack *stack = Read_Stack_U((dataPath + "/benchmark/rice_label.tif").c_str());
@@ -6335,9 +6149,7 @@ void ZTest::test(MainWindow *host)
   }
 
   C_Stack::write(dataPath + "/test.tif", stack);
-
 #endif
-
 #if 0
   ZObject3dScan obj;
   /*
@@ -6369,7 +6181,6 @@ void ZTest::test(MainWindow *host)
   delete obj2;
   //Stack *stack = Read_Stack(dataPath + "");
 #endif
-
 #if 0
   ZObject3dStripe stripe;
   stripe.setY(0);
@@ -6394,7 +6205,6 @@ void ZTest::test(MainWindow *host)
   obj.canonize();
   obj.print();
 #endif
-
 #if 0
   ZObject3dStripe stripe;
   stripe.setY(0);
@@ -6419,7 +6229,6 @@ void ZTest::test(MainWindow *host)
 
   C_Stack::print(stack);
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(dataPath + "/flyem/FIB/21784.sobj");
@@ -6442,7 +6251,6 @@ void ZTest::test(MainWindow *host)
   stream << "}";
   stream.close();
 #endif
-
 #if 0
   IMatrix *mat = IMatrix_Read((dataPath + "/test/session2/body_map/body_map00161.imat").c_str());
   int width = mat->dim[0];
@@ -6471,7 +6279,6 @@ void ZTest::test(MainWindow *host)
   C_Stack::write(dataPath + "/test.tif", stack);
   C_Stack::kill(stack);
 #endif
-
 #if 0
   map<int, ZObject3dScan*> bodySet;
   for (int z = 161; z <= 1461; ++z) {
@@ -6507,9 +6314,7 @@ void ZTest::test(MainWindow *host)
     iter->second = NULL;
   }
   bodySet.clear();
-
 #endif
-
 #if 0
   ZString bodyDir = "/run/media/zhaot/ATAWDC_2TB/data/skeletonization/session2/bodies";
   for (int z = 161; z <= 1461; ++z) {
@@ -6568,7 +6373,6 @@ void ZTest::test(MainWindow *host)
   bodySet.clear();
 */
 #endif
-
 #if 0
   int bodyId = 209;
   ZString bodyDir = "/run/media/zhaot/ATAWDC_2TB/data/skeletonization/session2/bodies";
@@ -6585,9 +6389,7 @@ void ZTest::test(MainWindow *host)
   }
 
   obj.save(dataPath + "/test.sobj");
-
 #endif
-
 #if 0
   const int zStart = 1490;
   const int zEnd = 7509;
@@ -6695,7 +6497,6 @@ void ZTest::test(MainWindow *host)
 
   stream.close();
 #endif
-
 #if 0
   //Load all FIB objects
   ZString sessionDir = "/run/media/zhaot/ATAWDC_2TB/data/skeletonization/FIB/session1";
@@ -6741,7 +6542,6 @@ void ZTest::test(MainWindow *host)
     obj.save(stackedObjPath);
   }
 #endif
-
 #if 0
   //Index all object
   ZString sessionDir = "/run/media/zhaot/ATAWDC_2TB/data/skeletonization/FIB/session1";
@@ -6774,7 +6574,6 @@ void ZTest::test(MainWindow *host)
 
   stream.close();
 #endif
-
 #if 0
   ZSwcLayerTrunkAnalyzer trunkAnalyzer;
   trunkAnalyzer.setStep(1);
@@ -6788,7 +6587,6 @@ void ZTest::test(MainWindow *host)
 
   tree.save((dataPath + "/test.swc").c_str());
 #endif
-
 #if 0
   ZSwcTree tree1;
   ZSwcTree tree2;
@@ -6825,7 +6623,6 @@ void ZTest::test(MainWindow *host)
 
   cout << "Score:  " << matcher.matchingScore() << endl;
 #endif
-
 #if 0
   ZGraph graph(ZGraph::UNDIRECTED_WITHOUT_WEIGHT);
 
@@ -6863,7 +6660,6 @@ void ZTest::test(MainWindow *host)
     ZDebugPrintArrayG(path, 0, path.size() - 1);
   }
 #endif
-
 #if 0
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(dataPath + "/flyem/TEM/data_bundle2.json");
@@ -6904,7 +6700,6 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
 #if 0
   ZGraph graph(ZGraph::UNDIRECTED_WITHOUT_WEIGHT);
 
@@ -6924,7 +6719,6 @@ void ZTest::test(MainWindow *host)
 
   graph.print();
 #endif
-
 #if 0
   ZGraph graph(ZGraph::UNDIRECTED_WITHOUT_WEIGHT);
 
@@ -6961,7 +6755,6 @@ void ZTest::test(MainWindow *host)
 
   graph.exportDotFile(dataPath + "/test.dot", labeled);
 #endif
-
 #if 0
   ZGraph graph(ZGraph::UNDIRECTED_WITHOUT_WEIGHT);
 
@@ -6980,9 +6773,7 @@ void ZTest::test(MainWindow *host)
   compressor.uncompress();
 
   graph.print();
-
 #endif
-
 #if 0
   ZGraph graph(ZGraph::UNDIRECTED_WITHOUT_WEIGHT);
 
@@ -7014,7 +6805,6 @@ void ZTest::test(MainWindow *host)
 
   graph.exportDotFile(dataPath + "/test.dot", labeled);
 #endif
-
 #if 0
   ZStackGraph stackGraph;
   Stack *stack = Read_Stack_U(
@@ -7027,7 +6817,6 @@ void ZTest::test(MainWindow *host)
   compressor.compress();
   graph->exportDotFile(dataPath + "/test.dot");
 #endif
-
 #if 0
   ZStackGraph stackGraph;
   //stackGraph.setStack(stack);
@@ -7075,7 +6864,6 @@ void ZTest::test(MainWindow *host)
   C_Stack::write(dataPath + "/test.tif", stack);
   //graph->exportDotFile(dataPath + "/test.dot", labeled);
 #endif
-
 #if 0
   ZGraph graph(ZGraph::UNDIRECTED_WITHOUT_WEIGHT);
 
@@ -7103,7 +6891,6 @@ void ZTest::test(MainWindow *host)
     cout << endl;
   }
 #endif
-
 #if 0
   ZGraph graph(ZGraph::UNDIRECTED_WITHOUT_WEIGHT);
 
@@ -7137,7 +6924,6 @@ void ZTest::test(MainWindow *host)
     cout << endl;
   }
 #endif
-
 #if 0
   cout << ZString::removeFileExt("test/test.tif") << endl;
   cout << ZString::removeFileExt("testtest.tif") << endl;
@@ -7147,7 +6933,6 @@ void ZTest::test(MainWindow *host)
   cout << ZString::removeFileExt("test/test") << endl;
   cout << ZString::removeFileExt("testtest") << endl;
 #endif
-
 #if 0
   QDomDocument doc("mydocument");
   QFile file((NeutubeConfig::getInstance().getApplicatinDir() + "/config.xml").c_str());
@@ -7174,7 +6959,6 @@ void ZTest::test(MainWindow *host)
     n = n.nextSibling();
   }
 #endif
-
 #if 0
   if (host != NULL) {
     ZStackFrame *frame = host->currentStackFrame();
@@ -7184,7 +6968,6 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
 #if 0
   Stack *stack = C_Stack::make(GREY, 100, 100, 5);
   Zero_Stack(stack);
@@ -7199,8 +6982,6 @@ void ZTest::test(MainWindow *host)
 
   C_Stack::write(dataPath + "/test.tif", stack);
 #endif
-
-
 #if 0
   Stack *stack = C_Stack::readSc(dataPath + "/benchmark/cross_45_10.tif");
   ZSwcTree tree;
@@ -7212,9 +6993,7 @@ void ZTest::test(MainWindow *host)
   path.resetPositionFromStack(stack);
 
   tree.print();
-
 #endif
-
 #if 0
   Stack *stack = C_Stack::readSc(dataPath + "/benchmark/cross_45_10.tif");
   ZSwcTree tree;
@@ -7233,7 +7012,6 @@ void ZTest::test(MainWindow *host)
 
   tree.print();
 #endif
-
 #if 0
   Stack *stack = C_Stack::readSc(dataPath + "/benchmark/mouse_neuron_single/stack.tif");
   ZSwcTree tree;
@@ -7245,7 +7023,6 @@ void ZTest::test(MainWindow *host)
   tree.save((dataPath + "/test.swc").c_str());
   tree.print();
 #endif
-
 #if 0
   ZStack stack;
   stack.load(dataPath + "/biocytin/MC0509C3-2_small_small.tif");
@@ -7258,7 +7035,6 @@ void ZTest::test(MainWindow *host)
   tree.save((dataPath + "/test.swc").c_str());
   tree.print();
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(dataPath + "/benchmark/432.sobj");
@@ -7294,7 +7070,6 @@ void ZTest::test(MainWindow *host)
   C_Stack::write(dataPath + "/test2.tif", stack);
   */
 #endif
-
 #if 0
   Stack *stack = C_Stack::readSc(dataPath + "/test.tif");
   //stack->depth = 5;
@@ -7307,8 +7082,7 @@ void ZTest::test(MainWindow *host)
   obj.labelStack(stack, 2);
   C_Stack::write(dataPath + "/test2.tif", stack);
 #endif
-
-#if 0 //FIB connection
+#if 0 // FIB connection
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(dataPath + "/flyem/FIB/v1/annotations-synapse.json");
   synapseArray.printSummary();
@@ -7330,7 +7104,6 @@ void ZTest::test(MainWindow *host)
 
   delete graph;
 #endif
-
 #if 0
   ZObject3dScan obj1;
   obj1.load(dataPath + "/flyem/FIB/skeletonization/session9/bodies/stacked/29.sobj");
@@ -7363,7 +7136,6 @@ void ZTest::test(MainWindow *host)
 
   C_Stack::kill(stack);
 #endif
-
 #if 0
   ZStackFile stackFile;
   stackFile.import(dataPath + "/biocytin/MC0509C3-2_small_small.tif");
@@ -7380,7 +7152,6 @@ void ZTest::test(MainWindow *host)
   delete stack;
   C_Stack::kill(mask);
 #endif
-
 #if 0
   ZSwcTree tree1;
   ZSwcTree tree2;
@@ -7398,7 +7169,6 @@ void ZTest::test(MainWindow *host)
   SwcTreeNode::setType(nodeArray.begin(), nodeArray.end(), 2);
   tree2.save(dataPath + "/test.swc");
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
@@ -7448,14 +7218,9 @@ void ZTest::test(MainWindow *host)
     }
   }
   ptoc();
-
 #endif
-
 #if 0
-
 #endif
-
-
 #if 0
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(dataPath + "/flyem/TEM/data_bundle6.json");
@@ -7468,7 +7233,6 @@ void ZTest::test(MainWindow *host)
                << neuronArray[i].getClass() << " " << ratio << std::endl;
   }
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(dataPath + "/flyem/FIB/skeletonization/session9/annotations-synapse.json");
@@ -7484,7 +7248,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << bodyCount << " bodies have synapses." << std::endl;
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(
@@ -7514,7 +7277,6 @@ void ZTest::test(MainWindow *host)
   fclose(fp);
   stream.close();
 #endif
-
 #if 0
   //Show data bundle summary
   std::map<std::string, int> classCountMap;
@@ -7538,7 +7300,6 @@ void ZTest::test(MainWindow *host)
     std::cout << iter->first << " " << iter->second << std::endl;
   }
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
@@ -7553,7 +7314,6 @@ void ZTest::test(MainWindow *host)
   boundBox = blockArray.getBoundBox();
   std::cout << "Offset: " << boundBox.cb[0] << " " << boundBox.cb[1] << std::endl;
 #endif
-
 #if 0
   std::string sessionDir = dataPath + "/flyem/FIB/skeletonization/session13";
   std::cout << "Loading synapses ..." <<std::endl;
@@ -7562,7 +7322,6 @@ void ZTest::test(MainWindow *host)
 
   std::vector<int> count = synapseArray.countPsd();
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
@@ -7626,7 +7385,6 @@ void ZTest::test(MainWindow *host)
 
   out.close();
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
@@ -7690,7 +7448,6 @@ void ZTest::test(MainWindow *host)
 
   out.close();
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
@@ -7758,7 +7515,6 @@ void ZTest::test(MainWindow *host)
 
   out.close();
 #endif
-
 #if 0
   //Calculate L1, L2 volume
 
@@ -7840,9 +7596,7 @@ void ZTest::test(MainWindow *host)
 
 
   //std::cout << temVolume << ' ' << fibVolume << ' ' << temVolume / fibVolume << std::endl;
-
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(
@@ -7850,9 +7604,7 @@ void ZTest::test(MainWindow *host)
 
   std::cout << "Psd number: " << synapseArray.getPsdNumber() << std::endl;
   std::cout << "TBar number: " << synapseArray.getTBarNumber() << std::endl;
-
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(dataPath +
@@ -7871,9 +7623,7 @@ void ZTest::test(MainWindow *host)
 
   C_Stack::kill(stack);
   C_Stack::kill(stack2);
-
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(
@@ -7916,9 +7666,7 @@ void ZTest::test(MainWindow *host)
 
   stream1.close();
   stream2.close();
-
 #endif
-
 #if 0
   std::map<int, int>::value_type rawMap[] =
   {
@@ -7930,7 +7678,6 @@ void ZTest::test(MainWindow *host)
   std::map<int, int> testMap(rawMap, rawMap + 2);
   std::cout << testMap.size() << std::endl;
 #endif
-
 #if 0
   ZProgressReporter reporter;
   reporter.start();
@@ -7964,7 +7711,6 @@ void ZTest::test(MainWindow *host)
 
   reporter.end();
 #endif
-
 #if 0
   NeuTube::getMessageReporter()->report(
         "test", "error 1", NeuTube::MSG_ERROR);
@@ -7973,7 +7719,6 @@ void ZTest::test(MainWindow *host)
   NeuTube::getMessageReporter()->report(
         "test", "output 1", NeuTube::MSG_INFORMATION);
 #endif
-
 #if 0
   ZHistogram hist;
   hist.setInterval(2.0);
@@ -7988,9 +7733,7 @@ void ZTest::test(MainWindow *host)
   hist.print();
 
   std::cout << hist.getDensity(0.1) << std::endl;
-
 #endif
-
 #if 0
 
   ZObject3dScan obj;
@@ -8001,7 +7744,6 @@ void ZTest::test(MainWindow *host)
 
   hist.print();
 #endif
-
 #if 0
   ZHistogram hist;
   //hist.increment(0.0);
@@ -8018,7 +7760,6 @@ void ZTest::test(MainWindow *host)
 
   Print_Stack_Value(stack);
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load("/groups/flyem/data/zhaot/bundle1/volume/215.sobj");
@@ -8041,7 +7782,6 @@ void ZTest::test(MainWindow *host)
 
   C_Stack::write(dataPath + "/test.tif", stack);
 #endif
-
 #if 0
   //Load tif list
 
@@ -8068,9 +7808,7 @@ void ZTest::test(MainWindow *host)
     C_Stack::write(dataPath + "/test.tif", cropped);
     C_Stack::kill(cropped);
   }
-
 #endif
-
 #if 0
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
@@ -8107,9 +7845,7 @@ void ZTest::test(MainWindow *host)
 
     C_Stack::kill(stack);
   }
-
 #endif
-
 #if 0
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
@@ -8162,7 +7898,6 @@ void ZTest::test(MainWindow *host)
   }
   stream.close();
 #endif
-
 #if 0
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
@@ -8214,7 +7949,6 @@ void ZTest::test(MainWindow *host)
   }
   stream.close();
 #endif
-
 #if 0
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
@@ -8269,8 +8003,7 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
-#if 0 //Density map matching
+#if 0 // Density map matching
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
         dataPath + "/flyem/TEM/data_release/bundle1/data_bundle.json");
@@ -8345,7 +8078,6 @@ void ZTest::test(MainWindow *host)
 
   mat.exportCsv(dataPath + "/test.csv");
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseAnnotation;
   synapseAnnotation.loadJson(dataPath + "/flyem/TEM/data_release/bundle1/annotations-synapse.json");
@@ -8353,7 +8085,6 @@ void ZTest::test(MainWindow *host)
   synapseAnnotation.exportPsd(dataPath + "/psd.csv");
   synapseAnnotation.exportCsvFile(dataPath + "/synapse.csv");
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseAnnotation;
 
@@ -8383,7 +8114,6 @@ void ZTest::test(MainWindow *host)
 
   mat.exportCsv(dataPath + "/conn.csv");
 #endif
-
 #if 0
   Stack *stack2 = C_Stack::readSc(dataPath + "/flyem/FIB/movie/frame/00002.tif");
   Stack *stack1 = C_Stack::readSc(dataPath + "/flyem/FIB/movie/12layer1024/00500.tif");
@@ -8415,7 +8145,6 @@ void ZTest::test(MainWindow *host)
   }
   C_Stack::write(dataPath + "/test.tif", blend);
 #endif
-
 #if 0
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
@@ -8445,13 +8174,11 @@ void ZTest::test(MainWindow *host)
   neuronArray[0].getModel()->save(dataPath + "/test2.swc");
   */
 #endif
-
 #if 0
   ZSwcTree *tree = ZSwcGenerator::createCircleSwc(0, 0, 0, 10.0);
   tree->resortId();
   tree->save(dataPath + "/test.swc");
 #endif
-
 #if 0
   ZFlyEmNeuronRange range;
   range.setPlaneRange(0, 10);
@@ -8484,8 +8211,7 @@ void ZTest::test(MainWindow *host)
   tree->save(dataPath + "/test2.swc");
   */
 #endif
-
-#if 0 //Create range for type L1
+#if 0 // Create range for type L1
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
         dataPath + "/flyem/TEM/data_release/bundle1/data_bundle.json");
@@ -8507,9 +8233,7 @@ void ZTest::test(MainWindow *host)
   ZSwcTree *tree = ZSwcGenerator::createSwc(overallRange, axis);
 
   tree->save(dataPath + "/test.swc");
-
 #endif
-
 #if 0
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
@@ -8565,9 +8289,7 @@ void ZTest::test(MainWindow *host)
     }
     delete tree;
   }
-
 #endif
-
 #if 0
   std::string sessionDir = dataPath + "/flyem/skeletonization/session3";
 
@@ -8602,9 +8324,7 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
-
-#if 0 //Regnerate all sparse volumes from downsampled stacks
+#if 0 // Regnerate all sparse volumes from downsampled stacks
   QDir dir((dataPath + "/flyem/skeletonization/session3").c_str());
   QStringList filters;
   filters << "*.tif";
@@ -8616,9 +8336,7 @@ void ZTest::test(MainWindow *host)
     obj.load(fileInfo.absoluteFilePath().toStdString());
 
   }
-
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
@@ -8683,7 +8401,6 @@ void ZTest::test(MainWindow *host)
 
   json_dump_file(obj, (dataPath + "/test.json").c_str(), JSON_INDENT(2));
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
@@ -8694,7 +8411,6 @@ void ZTest::test(MainWindow *host)
 
   blockArray.exportSwc(dataPath + "/flyem/FIB/orphan_body_check_block_12layer.swc");
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
@@ -8759,10 +8475,8 @@ void ZTest::test(MainWindow *host)
 
   json_dump_file(obj, (dataPath + "/orphan.json").c_str(), JSON_INDENT(2));
 #endif
-
 #if 0
   std::string sessionDir = "/run/media/zhaot/ATAWDC_2TB/data/skeletonization/FIB/session18";
-
 #if 0
   ZObject3dScan obj;
   std::string sessionDir = dataPath + "/flyem/FIB/skeletonization/session18";
@@ -8780,9 +8494,7 @@ void ZTest::test(MainWindow *host)
 
   stream.close();
 #endif
-
 #endif
-
 #if 0
   std::string sessionDir = dataPath+ "/flyem/FIB/skeletonization/session19";
   FlyEm::ZSynapseAnnotationArray synapseAnnotation;
@@ -8853,7 +8565,6 @@ void ZTest::test(MainWindow *host)
     //If it's an orphan body, save the marker
   }
 #endif
-
 #if 0
   std::string sessionDir = "/run/media/zhaot/ATAWDC_2TB/data/skeletonization/FIB/session18";
   FlyEm::ZSynapseAnnotationArray synapseAnnotation;
@@ -8916,8 +8627,7 @@ void ZTest::test(MainWindow *host)
     //If it's an orphan body, save the marker
   }
 #endif
-
-#if 0 //merge objects
+#if 0 // merge objects
   std::string sessionDir =
       "/run/media/zhaot/ATAWDC_2TB/data/skeletonization/FIB/session18";
   std::string stackedDir = sessionDir + "/bodies/stacked";
@@ -8951,10 +8661,8 @@ void ZTest::test(MainWindow *host)
   }
 
   stream.close();
-
 #endif
-
-#if 0 //merge objects
+#if 0 // merge objects
   std::string sessionDir =
       "/run/media/zhaot/ATAWDC_2TB/data/skeletonization/FIB/session18";
   std::string stackedDir = sessionDir + "/bodies/orphan_check";
@@ -9006,8 +8714,7 @@ void ZTest::test(MainWindow *host)
 
   json_dump_file(obj, (dataPath + "/test.json").c_str(), JSON_INDENT(2));
 #endif
-
-#if 0 //sort branch length
+#if 0 // sort branch length
   std::string sessionDir =
       "/Users/zhaot/Work/neutube/neurolabi/data/flyem/FIB/skeletonization/session18";
 
@@ -9042,14 +8749,12 @@ void ZTest::test(MainWindow *host)
 
   stream.close();
 #endif
-
 #if 0
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
         dataPath + "/flyem/TEM/data_release/bundle1/data_bundle.json");
   bundle.exportJsonFile(dataPath + "/test.json");
 #endif
-
 #if 0
   ZFlyEmNeuronRange reference;
   reference.importCsvFile(dataPath +
@@ -9080,7 +8785,6 @@ void ZTest::test(MainWindow *host)
   ZSwcTree *tree = ZSwcGenerator::createRangeCompareSwc(range, reference);
   tree->save(dataPath + "/test.swc");
 #endif
-
 #if 0
   ZSwcTree tree;
   //tree.load(dataPath + "/benchmark/diadem/golden/e1.swc");
@@ -9089,16 +8793,13 @@ void ZTest::test(MainWindow *host)
   ZSwcResampler resampler;
   resampler.optimalDownsample(&tree);
   tree.save(dataPath + "/test.swc");
-
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
   Cuboid_I boundBox = blockArray.getBoundBox();
   Print_Cuboid_I(&boundBox);
 #endif
-
 #if 0
   ZFlyEmDataBundle bundle1;
   bundle1.loadJsonFile(
@@ -9130,8 +8831,7 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
-#if 0 //Laplacian map
+#if 0 // Laplacian map
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
         dataPath + "/flyem/TEM/data_release/bundle1/data_bundle.json");
@@ -9174,8 +8874,7 @@ void ZTest::test(MainWindow *host)
 
   FlyEm::ZFileParser::writeVaa3dMakerFile(dataPath + "/test.marker", markerArray);
 #endif
-
-#if 0 //Generate layer swc
+#if 0 // Generate layer swc
   int zStart = 1490;
   int zEnd = 7489;
   double res[3] = {10, 10, 10};
@@ -9210,10 +8909,8 @@ void ZTest::test(MainWindow *host)
 
   tree.resortId();
   tree.save(dataPath + "/test.swc");
-
 #endif
-
-#if 0 //Generate TEM neuron information
+#if 0 // Generate TEM neuron information
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
         dataPath + "/flyem/TEM/data_release/bundle1/data_bundle.json");
@@ -9237,9 +8934,7 @@ void ZTest::test(MainWindow *host)
   }
   stream.close();
 #endif
-
-
-#if 0 //Check overlap
+#if 0 // Check overlap
   QDir dir1((dataPath + "/flyem/FIB/skeletonization/session18/bodies/stacked").c_str());
   QStringList filters;
   filters << "*.sobj";
@@ -9321,9 +9016,7 @@ void ZTest::test(MainWindow *host)
   }
 
   stream.close();
-
 #endif
-
 #if 0
   ZMatrix matrix;
   matrix.importTextFile(dataPath + "/flyem/FIB/overlap.txt");
@@ -9367,9 +9060,7 @@ void ZTest::test(MainWindow *host)
       }
     }
   }
-
 #endif
-
 #if 0
   ZSwcTree tree1;
   tree1.load(dataPath + "/flyem/FIB/skeletonization/session18/bodies/changed/stacked/swc/adjusted/427.swc");
@@ -9382,7 +9073,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << dist << std::endl;
 #endif
-
 #if 0
   ZGraph graph(ZGraph::UNDIRECTED_WITH_WEIGHT);
   graph.importTxtFile(dataPath + "/flyem/FIB/skeletonization/session19/changed.txt");
@@ -9404,9 +9094,7 @@ void ZTest::test(MainWindow *host)
     }
     std::cout << "   ||" <<  std::endl;
   }
-
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
@@ -9471,14 +9159,11 @@ void ZTest::test(MainWindow *host)
 
   json_dump_file(obj, (dataPath + "/test.json").c_str(), JSON_INDENT(2));
 #endif
-
-#if 0 //Change root of the swc trees
+#if 0 // Change root of the swc trees
   //Load data bundle
 
   //For each neuron
-
 #endif
-
 #if 0
   //Output a list of orphans that do not touch substack boundaries and are
   //greater than 100,000 voxels in size.
@@ -9557,7 +9242,6 @@ void ZTest::test(MainWindow *host)
 
   json_dump_file(obj, (dataPath + "/test.json").c_str(), JSON_INDENT(2));
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load(GET_DATA_DIR + "/flyem/TEM/data_release/bundle1/swc/T4-11_588435.swc");
@@ -9581,8 +9265,6 @@ void ZTest::test(MainWindow *host)
 
   //tree.save(GET_DATA_DIR + "/test.swc");
 #endif
-
-
 #if 0
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
@@ -9651,7 +9333,6 @@ void ZTest::test(MainWindow *host)
 
   }
 #endif
-
 #if 0
   //Provide x,y,z coordinates (and a body id) for all bodies
   //between 100,000 and 500,000 in size.
@@ -9732,7 +9413,6 @@ void ZTest::test(MainWindow *host)
   json_dump_file(smallObj, (dataPath + "/100k_500k.json").c_str(), JSON_INDENT(2));
   json_dump_file(bigObj, (dataPath + "/500k_100k.json").c_str(), JSON_INDENT(2));
 #endif
-
 #if 0
   ZMatrix mat;
   mat.importTextFile(GET_DATA_DIR + "/test/subtree/fuzzy_cluster_feature.txt");
@@ -9783,10 +9463,8 @@ void ZTest::test(MainWindow *host)
   simMat.exportCsv(GET_DATA_DIR + "/flyem/TEM/simmat_subtree.txt");
   std::cout << goodCount << " / " << nsample;
   confusionMatrix.exportCsv(GET_DATA_DIR + "/fuzzy_confmat.csv");
-
 #endif
-
-#if 0 //Finding holes
+#if 0 // Finding holes
   QDir dir((GET_DATA_DIR + "/flyem/FIB/skeletonization/session19/bodies/500k+").c_str());
   std::string outDir = (dir.absolutePath() + "/hole").toStdString();
   QStringList nameFilters;
@@ -9819,7 +9497,6 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
 #if 0
   ZDendrogram dendrogram;
 
@@ -9840,7 +9517,6 @@ void ZTest::test(MainWindow *host)
 
   svgGenerator.write((GET_DATA_DIR + "/test.svg").c_str(), svgString);
 #endif
-
 #if 0
   ZDendrogram dendrogram;
   dendrogram.addLink(1, 2, 1);
@@ -9853,7 +9529,6 @@ void ZTest::test(MainWindow *host)
   ZSvgGenerator svgGenerator;
   svgGenerator.write((GET_DATA_DIR + "/test.svg").c_str(), svgString);
 #endif
-
 #if 0
   std::string neuronNameFilePath = GET_DATA_DIR + "/flyem/TEM/class_name.txt";
   ZFlyEmDataBundle bundle;
@@ -9869,7 +9544,6 @@ void ZTest::test(MainWindow *host)
   }
   stream.close();
 #endif
-
 #if 0
   ZFlyEmBodyAnalyzer bodyAnalyzer;
   ZObject3dScan obj;
@@ -9889,7 +9563,6 @@ void ZTest::test(MainWindow *host)
 
   pts.print();
 #endif
-
 #if 0
   ZFlyEmBodyAnalyzer bodyAnalyzer;
   ZObject3dScan obj;
@@ -9905,12 +9578,10 @@ void ZTest::test(MainWindow *host)
 
   pts.exportSwcFile(GET_DATA_DIR + "/test.swc", 3.0);
 #endif
-
 #if 0
   RECORD_INFORMATION("Info test");
   RECORD_WARNING_UNCOND("Warning test");
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load(GET_DATA_DIR + "/biocytin/bug_source1.swc");
@@ -9922,7 +9593,6 @@ void ZTest::test(MainWindow *host)
   //resampler.optimalDownsample(&tree);
   tree.save(GET_DATA_DIR + "/test.swc");
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load(GET_DATA_DIR + "/benchmark/swc/compare/compare1.swc");
@@ -9937,10 +9607,7 @@ void ZTest::test(MainWindow *host)
   tree.setTypeByLabel();
   tree.print();
   tree.save(GET_DATA_DIR + "/test.swc");
-
 #endif
-
-
 #if 0
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(dataPath + "/flyem/TEM/data_bundle2.json");
@@ -9973,14 +9640,12 @@ void ZTest::test(MainWindow *host)
     feature = analyzer.computeFeature(*iter);
   }
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.importDvidObject(GET_DATA_DIR + "/1.dvid");
 
   std::cout << obj.getVoxelNumber() << std::endl;
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.addSegment(0, 1, 1, 1);
@@ -9990,7 +9655,6 @@ void ZTest::test(MainWindow *host)
   obj.addSegment(2, 2, 1, 1);
   obj.save(GET_DATA_DIR + "/benchmark/tower3.sobj");
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.addSegment(1, 2, 2, 2);
@@ -10000,7 +9664,6 @@ void ZTest::test(MainWindow *host)
   obj.addSegment(3, 3, 2, 2);
   obj.save(GET_DATA_DIR + "/benchmark/tower5.sobj");
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.addSegment(1, 16, 16, 16);
@@ -10014,7 +9677,6 @@ void ZTest::test(MainWindow *host)
   }
   obj.save(GET_DATA_DIR + "/benchmark/pile.sobj");
 #endif
-
 #if 0
   ZMatlabProcess matlabProcess;
   if (matlabProcess.findMatlab()) {
@@ -10025,7 +9687,6 @@ void ZTest::test(MainWindow *host)
     matlabProcess.printOutputSummary();
   }
 #endif
-
 #if 0
   ZStackBinarizer binarizer;
   binarizer.setThreshold(8);
@@ -10039,12 +9700,10 @@ void ZTest::test(MainWindow *host)
   }
   C_Stack::write(GET_DATA_DIR + "/test.tif", stack);
 #endif
-
 #if 0
    Stack *stack = C_Stack::readSc(GET_DATA_DIR + "/system/mouse_neuron_single/stack.tif");
    std::cout << Stack_Var(stack) << std::endl;
 #endif
-
 #if 0
   ZString str("data/testffa/test.tif/");
   std::vector<std::string> parts = str.decomposePath();
@@ -10053,13 +9712,10 @@ void ZTest::test(MainWindow *host)
   }
   std::cout << std::endl;
 #endif
-
 #if 0
   std::cout << ZString::relativePath(GET_DATA_DIR + "/test/test.tif", GET_DATA_DIR + "/benchmark")
                << std::endl;
 #endif
-
-
 #if 0
   ZSwcTree tree;
   tree.load(GET_DATA_DIR + "/test.swc");
@@ -10068,14 +9724,12 @@ void ZTest::test(MainWindow *host)
   tree.labelStack(stack.c_stack());
   stack.save(GET_DATA_DIR + "/test.tif");
 #endif
-
 #if 0
   Stack *stack =C_Stack::readSc(GET_DATA_DIR + "/benchmark/ball.tif");
   stack = C_Stack::boundCrop(stack, 0);
   Stack *out = misc::computeNormal(stack, NeuTube::Z_AXIS);
   C_Stack::write(GET_DATA_DIR + "/test.tif", out);
 #endif
-
 #if 0
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
@@ -10087,7 +9741,6 @@ void ZTest::test(MainWindow *host)
   std::cout << "Most spreaded layer: " << layer << std::endl;
   std::cout << "Radius: " << radius << std::endl;
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
@@ -10104,7 +9757,6 @@ void ZTest::test(MainWindow *host)
   blockArray2.translate(10, 10, 10);
   blockArray2.exportSwc(dataPath + "/flyem/FIB/orphan_body_check_block_layer12_13.swc");
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
@@ -10119,14 +9771,12 @@ void ZTest::test(MainWindow *host)
 
   blockArray.exportSwc(GET_DATA_DIR + "/test.swc");
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
   std::cout << misc::computeRavelerHeight(blockArray, 10) << std::endl;
 #endif
-
-#if 0 //Get all bodies within a certain body range
+#if 0 // Get all bodies within a certain body range
   ZFlyEmNeuronArray neuronArray;
   neuronArray.importBodyDir(
         GET_DATA_DIR + "/flyem/FIB/skeletonization/session26/100k_500k/stacked");
@@ -10146,7 +9796,6 @@ void ZTest::test(MainWindow *host)
   }
   */
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(
@@ -10166,7 +9815,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << bodyCount << " bodies have synapses" << std::endl;
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(
@@ -10178,7 +9826,6 @@ void ZTest::test(MainWindow *host)
   std::cout << psdCount.size() << std::endl;
   std::cout << tbarCount.size() << std::endl;
 #endif
-
 #if 0
   ZFlyEmNeuronArray neuronArray;
   neuronArray.importBodyDir(
@@ -10241,10 +9888,8 @@ void ZTest::test(MainWindow *host)
 
   json_dump_file(rootObj, (GET_DATA_DIR + "/small_body.json").c_str(),
                  JSON_INDENT(2));
-
 #endif
-
-#if 0 //Sort large bodies
+#if 0 // Sort large bodies
   ZFlyEmNeuronArray neuronArray;
   neuronArray.importBodyDir(
         GET_DATA_DIR + "/flyem/FIB/skeletonization/session27/100k_5m/stacked");
@@ -10267,7 +9912,6 @@ void ZTest::test(MainWindow *host)
   sizeFilter.setSizeRange(1000000, 5000000);
   exporter.exportIdPosition(neuronArray, GET_DATA_DIR + "/1m_5m.json");
 #endif
-
 #if 0
   ZFlyEmNeuronArray neuronArray;
   neuronArray.importBodyDir(
@@ -10315,7 +9959,6 @@ void ZTest::test(MainWindow *host)
 
   json_decref(rootObj);
 #endif
-
 #if 0
   ZFlyEmNeuronArray neuronArray;
   neuronArray.importBodyDir(
@@ -10363,7 +10006,6 @@ void ZTest::test(MainWindow *host)
 
   json_decref(rootObj);
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
@@ -10378,7 +10020,6 @@ void ZTest::test(MainWindow *host)
 
   blockArray.exportSwc(dataPath + "/flyem/FIB/orphan_body_check_block_13layer.swc");
 #endif
-
 #if 0
   ZFlyEmNeuronArray neuronArray;
   neuronArray.importBodyDir(
@@ -10416,9 +10057,7 @@ void ZTest::test(MainWindow *host)
 
   ZFlyEmNeuronExporter exporter;
   exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/test2.json");
-
 #endif
-
 #if 0
   ZFlyEmDataBundle dataBundle;
   dataBundle.loadJsonFile(
@@ -10446,7 +10085,6 @@ void ZTest::test(MainWindow *host)
 
   //misc::exportPointList(GET_DATA_DIR + "/test.json", pointArray);
 #endif
-
 #if 0
   ZPointArray pointArray;
   pointArray.append(1, 2, 3);
@@ -10455,13 +10093,11 @@ void ZTest::test(MainWindow *host)
 
   std::cout << pointArray.toJsonString() << std::endl;
 #endif
-
 #if 0
   ZJsonArray jsonArray;
   jsonArray << 1 << 2 << 3.5;
   std::cout << json_dumps(jsonArray.getValue(), JSON_INDENT(2)) << std::endl;
 #endif
-
 #if 0
   ZSwcPruner pruner;
   pruner.setMinLength(18.0);
@@ -10481,7 +10117,6 @@ void ZTest::test(MainWindow *host)
   pruner.prune(&tree);
   tree.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
-
 #if 0
   ZSquareTaskManager *taskManager = new ZSquareTaskManager;
   for (int i = 0; i < 100; ++i) {
@@ -10497,7 +10132,6 @@ void ZTest::test(MainWindow *host)
 
   taskManager->deleteLater();
 #endif
-
 #if 0
   ZFlyEmNeuronMatchTaskManager *taskManager = new ZFlyEmNeuronMatchTaskManager;
   ZFlyEmDataBundle bundle;
@@ -10521,7 +10155,6 @@ void ZTest::test(MainWindow *host)
 
   taskManager->deleteLater();
 #endif
-
 #if 0
   ZTextLineCompositer compositer;
   compositer.appendLine("Title");
@@ -10537,7 +10170,6 @@ void ZTest::test(MainWindow *host)
   compositer2.setLevel(1);
   compositer2.print(2);
 #endif
-
 #if 0
   FlyEm::ZHotSpot *hotSpot =
       FlyEm::ZHotSpotFactory::createPointHotSpot(1, 2, 3);
@@ -10545,7 +10177,6 @@ void ZTest::test(MainWindow *host)
 
   delete hotSpot;
 #endif
-
 #if 0
   ZSwcDeepAngleMetric metric;
   metric.setLevel(3);
@@ -10573,7 +10204,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << "Distance: " << dist << std::endl;
 #endif
-
 #if 0
   ZSwcDeepAngleMetric metric;
   metric.setLevel(3);
@@ -10602,8 +10232,7 @@ void ZTest::test(MainWindow *host)
 
   std::cout << hotSpotArray.toString() << std::endl;
 #endif
-
-#if 0 //Count orphans and boundary orphans
+#if 0 // Count orphans and boundary orphans
   ZFlyEmNeuronArray neuronArray;
   neuronArray.importBodyDir(
         GET_DATA_DIR + "/flyem/FIB/skeletonization/session31/0_100000/stacked");
@@ -10662,9 +10291,7 @@ void ZTest::test(MainWindow *host)
             << orphanPsdCount << std::endl;
   std::cout << "#Boundary orphans:" << boundaryOrphanCount << "; #PSDs: "
             << boundaryOrphanPsdCount << std::endl;
-
 #endif
-
 #if 0
   ZObject3dScanArray bodyArray;
   bodyArray.importDir(
@@ -10676,22 +10303,18 @@ void ZTest::test(MainWindow *host)
   obj.importHdf5(GET_DATA_DIR + "/test.hf5", "/body/1.sobj");
 
   obj.save(GET_DATA_DIR + "/test.sobj");
-
 #endif
-
 #if 0
   ZFlyEmDataBundle dataBundle;
   dataBundle.loadJsonFile(
         GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/data_bundle.json");
   dataBundle.getNeuronArray().exportBodyToHdf5(GET_DATA_DIR + "/test.hf5");
 #endif
-
 #if 0
   ZFlyEmNeuron neuron;
   neuron.importBodyFromHdf5(GET_TEST_DATA_DIR + "/test.hf5", "/bodies/9531.sobj");
   neuron.getBody()->save(GET_DATA_DIR + "/test.sobj");
 #endif
-
 #if 0
   ZFlyEmDataBundle dataBundle;
   dataBundle.loadJsonFile(
@@ -10699,8 +10322,7 @@ void ZTest::test(MainWindow *host)
         "/flyem/FIB/data_release/bundle5/data_bundle_wo_synapse.json");
 
   ZFlyEmQualityAnalyzer analyzer;
-
-#  if 0
+#if 0
   const std::vector<ZFlyEmNeuron>& neuronArray = dataBundle.getNeuronArray();
   for (size_t i = 0; i < neuronArray.size(); ++i) {
     const ZFlyEmNeuron &neuron = neuronArray[i];
@@ -10711,14 +10333,13 @@ void ZTest::test(MainWindow *host)
 //      break;
     }
   }
-#  endif
+#endif
 
   ZFlyEmNeuron *neuron = dataBundle.getNeuron(406309);
   FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(*neuron);
   hotSpotArray.print();
   neuron->getUnscaledModel()->save(GET_DATA_DIR + "/test.swc");
 #endif
-
 #if 0
   ZStackSkeletonizer skeletonizer;
 
@@ -10732,7 +10353,6 @@ void ZTest::test(MainWindow *host)
   ZSwcTree *tree = skeletonizer.makeSkeleton(obj);
   tree->save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
-
 #if 0
   ZFlyEmDataBundle dataBundle;
   dataBundle.loadJsonFile(
@@ -10740,8 +10360,7 @@ void ZTest::test(MainWindow *host)
         "/flyem/FIB/skeletonization/session31/500000_/len40/data_bundle.json");
 
   ZFlyEmQualityAnalyzer analyzer;
-
-#  if 0
+#if 0
   const std::vector<ZFlyEmNeuron>& neuronArray = dataBundle.getNeuronArray();
   for (size_t i = 0; i < neuronArray.size(); ++i) {
     const ZFlyEmNeuron &neuron = neuronArray[i];
@@ -10752,17 +10371,15 @@ void ZTest::test(MainWindow *host)
 //      break;
     }
   }
-#  else
+#else
   ZFlyEmNeuron *neuron = dataBundle.getNeuron(21894);
   FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(*neuron);
   hotSpotArray.print();
   //neuron->getUnscaledModel()->save(GET_DATA_DIR + "/test.swc");
 
   std::cout << hotSpotArray.toJsonString() << std::endl;
-#  endif
-
 #endif
-
+#endif
 #if 0
   ZFlyEmNeuron neuron;
   neuron.setId(1);
@@ -10770,13 +10387,10 @@ void ZTest::test(MainWindow *host)
   ZFlyEmQualityAnalyzer analyzer;
   FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(neuron);
   hotSpotArray.print();
-
 #endif
-
 #if 0
   std::cout << misc::computeConfidence(5000, 1000, 10000) << std::endl;
 #endif
-
 #if 0
   ZFlyEmCoordinateConverter converter;
   converter.setStackSize(3150, 2599, 6500);
@@ -10808,7 +10422,6 @@ void ZTest::test(MainWindow *host)
                     ZFlyEmCoordinateConverter::ROI_SPACE);
   std::cout << x << " " << y << " " << z << std::endl;
 #endif
-
 #if 0
   FlyEm::ZCurveGeometry geometry;
   geometry.appendPoint(0, 1, 2);
@@ -10830,7 +10443,6 @@ void ZTest::test(MainWindow *host)
   //ZJsonObject obj = hotSpot->toRavelerJsonObject(resolution, imageSize);
   //obj.print();
 #endif
-
 #if 0
   ZDvidReader reader;
 
@@ -10844,7 +10456,6 @@ void ZTest::test(MainWindow *host)
   }
   std::cout << std::endl;
 #endif
-
 #if 0
   ZDvidReader reader;
   ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
@@ -10853,7 +10464,6 @@ void ZTest::test(MainWindow *host)
   int sourceBodyId = 265246;
   ZSwcTree *tree = reader.readSwc(sourceBodyId);
 #endif
-
 #if 0
   ZDvidReader reader;
 
@@ -10934,7 +10544,6 @@ void ZTest::test(MainWindow *host)
       analyzer.computeHotSpot(neuron, neuronArray);
   hotSpotArray.print();
 #endif
-
 #if 0
   ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
   ZDvidReader reader;
@@ -10952,7 +10561,6 @@ void ZTest::test(MainWindow *host)
   dvidInfo.setFromJsonString(info.toStdString());
   dvidInfo.print();
 #endif
-
 #if 0
   ZFlyEmNeuronArray neuronArray;
   neuronArray.importBodyDir(
@@ -10992,7 +10600,6 @@ void ZTest::test(MainWindow *host)
   ZFlyEmNeuronExporter exporter;
   exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/test2.json");
 #endif
-
 #if 0
   ZHdf5Reader reader;
   reader.open(GET_DATA_DIR + "/flyem/FIB/skeletonization/session33/100000_/stacked.hf5");
@@ -11004,24 +10611,19 @@ void ZTest::test(MainWindow *host)
     std::cout << *iter << std::endl;
   }
 #endif
-
 #if 0
   std::vector<std::string> pathArray =
       misc::parseHdf5Path(GET_DATA_DIR +
                           "/flyem/FIB/skeletonization/session33/100000_/stacked.hf5");
   ZStringArray::print(pathArray);
 #endif
-
 #if 0
   ZFlyEmNeuronArray neuronArray;
   neuronArray.importBodyDir(
         GET_TEST_DATA_DIR +
         "/flyem/FIB/skeletonization/session33/100000_/stacked.hf5");
   std::cout << neuronArray.size() << " neurons." << std::endl;
-
-
 #endif
-
 #if 0
   ZDvidReader reader;
 
@@ -11035,7 +10637,6 @@ void ZTest::test(MainWindow *host)
   }
   std::cout << std::endl;
 #endif
-
 #if 0
   ZFlyEmNeuron neuron;
   neuron.setId(117);
@@ -11057,7 +10658,6 @@ void ZTest::test(MainWindow *host)
 
   tree->save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
-
 #if 0
   ZFlyEmDataBundle dataBundle;
   ZDvidFilter dvidFilter;
@@ -11065,7 +10665,6 @@ void ZTest::test(MainWindow *host)
   dvidFilter.setMaxBodySize(100000);
   dataBundle.loadDvid(dvidFilter);
 #endif
-
 #if 0
   ZIntCuboidFaceArray faceArray;
   Cuboid_I cuboid;
@@ -11074,7 +10673,6 @@ void ZTest::test(MainWindow *host)
   ZSwcTree *tree = ZSwcGenerator::createSwc(faceArray, 5.0);
   tree->save(GET_DATA_DIR + "/test.swc");
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
@@ -11083,7 +10681,6 @@ void ZTest::test(MainWindow *host)
   ZSwcTree *tree = ZSwcGenerator::createSwc(faceArray, 5.0);
   tree->save(GET_DATA_DIR + "/test.swc");
 #endif
-
 #if 0
   //Provide x,y,z coordinates (and a body id) for all bodies
   //between 100,000 and 500,0000 in size.
@@ -11155,10 +10752,8 @@ void ZTest::test(MainWindow *host)
 
   json_dump_file(smallObj, (dataPath + "/100k_5M.json").c_str(), JSON_INDENT(2));
   //json_dump_file(bigObj, (dataPath + "/500k_100k.json").c_str(), JSON_INDENT(2));
-
 #endif
-
-#if 0 //Count orphans
+#if 0 // Count orphans
   ZFlyEmNeuronArray neuronArray;
   neuronArray.importBodyDir(
         GET_DATA_DIR + "/flyem/FIB/skeletonization/session34/100000_/stacked.hf5");
@@ -11223,10 +10818,8 @@ void ZTest::test(MainWindow *host)
   std::cout << "#Orphans >= 100k: " << orphanCount << std::endl;
   std::cout << "#PSDs: " << orphanPsdCount << std::endl;
   std::cout << "#TBars: " << orphanTbarCount << std::endl;
-
 #endif
-
-#if 0 //rescale TEM cells
+#if 0 // rescale TEM cells
   QDir dir((GET_DATA_DIR + "/flyem/TEM/All_Cells").c_str());
   QString outputDirPath = (GET_DATA_DIR + "/flyem/TEM/All_Cells_Scaled").c_str();
   QDir outputDir(outputDirPath);
@@ -11255,7 +10848,6 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
 #if 0
   ZFlyEmNeuronArray neuronArray;
   neuronArray.importBodyDir(
@@ -11296,7 +10888,6 @@ void ZTest::test(MainWindow *host)
   //ZFlyEmNeuronExporter exporter;
   //exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/side_bounary.json");
 #endif
-
 #if 0
   ZDvidReader reader;
 
@@ -11308,7 +10899,6 @@ void ZTest::test(MainWindow *host)
 
   qDebug() << QString(keyValue);
 #endif
-
 #if 0
   ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
   ZFlyEmDvidReader reader;
@@ -11317,9 +10907,7 @@ void ZTest::test(MainWindow *host)
 
   ZFlyEmBodyAnnotation annotation = reader.readAnnotation(117);
   annotation.print();
-
 #endif
-
 #if 0
   //QImage image(1024, 1024, QImage::Format_Mono);
   //QPainter painter(image);
@@ -11334,7 +10922,6 @@ void ZTest::test(MainWindow *host)
   stroke.labelGrey(stack);
   C_Stack::write(GET_DATA_DIR + "/test.tif", stack);
 #endif
-
 #if 0
   ZDvidReader reader;
 
@@ -11387,7 +10974,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << count << " internal face orphans." << std::endl;
 #endif
-
 #if 0
   ZFlyEmNeuronArray neuronArray;
   neuronArray.importBodyDir(
@@ -11431,7 +11017,6 @@ void ZTest::test(MainWindow *host)
   //ZFlyEmNeuronExporter exporter;
   //exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/side_bounary.json");
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(
@@ -11463,7 +11048,6 @@ void ZTest::test(MainWindow *host)
   std::cout << "#PSD: " << psdCount << std::endl;
   std::cout << "#Tbar: " << tbarCount << std::endl;
 #endif
-
 #if 0
   std::vector<int> bodyIdArray;
 
@@ -11478,9 +11062,7 @@ void ZTest::test(MainWindow *host)
     ZObject3dScan &body = bodyArray[i];
 
   }
-
 #endif
-
 #if 0
   ZDvidReader reader;
 
@@ -11530,7 +11112,6 @@ void ZTest::test(MainWindow *host)
 
   delete stack;
 #endif
-
 #if 0
   FlyEm::Service::FaceOrphanOverlap service;
 
@@ -11546,14 +11127,12 @@ void ZTest::test(MainWindow *host)
   calbr.setBounding(true, true, false);
   calbr.setMargin(10, 10, 0);
   calbr.calibrate(blockArray);
-
 #if 0
   blockArray.resize(20);
   blockArray.exportSwc(GET_DATA_DIR + "/test.swc");
 #endif
   service.loadFace(blockArray);
-
-#  if 1
+#if 1
   service.markBody();
 
   std::vector<int> orphanBodyArray;
@@ -11571,10 +11150,9 @@ void ZTest::test(MainWindow *host)
        iter != marker.end(); ++iter) {
     std::cout << iter->getX() << " " << iter->getY() << " " << iter->getZ() << std::endl;
   }
-#  endif
+#endif
   service.print();
 #endif
-
 #if 0
   ZDvidReader reader;
 
@@ -11588,7 +11166,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << obj.getVoxelNumber() << std::endl;
 #endif
-
 #if 0
   ZDvidReader reader;
   ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
@@ -11611,7 +11188,6 @@ void ZTest::test(MainWindow *host)
 
   fclose(fp);
 #endif
-
 #if 0
   ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
   ZDvidTarget dvidTarget;
@@ -11627,7 +11203,6 @@ void ZTest::test(MainWindow *host)
   obj.getMarker().print();
   ptoc();
 #endif
-
 #if 0
   FlyEm::Service::FaceOrphanOverlap service;
 
@@ -11643,7 +11218,6 @@ void ZTest::test(MainWindow *host)
   calbr.setBounding(true, true, false);
   calbr.setMargin(10, 10, 0);
   calbr.calibrate(blockArray);
-
 #if 0
   blockArray.resize(20);
   blockArray.exportSwc(GET_DATA_DIR + "/test.swc");
@@ -11655,8 +11229,7 @@ void ZTest::test(MainWindow *host)
 
 
   std::vector<int> orphanBodyArray;
-
-#  if 1
+#if 1
   ZString line;
   FILE *fp = fopen((GET_DATA_DIR + "/face_orphan.txt").c_str(), "r");
   while(line.readLine(fp)) {
@@ -11668,13 +11241,13 @@ void ZTest::test(MainWindow *host)
   }
 
   fclose(fp);
-#  else
+#else
   orphanBodyArray.push_back(34677);
   orphanBodyArray.push_back(236315);
   orphanBodyArray.push_back(66038);
   orphanBodyArray.push_back(67948);
   orphanBodyArray.push_back(625684);
-#  endif
+#endif
   service.loadFaceOrphanBody(orphanBodyArray);
 
   service.computeOverlap();
@@ -11695,14 +11268,12 @@ void ZTest::test(MainWindow *host)
 
   service.exportJsonFile(GET_DATA_DIR + "/test.json");
 #endif
-
 #if 0
   Mc_Stack *stack = C_Stack::make(GREY16, 5, 5, 2, 3);
   C_Stack::setOne(stack);
   C_Stack::setZero(stack, 3, 2, 1, 3, 2, 2);
   C_Stack::printValue(stack);
 #endif
-
 #if 0
   Stack *stack = C_Stack::make(GREY16, 5, 5, 2);
   C_Stack::setOne(stack);
@@ -11711,7 +11282,6 @@ void ZTest::test(MainWindow *host)
   C_Stack::setBlockValue(stack, block, -1, -1, 0);
   C_Stack::printValue(stack);
 #endif
-
 #if 0
   FlyEm::ZSubstackRoi roi;
   roi.importJsonFile(GET_DATA_DIR + "/flyem/FIB/roi.json");
@@ -11719,7 +11289,6 @@ void ZTest::test(MainWindow *host)
   ZIntCuboidFaceArray faceArray = roi.getCuboidArray().getSideBorderFace();
   faceArray.exportSwc(GET_DATA_DIR + "/flyem/FIB/block_13layer_chop.swc");
 #endif
-
 #if 0
   ZFlyEmNeuron neuron;
   neuron.setId(117);
@@ -11732,7 +11301,6 @@ void ZTest::test(MainWindow *host)
   ZObject3dScan *body = neuron.getBody();
   std::cout << body->getVoxelNumber() << std::endl;
 #endif
-
 #if 0
   FlyEm::ZSubstackRoi roi;
   roi.importJsonFile(GET_DATA_DIR + "/flyem/FIB/roi.json");
@@ -11783,7 +11351,6 @@ void ZTest::test(MainWindow *host)
       }
     }
   }
-
 #if 0
 
   FlyEm::ZSynapseAnnotationArray synapseArray;
@@ -11821,7 +11388,6 @@ void ZTest::test(MainWindow *host)
   exporter.exportIdVolume(selectedNeuronArray,
                           GET_TEST_DATA_DIR + "/side_bounary.json");
 #endif
-
 #if 0
   ZIntSet set1;
   set1.insert(1);
@@ -11844,7 +11410,6 @@ void ZTest::test(MainWindow *host)
 
   set1.print();
 #endif
-
 #if 0
   ZStroke2d stroke;
   stroke.append(10, 10);
@@ -11857,7 +11422,6 @@ void ZTest::test(MainWindow *host)
 
   stack->save(GET_DATA_DIR + "/test.tif");
 #endif
-
 #if 0
   Stack *stack = C_Stack::make(GREY8, 5, 5, 5);
   C_Stack::setOne(stack);
@@ -11869,7 +11433,6 @@ void ZTest::test(MainWindow *host)
   Stack *out = C_Stack::downsampleMin(stack, 1, 1, 1);
   C_Stack::printValue(out);
 #endif
-
 #if 0
   ZStack stack;
   for (size_t i = 0; i < 10; ++i) {
@@ -11880,12 +11443,10 @@ void ZTest::test(MainWindow *host)
     proj.project(&stack);
   }
 #endif
-
 #if 0
   glm::mat4 Projection = glm::perspective(3.14f * 45.0f / 180.f, 1.0f, 0.1f, 100.0f);
   std::cout << Projection << std::endl;
 #endif
-
 #if 0
   ZSparseObject obj;
   obj.addSegment(0, 0, 0, 0, false);
@@ -11922,7 +11483,6 @@ void ZTest::test(MainWindow *host)
   std::cout << obj.getVoxelValue(1, 0, 0) << std::endl;
   */
 #endif
-
 #if 0
   ZDvidDialog dlg;
   dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
@@ -11962,7 +11522,6 @@ void ZTest::test(MainWindow *host)
     }
   }
   ptoc();
-
 #if 0
   int count = 0;
   int ncount = 0;
@@ -11991,7 +11550,6 @@ void ZTest::test(MainWindow *host)
   obj2.dilate();
   ptoc();
 #endif
-
 #if 0
   ZDvidDialog dlg;
   dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
@@ -12052,7 +11610,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << "Volume: " << volume << std::endl;
 #endif
-
 #if 0
   ZStackFrame *frame = ZStackFrame::Make(NULL);
 
@@ -12104,14 +11661,12 @@ void ZTest::test(MainWindow *host)
   frame->open3DWindow();
   delete frame;
 #endif
-
 #if 0
   ZFlyEmBookmarkArray bookmarkArray;
   bookmarkArray.importJsonFile(
         GET_TEST_DATA_DIR + "/flyem/FIB/annotations-bookmarks.json");
   bookmarkArray.print();
 #endif
-
 #if 0
   ZStackFrame *frame = new ZStackFrame;
   frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
@@ -12134,7 +11689,6 @@ void ZTest::test(MainWindow *host)
   rect->setColor(0, 255, 0);
   frame->document()->addObject(rect);
 #endif
-
 #if 0
   ZWindowFactory factory;
   factory.setWindowTitle("Test");
@@ -12145,7 +11699,6 @@ void ZTest::test(MainWindow *host)
   window->show();
   window->raise();
 #endif
-
 #if 0
   /*
   ZDvidDialog dlg;
@@ -12178,9 +11731,7 @@ void ZTest::test(MainWindow *host)
   window->getSwcFilter()->setRenderingPrimitive("Sphere");
   window->show();
   window->raise();
-
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/benchmark/50.sobj");
@@ -12202,7 +11753,6 @@ void ZTest::test(MainWindow *host)
   window->show();
   window->raise();
 #endif
-
 #if 0
   ZDvidDialog dlg;
   dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
@@ -12225,7 +11775,6 @@ void ZTest::test(MainWindow *host)
   writer.open(target);
   writer.writeSwc(15730, tree);
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
@@ -12245,8 +11794,6 @@ void ZTest::test(MainWindow *host)
 
   }
 #endif
-
-
 #if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "43f", 9000);
@@ -12288,7 +11835,6 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
 #if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle7/thumbnails/117.tif");
@@ -12302,7 +11848,6 @@ void ZTest::test(MainWindow *host)
 
   stack2.save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
-
 #if 0
   ZDvidDialog dlg;
   dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
@@ -12317,7 +11862,6 @@ void ZTest::test(MainWindow *host)
   ZStack *stack = reader.readThumbnail(117);
   stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
-
 #if 0
   ZJsonObject obj;
   obj.setEntry("first", 1);
@@ -12329,8 +11873,7 @@ void ZTest::test(MainWindow *host)
   std::string str2 = ZString(str).replace("\n", " ");
   std::cout << str2 << std::endl;
 #endif
-
-#if 0 //update annotation
+#if 0 // update annotation
   std::string annotationFile = GET_DATA_DIR +
       "/flyem/FIB/skeletonization/session40/annotations-body.json";
   std::string bundleFile = GET_DATA_DIR +
@@ -12353,10 +11896,8 @@ void ZTest::test(MainWindow *host)
       writer.writeAnnotation(neuron);
     }
   }
-
 #endif
-
-#if 0//update annotation
+#if 0 // update annotation
   std::string annotationFile = GET_DATA_DIR +
       "/flyem/FIB/skeletonization/session40/annotations-body.json";
   std::string bundleFile = GET_DATA_DIR +
@@ -12379,15 +11920,12 @@ void ZTest::test(MainWindow *host)
       writer.writeAnnotation(neuron);
     }
   }
-
 #endif
-
 #if 0
   QDialog *dlg = ZDialogFactory::makeTestDialog();
 
   dlg->exec();
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/benchmark/50.sobj");
@@ -12400,7 +11938,6 @@ void ZTest::test(MainWindow *host)
 
   C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/flyem/test/roi.swc");
@@ -12415,7 +11952,6 @@ void ZTest::test(MainWindow *host)
   sampler.optimalDownsample(&tree);
   tree.save(GET_TEST_DATA_DIR + "/test2.swc");
 #endif
-
 #if 0
   std::string curvePath1 = GET_TEST_DATA_DIR + "/flyem/test/roi1.swc";
   std::string curvePath2 = GET_TEST_DATA_DIR + "/flyem/test/roi2.swc";
@@ -12443,7 +11979,6 @@ void ZTest::test(MainWindow *host)
 
   result->save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
-
 #if 0
   ZClosedCurve curve;
   curve.append(0, 0, 0);
@@ -12451,7 +11986,6 @@ void ZTest::test(MainWindow *host)
   ZJsonObject obj = curve.toJsonObject();
   std::cout << obj.dumpString() << std::endl;
 #endif
-
 #if 0
 //http://emdata1.int.janelia.org:9000/api/node/ba959/roi_curve/0/5000
 
@@ -12463,7 +11997,6 @@ void ZTest::test(MainWindow *host)
     qDebug() << keys;
   }
 #endif
-
 #if 0
 
   ZClosedCurve curve1;
@@ -12475,7 +12008,6 @@ void ZTest::test(MainWindow *host)
 
   curve1.interpolate(curve2, 2.0, 0).print();
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/curve_test.swc");
@@ -12506,7 +12038,6 @@ void ZTest::test(MainWindow *host)
 
   tree.save(GET_TEST_DATA_DIR + "/test2.swc");
 #endif
-
 #if 0
   ZSwcTree tree1;
   ZSwcTree tree2;
@@ -12550,9 +12081,7 @@ void ZTest::test(MainWindow *host)
   tree.merge(tree3);
 
   tree.save(GET_TEST_DATA_DIR + "/test2.swc");
-
 #endif
-
 #if 0
   QPixmap *pix = new QPixmap(500,500);
   QPainter *paint = new QPainter(pix);
@@ -12561,7 +12090,6 @@ void ZTest::test(MainWindow *host)
 
   pix->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
-
 #if 0
   ZStroke2d stroke;
   stroke.append(0, 0);
@@ -12573,7 +12101,6 @@ void ZTest::test(MainWindow *host)
   ZStack *stack = ZStackFactory::makePolygonPicture(stroke);
   stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/curve_test.swc");
@@ -12604,7 +12131,6 @@ void ZTest::test(MainWindow *host)
 
   tree.save(GET_TEST_DATA_DIR + "/test2.swc");
 #endif
-
 #if 0
   ZSwcTree tree1;
   tree1.load(GET_TEST_DATA_DIR + "/curve1.swc");
@@ -12620,7 +12146,6 @@ void ZTest::test(MainWindow *host)
   ZStack *stack = ZStackFactory::makePolygonPicture(curve);
   stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/test.sobj");
@@ -12641,7 +12166,6 @@ void ZTest::test(MainWindow *host)
 
   blockObj.save(GET_TEST_DATA_DIR + "/test2.sobj");
 #endif
-
 #if 0
   ZDvidInfo dvidInfo;
   ZDvidReader reader;
@@ -12664,7 +12188,6 @@ void ZTest::test(MainWindow *host)
   frame->open3DWindow(host);
   delete frame;
 #endif
-
 #if 0
   ZDvidInfo dvidInfo;
   ZDvidReader reader;
@@ -12692,7 +12215,6 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
 #if 0
   ZStack *stack = ZStackFactory::makeZeroStack(3, 3, 3, 3);
   for (int c = 0; c < 3; ++c) {
@@ -12710,9 +12232,7 @@ void ZTest::test(MainWindow *host)
   stack->setIntValue(1, 1, 0, 2, 255);
 
   stack->save(GET_DATA_DIR + "/color_test2.tif");
-
 #endif
-
 #if 0
   QUndoStack *stack = new QUndoStack(host);
   stack->push(new QUndoCommand("1"));
@@ -12728,9 +12248,7 @@ void ZTest::test(MainWindow *host)
 
   const QUndoCommand *command = stack->command(stack->index() - 1);
   qDebug() << command->text();
-
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.addSegment(0, 0, 0, 1);
@@ -12741,7 +12259,6 @@ void ZTest::test(MainWindow *host)
   ZJsonArray array = ZJsonFactory::makeJsonArray(obj);
   std::cout << array.dumpString(0) << std::endl;
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(GET_DATA_DIR + "/test.sobj");
@@ -12749,9 +12266,7 @@ void ZTest::test(MainWindow *host)
   ZJsonObject headObj;
   headObj.setEntry("data", array);
   headObj.dump(GET_DATA_DIR + "/test.json");
-
 #endif
-
 #if 0
   ZParameterArray paramArray;
 
@@ -12771,7 +12286,6 @@ void ZTest::test(MainWindow *host)
 
   dlg->exec();
 #endif
-
 #if 0
   QObject *parent = new QObject();
   QPointer<QObject> child(new QObject(parent));
@@ -12781,7 +12295,6 @@ void ZTest::test(MainWindow *host)
     std::cout << "object alive" << std::endl;
   }
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load(GET_DATA_DIR + "/benchmark/swc/mouse_single_org.swc");
@@ -12790,7 +12303,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << sxy << " " << sz << std::endl;
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   //synapseArray.loadJson(GET_DATA_DIR + "/flyem/MB/synapses0725.json");
@@ -12807,9 +12319,7 @@ void ZTest::test(MainWindow *host)
                                 annotationConfig,
                                 FlyEm::SynapseLocation::CURRENT_SPACE,
                                 displayConfig);
-
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR + "/flyem/MB/MB6_TbarPredict_Global_fixed_y.json");
@@ -12842,7 +12352,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << count << " tbars found." << std::endl;
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR + "/flyem/MB/mb06-tbar-predict-dvid_0.78.json");
@@ -12898,9 +12407,7 @@ void ZTest::test(MainWindow *host)
                                 FlyEm::SynapseLocation::CURRENT_SPACE,
                                 displayConfig);
                                 */
-
 #endif
-
 #if 0
   ZDvidBufferReader reader;
 
@@ -12917,16 +12424,13 @@ void ZTest::test(MainWindow *host)
   } else {
     std::cout << "Reading failed" << std::endl;
   }
-
 #endif
-
 #if 0
   ZDvidClient dvidClient;
   dvidClient.setServer("emdata2.int.janelia.org", 9000);
   dvidClient.setUuid("fa9");
   dvidClient.postRequest(ZDvidRequest::DVID_UPLOAD_SWC, 0);
 #endif
-
 #if 0
   ZMatrix mat;
   mat.importTextFile(GET_DATA_DIR + "/flyem/AL/AL_Tbars_xyz.txt");
@@ -12956,13 +12460,11 @@ void ZTest::test(MainWindow *host)
 
   std::cout << count << " tbars found." << std::endl;
 #endif
-
 #if 0
   ZDvidReader reader;
   ZDvidTarget target("emdata.janelia.org", "bf1");
   std::cout << reader.open(target) << std::endl;
 #endif
-
 #if 0
 #ifdef _ENABLE_LIBDVID_
   ZDvidTarget target =
@@ -12974,16 +12476,13 @@ void ZTest::test(MainWindow *host)
   dvidNode.get("skeletons", "1.swc", value);
 #endif
 #endif
-
 #if 0
   ZDvidTarget target("emdata2.int.janelia.org", "faa");
   ZDvidWriter writer;
   if (writer.open(target)) {
     writer.createData("labels64", "split");
   }
-
 #endif
-
 #if 0
   ZFlyEmNeuronImageFactory factory;
   factory.setDownsampleInterval(2, 2, 2);
@@ -12996,8 +12495,6 @@ void ZTest::test(MainWindow *host)
 
   C_Stack::write(GET_DATA_DIR + "/test.tif", stack);
 #endif
-
-
 #if 0
   ZStackFactory factory;
   ZPointArray ptArray;
@@ -13017,7 +12514,7 @@ void ZTest::test(MainWindow *host)
   //C_Stack::write(GET_DATA_DIR + "/test.tif", stack2);
 
   stack->save(GET_DATA_DIR + "/test.tif");
-#  if 0
+#if 0
   //Get grayscale
   ZStack *grayScale = factory.makeZeroStack(stack->getBoundBox());
 
@@ -13041,9 +12538,8 @@ void ZTest::test(MainWindow *host)
 
   delete stack;
   delete grayScale;
-#  endif
 #endif
-
+#endif
 #if 0
   ZStack stack;
   stack.load(GET_DATA_DIR + "/flyem/AL/seg_ds9.tif");
@@ -13058,7 +12554,6 @@ void ZTest::test(MainWindow *host)
 
   stack2.save(GET_DATA_DIR + "/flyem/AL/seg_ds9_smoothed.tif");
 #endif
-
 #if 0
   //Assign color
   ZStack stack;
@@ -13095,9 +12590,7 @@ void ZTest::test(MainWindow *host)
 //    *iter *= 1.0 / dsScale;
 //    stack
 //  }
-
 #endif
-
 #if 0
   ZStack stack;
   stack.load(GET_DATA_DIR + "/flyem/AL/test/densitymap.tif");
@@ -13113,7 +12606,6 @@ void ZTest::test(MainWindow *host)
   }
   stack.save(GET_DATA_DIR + "/test.tif");
 #endif
-
 #if 0
   ZStack *stack = ZStackFactory::makeZeroStack(ZIntCuboid(1, 2, 3, 4, 5, 6));
   stack->save(GET_DATA_DIR + "/test.tif");
@@ -13122,7 +12614,6 @@ void ZTest::test(MainWindow *host)
   stack2.load(GET_DATA_DIR + "/test.tif");
   stack2.printInfo();
 #endif
-
 #if 0
   ZDvidTarget dvidTarget("emdata2.int.janelia.org", "134", -1);
   dvidTarget.setLocalFolder(GET_TEST_DATA_DIR +
@@ -13142,7 +12633,6 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
 #if 0
   ZPointArray ptArray;
   ptArray.importTxtFile(GET_DATA_DIR + "/flyem/AL/AL_Tbars_xyz.txt");
@@ -13155,7 +12645,6 @@ void ZTest::test(MainWindow *host)
 
   delete graph;
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(
@@ -13171,7 +12660,6 @@ void ZTest::test(MainWindow *host)
   }
   stream.close();
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(
@@ -13187,7 +12675,6 @@ void ZTest::test(MainWindow *host)
   }
   stream.close();
 #endif
-
 #if 0
   ZPointArray ptArray;
   ptArray.importTxtFile(GET_DATA_DIR + "/flyem/AL/synapse_cleaned.txt");
@@ -13221,7 +12708,6 @@ void ZTest::test(MainWindow *host)
 
 //  delete graph;
 #endif
-
 #if 0
   ZStackFactory factory;
 
@@ -13249,7 +12735,6 @@ void ZTest::test(MainWindow *host)
 
   stack->save(GET_DATA_DIR + "/test.tif");
 #endif
-
 #if 0
   std::string synapseFile = GET_DATA_DIR + "/flyem/AL/synpase_labeled4.txt";
 
@@ -13287,7 +12772,6 @@ void ZTest::test(MainWindow *host)
   }
   stream.close();
 #endif
-
 #if 0
   std::string annotationFile = GET_DATA_DIR +
       "/flyem/FIB/skeletonization/session41/annotations-body.json";
@@ -13311,7 +12795,6 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
 #if 0
   ZFlyEmNeuronArray neuronArray;
   neuronArray.importBodyDir(
@@ -13349,9 +12832,7 @@ void ZTest::test(MainWindow *host)
 
   ZFlyEmNeuronExporter exporter;
   exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/test2.json");
-
 #endif
-
 #if 0
   FlyEm::ZSubstackRoi roi;
   roi.importJsonFile(
@@ -13362,7 +12843,6 @@ void ZTest::test(MainWindow *host)
 
   tree->save(GET_DATA_DIR + "/test.swc");
 #endif
-
 #if 0
   ZStackFactory factory;
 
@@ -13388,7 +12868,6 @@ void ZTest::test(MainWindow *host)
 
   stack->save(GET_DATA_DIR + "/test.tif");
 #endif
-
 #if 0
   ZStackFactory factory;
 
@@ -13413,8 +12892,6 @@ void ZTest::test(MainWindow *host)
   ZStack *stack = factory.makeDensityMap(ptArray, 15.0);
   stack->save(GET_DATA_DIR + "/test2.tif");
 #endif
-
-
 #if 0
   ZDvidTarget dvidTarget;
   dvidTarget.set("emdata2.int.janelia.org", "2b6c");
@@ -13454,7 +12931,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << "Hit: " << sideBodySet.count(30155) << std::endl;
 #endif
-
 #if 0
   std::string synapseFile =
       GET_DATA_DIR + "/flyem/AL/al7-origroi-tbar-predict_0.86.txt";
@@ -13493,7 +12969,6 @@ void ZTest::test(MainWindow *host)
   }
   stream.close();
 #endif
-
 #if 0
   ZDvidTarget dvidTarget;
   dvidTarget.set("emdata2.int.janelia.org", "2b6c");
@@ -13504,7 +12979,6 @@ void ZTest::test(MainWindow *host)
     qDebug() << synapseList;
   }
 #endif
-
 #if 0
   ZDvidTarget dvidTarget;
   dvidTarget.set("emdata2.int.janelia.org", "2b6c");
@@ -13518,7 +12992,6 @@ void ZTest::test(MainWindow *host)
     obj.print();
   }
 #endif
-
 #if 0
   ZDvidTarget dvidTarget;
   dvidTarget.set("emdata2.int.janelia.org", "134");
@@ -13538,7 +13011,6 @@ void ZTest::test(MainWindow *host)
 
   tree->save(GET_DATA_DIR + "/test.swc");
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
@@ -13566,7 +13038,6 @@ void ZTest::test(MainWindow *host)
     stack->save(GET_DATA_DIR + "/flyem/FIB/FIB25/density_map_ds10.tif");
   }
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
@@ -13614,9 +13085,7 @@ void ZTest::test(MainWindow *host)
     FlyEm::ZFileParser::writeVaa3dMakerFile(GET_DATA_DIR + "/test.marker",
                                             markerArray);
   }
-
 #endif
-
 #if 0
   ZDvidReader reader;
   ZDvidTarget target;
@@ -13718,9 +13187,7 @@ void ZTest::test(MainWindow *host)
 //  //objArray.downsample(9, 9, 9);
 //  ZStack *stack = objArray.toLabelField();
 //  stack->save(GET_DATA_DIR + "/flyem/FIB/FIB25/seed_ds10.tif");
-
 #endif
-
 #if 0
   for (int i = 0; i < 100; ++i) {
     ZStackWatershed engine;
@@ -13738,7 +13205,6 @@ void ZTest::test(MainWindow *host)
     delete result;
   }
 #endif
-
 #if 0
   ZDvidReader reader;
   ZDvidTarget target;
@@ -13766,7 +13232,6 @@ void ZTest::test(MainWindow *host)
   allObj.canonize();
   allObj.save(GET_DATA_DIR + "/flyem/FIB/FIB25/border_obj/all.sobj");
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
@@ -13797,7 +13262,6 @@ void ZTest::test(MainWindow *host)
   stack->save(GET_DATA_DIR +
               "/flyem/AL/al7d_whole448_tbar-predict_0.86_ds20_s10.tif");
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
@@ -13824,7 +13288,6 @@ void ZTest::test(MainWindow *host)
   stack->save(GET_DATA_DIR +
               "/flyem/FIB/fib19_all_dvid_final_tbar-predict_0.74_ds20_s10.tif");
 #endif
-
 #if 0
   ZPointArray ptArray;
   ptArray.importPcdFile(GET_DATA_DIR + "/test/pc519f.pcd");
@@ -13841,9 +13304,7 @@ void ZTest::test(MainWindow *host)
   ZStackFactory factory;
   ZStack *stack = factory.makeDensityMap(ptArray, 5.0);
   stack->save(GET_DATA_DIR + "/test2.tif");
-
 #endif
-
 #if 0
   ZStack stack;
   stack.load(GET_DATA_DIR + "/benchmark/em_stack.tif");
@@ -13851,7 +13312,6 @@ void ZTest::test(MainWindow *host)
   Stack stackView = C_Stack::sliceView(stack.c_stack(), 100, 100);
   C_Stack::write(GET_DATA_DIR + "/benchmark/em_stack_slice.tif", &stackView);
 #endif
-
 #if 0
   ZStack stack;
   stack.load(GET_DATA_DIR + "/flyem/AL/label/ds20_s10_signal1_1_1_1_1_thre.tif");
@@ -13859,7 +13319,6 @@ void ZTest::test(MainWindow *host)
   stack.save(GET_DATA_DIR +
              "/flyem/AL/label/ds20_s10_signal1_1_1_1_1_thre_labled.tif");
 #endif
-
 #if 0
   ZFileList fileList;
   fileList.load(GET_DATA_DIR + "/flyem/AL/label", "tif");
@@ -13911,7 +13370,6 @@ void ZTest::test(MainWindow *host)
   ZStack *stack = objArray.toLabelField();
   stack->save(GET_DATA_DIR + "/test.tif");
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
@@ -13942,7 +13400,6 @@ void ZTest::test(MainWindow *host)
   }
   stream.close();
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
@@ -13976,7 +13433,6 @@ void ZTest::test(MainWindow *host)
   }
   stream.close();
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
@@ -13984,10 +13440,7 @@ void ZTest::test(MainWindow *host)
 
   ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
   std::cout << ptArray.size() << " TBars" << std::endl;
-
-
 #endif
-
 #if 0
   ZStack signal;
   signal.load(GET_DATA_DIR +
@@ -14008,7 +13461,6 @@ void ZTest::test(MainWindow *host)
 
   delete colorStack;
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
@@ -14035,7 +13487,6 @@ void ZTest::test(MainWindow *host)
   stack->save(GET_DATA_DIR +
               "/flyem/MB/tbars_annotated_20141201T131652_ds20_s5.tif");
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
@@ -14062,8 +13513,6 @@ void ZTest::test(MainWindow *host)
   stack->save(GET_DATA_DIR +
               "/flyem/AL/al7d_whole_wfix_tbar-predict_0.81_ds20_s10.tif");
 #endif
-
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
@@ -14082,7 +13531,6 @@ void ZTest::test(MainWindow *host)
   }
   stream.close();
 #endif
-
 #if 0
   ZDvidTarget dvidTarget;
   dvidTarget.set("emdata2.int.janelia.org", "2b6c");
@@ -14116,7 +13564,7 @@ void ZTest::test(MainWindow *host)
   Z3DWindow *stage = new Z3DWindow(academy, Z3DWindow::NORMAL_INIT,
                                    false, NULL);
 
-  stage->getVolumeRaycaster()->hideBoundBox();
+  //stage->getVolumeRaycaster()->hideBoundBox();
   stage->getVolumeRaycasterRenderer()->setCompositeMode(
         "Direct Volume Rendering");
   stage->getAxis()->setVisible(false);
@@ -14158,14 +13606,12 @@ void ZTest::test(MainWindow *host)
   //stage->close();
   //delete stage;
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR+ "/body_1.sobj");
   obj.upSample(1, 1, 1);
   obj.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
-
 #if 0
   ZObject3dScan obj1;
   obj1.load(GET_TEST_DATA_DIR + "/body_0.sobj");
@@ -14181,7 +13627,6 @@ void ZTest::test(MainWindow *host)
   obj1.save(GET_TEST_DATA_DIR + "/test.sobj");
   remained.save(GET_TEST_DATA_DIR + "/test2.sobj");
 #endif
-
 #if 0
   std::vector<ZPointArray> synapseGroup;
   std::string synapseFile =
@@ -14219,7 +13664,6 @@ void ZTest::test(MainWindow *host)
               << ", " << histArray[label] * 0.16 * 0.16 *0.16  << std::endl;
   }
 #endif
-
 #if 0
   ZStack labelField;
   labelField.load(GET_DATA_DIR + "/flyem/AL/glomeruli/label.tif");
@@ -14230,7 +13674,6 @@ void ZTest::test(MainWindow *host)
   obj.maskStack(&labelField);
   labelField.save(GET_DATA_DIR + "/test.tif");
 #endif
-
 #if 0
   ZStack labelField;
   labelField.load(GET_DATA_DIR + "/flyem/AL/glomeruli/label.tif");
@@ -14238,9 +13681,7 @@ void ZTest::test(MainWindow *host)
   C_Stack::shrinkBorder(labelField.c_stack(), 3);
 
   labelField.save(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/label_shrinked_3.tif");
-
 #endif
-
 #if 0
 //  ZStack *stack = ZStackFactory::makeIndexStack(3, 3, 1);
   ZStack stack;
@@ -14299,7 +13740,6 @@ void ZTest::test(MainWindow *host)
     std::cout << iterator.next() << std::endl;
   }
 #endif
-
 #if 0
   std::vector<ZPointArray> synapseGroup;
   std::string synapseFile =
@@ -14371,7 +13811,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << "Total volume: " << totalVolume << std::endl;
 #endif
-
 #if 0
   ZStack labelField;
   labelField.load(GET_DATA_DIR + "/flyem/AL/label/label_field.tif");
@@ -14386,7 +13825,6 @@ void ZTest::test(MainWindow *host)
 
   obj.save(GET_DATA_DIR + "/test.sobj");
 #endif
-
 #if 0
   ZJsonObject rootJson;
   ZJsonObject stackJson;
@@ -14470,7 +13908,6 @@ void ZTest::test(MainWindow *host)
 
   rootJson.dump(GET_DATA_DIR + "/flyem/AL/glomeruli/segcheck/seg.json");
 #endif
-
 #if 0
   ZJsonObject rootJson;
   ZJsonObject stackJson;
@@ -14564,7 +14001,6 @@ void ZTest::test(MainWindow *host)
 
 //  rootJson.dump(GET_DATA_DIR + "/flyem/AL/label/segcheck/seg.json");
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "2b6c", -1);
@@ -14590,16 +14026,13 @@ void ZTest::test(MainWindow *host)
     ptoc();
     delete frame;
   }
-
 #endif
-
 #if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/benchmark/em_stack_slice.tif");
   Stack *out = C_Stack::computeGradient(stack.c_stack());
   C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", out);
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
@@ -14631,7 +14064,6 @@ void ZTest::test(MainWindow *host)
 
   stream.close();
 #endif
-
 #if 0
   ZDvidTarget dvidTarget("emdata2.int.janelia.org", "134");
   ZDvidReader reader;
@@ -14639,7 +14071,6 @@ void ZTest::test(MainWindow *host)
   ZDvidInfo info = reader.readGrayScaleInfo();
   info.print();
 #endif
-
 #if 0
   //merging objects
   std::string dataFolder = GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/segcheck3";
@@ -14829,7 +14260,6 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
 #if 0
   ZSegmentationProject segProj;
   ZTree<ZObject3dScan> *labelTree = segProj.getLabelTree();
@@ -14858,7 +14288,6 @@ void ZTest::test(MainWindow *host)
 
   segProj.save((outputFolder + "/seg.json").c_str());
 #endif
-
 #if 0
   ZStack redStack;
   ZStack greenStack;
@@ -14872,17 +14301,13 @@ void ZTest::test(MainWindow *host)
 
   ZStack *stack = ZStackFactory::MakeRgbStack(redStack, greenStack, blueStack);
   stack->save(GET_TEST_DATA_DIR + "/test.tif");
-
 #endif
-
 #if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/flyem/MB/C3-alphalobealigned.tif");
   stack.translate(-6, -4, 0);
   stack.save(GET_TEST_DATA_DIR + "/flyem/MB/C3-alphalobealigned_adjusted.tif");
-
 #endif
-
 #if 0
   ZStack stack1;
   ZStack stack2;
@@ -14898,7 +14323,6 @@ void ZTest::test(MainWindow *host)
 
   stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
-
 #if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/segcheck5/signal.tif");
@@ -14906,9 +14330,7 @@ void ZTest::test(MainWindow *host)
   cuboid.setFirstZ(50);
   stack.crop(cuboid);
   stack.save(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/segcheck6/signal.tif");
-
 #endif
-
 #if 0
   ZObject3dScan obj1;
   ZObject3dScan obj2;
@@ -14919,9 +14341,7 @@ void ZTest::test(MainWindow *host)
   obj1.unify(obj2);
 
   obj1.save(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/segcheck6/_39.sobj");
-
 #endif
-
 #if 0
   ZStack labelField;
   labelField.load(GET_DATA_DIR + "/flyem/AL/glomeruli/new_label_field.tif");
@@ -14971,14 +14391,12 @@ void ZTest::test(MainWindow *host)
               << ", " << histArray[label] * 0.16 * 0.16 *0.16  << std::endl;
   }
 #endif
-
 #if 0
   ZObject3dScan obj;
 //  obj.load(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/segcheck8/_31.sobj");
   obj.load(GET_TEST_DATA_DIR + "/test.sobj");
   std::cout << obj.getVoxelNumber() << std::endl;
 #endif
-
 #if 0
   ZStackFrame *w1 = new ZStackFrame;
   ZStackFrame *w2 = new ZStackFrame;
@@ -14988,9 +14406,7 @@ void ZTest::test(MainWindow *host)
   manager.registerWindowPair(w1, w2);
 
   manager.print();
-
 #endif
-
 #if 0
   FILE *fp = fopen((GET_DATA_DIR +
                    "/flyem/AL/glomeruli/labeled_synapse_confidence.txt").c_str(), "r");
@@ -15020,7 +14436,6 @@ void ZTest::test(MainWindow *host)
     std::cout << label << ": " << pt.toIntPoint().toString() << std::endl;
   }
 #endif
-
 #if 0
   if (host != NULL) {
     ZStackFrame *frame = host->currentStackFrame();
@@ -15030,8 +14445,7 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
-#if 0 //Estimate bound box
+#if 0 // Estimate bound box
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "2b6c", -1);
 
@@ -15064,7 +14478,6 @@ void ZTest::test(MainWindow *host)
   std::cout << "Bound box: " << box1.getFirstCorner().toString() << " => "
             << box2.getLastCorner().toString() << std::endl;
 #endif
-
 #if 0
   ZClosedCurve curve;
   curve.append(4.5, 0.0, 0);
@@ -15077,7 +14490,6 @@ void ZTest::test(MainWindow *host)
   obj.print();
   obj.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
-
 #if 0
   FILE *fp = fopen((GET_TEST_DATA_DIR + "/flyem/FIB/roi/layer_roi.txt").c_str(),
                    "r");
@@ -15108,7 +14520,6 @@ void ZTest::test(MainWindow *host)
                 QString("/flyem/FIB/roi/layer_roi_%1.sobj").arg(i).toStdString());
   }
 #endif
-
 #if 0
 
   ZDvidTarget target;
@@ -15135,7 +14546,6 @@ void ZTest::test(MainWindow *host)
                QString("/flyem/FIB/roi/layer_roi_%1.json").arg(i).toStdString());
   }
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set("emrecon100.janelia.priv", "2a3", -1);
@@ -15185,19 +14595,16 @@ void ZTest::test(MainWindow *host)
 
   rootJson.dump(GET_TEST_DATA_DIR + "/test.json");
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer_extended.txt");
   blockArray.exportSwc(dataPath + "/flyem/FIB/block_13layer_extended.swc");
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer_extended_surround.txt");
   blockArray.exportSwc(dataPath + "/flyem/FIB/block_13layer_extended_surround.swc");
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(
@@ -15206,7 +14613,6 @@ void ZTest::test(MainWindow *host)
   Cuboid_I box = blockArray.getBoundBox();
   Print_Cuboid_I(&box);
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer_extended.txt");
@@ -15246,9 +14652,7 @@ void ZTest::test(MainWindow *host)
   }
 
   std::cout << count << "/" << swcKeys.size() << " neurons" << std::endl;
-
 #endif
-
 #if 0
   ZIntCuboid box;
   box.setFirstCorner(1568, 1664, 1376);
@@ -15278,9 +14682,7 @@ void ZTest::test(MainWindow *host)
 
     std::cout << obj.getSource() << ": " << ratio << std::endl;
   }
-
 #endif
-
 #if 0
   ZObject3dScanArray objArray;
   ZObject3dScan obj;
@@ -15302,8 +14704,7 @@ void ZTest::test(MainWindow *host)
 
   ZStack *stack = ZStackFactory::MakeBinaryStack(objArray, 1);
   stack->printInfo();
-
-#  if 1
+#if 1
   ZDvidTarget target;
   target.set("emrecon100.janelia.priv", "2a3", -1);
 
@@ -15317,10 +14718,8 @@ void ZTest::test(MainWindow *host)
   }
 
   std::cout << swcKeys.size() << " neurons" << std::endl;
-
-#  endif
-
-#  if 0
+#endif
+#if 0
   ZFileList fileList;
   int count = 0;
   fileList.load("/Users/zhaot/Work/ConnectomeHackathon2015/skeletons", "swc");
@@ -15347,10 +14746,8 @@ void ZTest::test(MainWindow *host)
   std::cout << count << " neurons" << std::endl;
 
   delete stack;
-#  endif
-
 #endif
-
+#endif
 #if 0
   ZFileList fileList;
   int count = 0;
@@ -15403,7 +14800,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << count << " trees" << std::endl;
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "2a3", -1);
@@ -15414,7 +14810,6 @@ void ZTest::test(MainWindow *host)
 
   tileInfo.print();
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "2a3", -1);
@@ -15425,9 +14820,7 @@ void ZTest::test(MainWindow *host)
   ZDvidTile *tile = reader.readTile("graytiles", 4, 0, 0, 6000);
   tile->printInfo();
   delete tile;
-
 #endif
-
 #if 0
   ZFileList fileList;
 //  int count = 0;
@@ -15454,10 +14847,7 @@ void ZTest::test(MainWindow *host)
 
     QProcess::execute(command);
   }
-
 #endif
-
-
 #if 0
   ZFileList fileList;
   int count = 0;
@@ -15537,7 +14927,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << count << " trees" << std::endl;
 #endif
-
 #if 0
 
   ZDvidTarget target;
@@ -15554,9 +14943,7 @@ void ZTest::test(MainWindow *host)
 
   ZObject3dScan slice = obj.getSlice(7999);
   std::cout << slice.getVoxelNumber() << std::endl;
-
 #endif
-
 #if 0
   ZJsonObject neuronJson;
   neuronJson.load("/Users/zhaot/Work/ConnectomeHackathon2015/neuronsinfo.json");
@@ -15583,7 +14970,6 @@ void ZTest::test(MainWindow *host)
     writer.writeAnnotation(annotation.getBodyId(), obj);
   }
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "2a3", -1);
@@ -15627,8 +15013,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "Max box size: " << maxBoxIndex << ": " << maxBoxSize
             << std::endl;
 #endif
-
-#if 0 //Generate thumbnail for large bodies
+#if 0 // Generate thumbnail for large bodies
   ZDvidTarget target;
   target.set("hackathon.janelia.org", "2a3", -1);
 
@@ -15665,9 +15050,7 @@ void ZTest::test(MainWindow *host)
       writer.writeBodyInfo(bodyId, bodyInfo.toJsonObject());
     }
   }
-
 #endif
-
 #if 0
   ZJsonObject jsonObject;
   jsonObject.load("/Users/zhaot/Work/ConnectomeHackathon2015/neuronsinfo.json");
@@ -15719,7 +15102,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << count << " named neurons." << std::endl;
 #endif
-
 #if 0
   ZMatrix matrix;
   matrix.importTextFile(GET_TEST_DATA_DIR + "/flyem/FIB/hackathon/simmat.txt");
@@ -15777,7 +15159,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << count << std::endl;
 #endif
-
 #if 0
   ZDvidBufferReader reader;
   //reader.open("emdata2.int.janelia.org", "628");
@@ -15792,7 +15173,6 @@ void ZTest::test(MainWindow *host)
     std::cout << "NOT readable" << std::endl;
   }
 #endif
-
 #if 0
   ZFlyEmNeuronDensity d1;
   ZFlyEmNeuronDensity d2;
@@ -15813,7 +15193,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << score << std::endl;
 #endif
-
 #if 0
   ZWeightedPointArray pointArray;
   ZDvidTarget target;
@@ -15847,7 +15226,6 @@ void ZTest::test(MainWindow *host)
   ZPoint pt = pointArray.principalDirection();
   pt.print();
 #endif
-
 #if 0
   ZPoint pt;
   pt.set(-0.164321, -0.138413, 0.976647);
@@ -15856,7 +15234,6 @@ void ZTest::test(MainWindow *host)
   Geo3d_Rotate_Coordinate(pt.xRef(), pt.yRef(), pt.zRef(), theta, psi, TRUE);
   pt.print();
 #endif
-
 #if 0
   std::string hackathonDir =
       "/Users/zhaot/Work/neutube/neurolabi/data/flyem/FIB/hackathon";
@@ -15912,9 +15289,7 @@ void ZTest::test(MainWindow *host)
   }
 
   fclose(fp);
-
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set("hackathon.janelia.org", "2a3", -1);
@@ -15952,7 +15327,6 @@ void ZTest::test(MainWindow *host)
     outStream.close();
   }
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "628");
@@ -15960,7 +15334,6 @@ void ZTest::test(MainWindow *host)
   //std::cout << reader.hasSparseVolume(1) << std::endl;
   //  reader.has
 #endif
-
 #if 0
   ZStackFrame *frame = new ZStackFrame;
   ZStack *stack = ZStackFactory::makeVirtualStack(
@@ -15994,7 +15367,6 @@ void ZTest::test(MainWindow *host)
   host->addStackFrame(frame);
   host->presentStackFrame(frame);
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.importDvidObject("/private/var/folders/bj/5d0p7tjx4jv12yzf0458g5fxf4nm2r/T/50000003.dvid");
@@ -16002,9 +15374,7 @@ void ZTest::test(MainWindow *host)
   std::cout << obj.getVoxelNumber() << std::endl;
 
   obj.save(GET_TEST_DATA_DIR + "/test.sobj");
-
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/backup/segmentation030115_seed_10492041.sobj");
@@ -16065,7 +15435,6 @@ void ZTest::test(MainWindow *host)
 //  std::cout << obj2.getVoxelNumber() << std::endl;
 //  std::cout << remained.getVoxelNumber() << std::endl;
 #endif
-
 #if 0
   ZFileList fileList;
   fileList.load(GET_TEST_DATA_DIR + "/backup", "dvid");
@@ -16106,9 +15475,7 @@ void ZTest::test(MainWindow *host)
     }
 
   }
-
 #endif
-
 #if 0
   ZDvidVersionDag dag;
   dag.setRoot("root");
@@ -16129,9 +15496,7 @@ void ZTest::test(MainWindow *host)
   ZDvidVersionDag dag2;
   dag2 = dag;
   dag2.print();
-
 #endif
-
 #if 0
   ZDvidTarget target("emdata1.int.janelia.org", "cf6e", 7000);
   ZDvidReader reader;
@@ -16140,7 +15505,6 @@ void ZTest::test(MainWindow *host)
   ZDvidVersionDag dag = reader.readVersionDag();
   dag.print();
 #endif
-
 #if 0
   ZDvidBufferReader reader;
   tic();
@@ -16164,7 +15528,6 @@ void ZTest::test(MainWindow *host)
   reader.read("http://emdata1.int.janelia.org:7000/api/node/cf6e/grayscale/raw/0_1_2/320_32_32/3104_5568_3520");
   ptoc();
 #endif
-
 #if 0
   ZDvidTarget target("emdata1.int.janelia.org", "cf6e", 7000);
   ZDvidReader reader;
@@ -16173,7 +15536,6 @@ void ZTest::test(MainWindow *host)
   reader.readSparseStack(8376505);
   ptoc();
 #endif
-
 #if 0
   std::string url = "http://emdata1.int.janelia.org:7000/api/node/cf6e/grayscale/raw/0_1_2/320_32_32/3104_5568_3520";
   std::cout << url << std::endl;
@@ -16183,8 +15545,6 @@ void ZTest::test(MainWindow *host)
   target.setFromUrl(url);
   target.print();
 #endif
-
-
 #if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "628");
@@ -16212,7 +15572,6 @@ void ZTest::test(MainWindow *host)
         block1, ZJsonFactory::OBJECT_SPARSE);
   array.dump(GET_TEST_DATA_DIR + "/flyem/MB/ring.json");
 #endif
-
 #if 0
   ZObject3dScan obj1;
   obj1.load(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/synapse_roi_test.sobj");
@@ -16223,7 +15582,6 @@ void ZTest::test(MainWindow *host)
         obj1, ZJsonFactory::OBJECT_SPARSE);
   array.dump(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/synapse_roi_test.json");
 #endif
-
 #if 0
   ZObject3dScan obj1;
   obj1.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block.sobj");
@@ -16246,7 +15604,6 @@ void ZTest::test(MainWindow *host)
 //        obj1, ZJsonFactory::OBJECT_SPARSE);
 //  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/alpha_ring.json");
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "78b6", 7000);
@@ -16269,10 +15626,7 @@ void ZTest::test(MainWindow *host)
   obj.getSegment(0, &z, &y, &x1, &x2);
   std::cout << x1 << " " << y << " " << z << std::endl;
   std::cout << obj.getVoxelNumber() << std::endl;
-
 #endif
-
-
 #if 0
   int startId = 17159585;
 //  int endId = startId + 10;
@@ -16346,9 +15700,7 @@ void ZTest::test(MainWindow *host)
     }
     std::cout << std::endl;
   }
-
 #endif
-
 #if 0
   ZDvidBufferReader reader;
   reader.read("http://emdata2.int.janelia.org/api/node/628/mbroi/roi");
@@ -16362,7 +15714,6 @@ void ZTest::test(MainWindow *host)
 
   obj.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
-
 #if 0
   ZObject3dScan obj1;
   ZJsonArray array1;
@@ -16390,7 +15741,6 @@ void ZTest::test(MainWindow *host)
 
   stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
-
 #if 0
   ZObject3dScan obj1;
   obj1.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block.sobj");
@@ -16427,7 +15777,6 @@ void ZTest::test(MainWindow *host)
         obj3, ZJsonFactory::OBJECT_SPARSE);
   array.dump(GET_TEST_DATA_DIR + "/flyem/MB/alpha_ring.json");
 #endif
-
 #if 0
   ZImage image(5, 5);
   ZStTransform transform;
@@ -16442,7 +15791,6 @@ void ZTest::test(MainWindow *host)
 
   image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
-
 #if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer_extended.txt");
@@ -16465,7 +15813,6 @@ void ZTest::test(MainWindow *host)
   jsonArray.dump(GET_TEST_DATA_DIR +
                  "/flyem/FIB/block_13layer_extended_roi.json");
 #endif
-
 #if 0
   ZObject3dScan obj1;
   obj1.addSegment(0, 0, 0, 1);
@@ -16474,20 +15821,14 @@ void ZTest::test(MainWindow *host)
 
   obj1.addSegment(2, 0, 0, 10);
   obj1.interpolateSlice(1).print();
-
-
 #endif
-
-
 #if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
   stack.setOffset(10, 20, 0);
 
   stack.save(GET_TEST_DATA_DIR + "/test.tif");
-
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "cf6e", 7000);
@@ -16502,7 +15843,6 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "f94a", 8500);
@@ -16516,9 +15856,7 @@ void ZTest::test(MainWindow *host)
   } else {
     std::cout << "body check failed." << std::endl;
   }
-
 #endif
-
 #if 0
   ZStack stack;
   stack.load(GET_DATA_DIR + "/flyem/AL/glomeruli/new_label_field.tif");
@@ -16542,7 +15880,6 @@ void ZTest::test(MainWindow *host)
     std::cout << "substack" << i + 1 << ": " << label << std::endl;
   }
 #endif
-
 #if 0
   FILE *fp = fopen((GET_DATA_DIR +
                    "/flyem/AL/glomeruli/labeled_synapse_confidence.txt").c_str(), "r");
@@ -16585,14 +15922,12 @@ void ZTest::test(MainWindow *host)
 //    std::cout << label << ": " << pt.toIntPoint().toString() << std::endl;
 //  }
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
   ZJsonArray jsonArray = ZJsonFactory::MakeJsonArray(obj);
   jsonArray.dump(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.json");
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
@@ -16634,11 +15969,7 @@ void ZTest::test(MainWindow *host)
 
   std::cout << obj3.equalsLiterally(obj4) << std::endl;
 //  obj3.subtract()
-
-
-
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "f94a", 8500);
@@ -16650,7 +15981,6 @@ void ZTest::test(MainWindow *host)
   }
   ptoc();
 #endif
-
 #if 0
   int width = 512;
   int height = 512;
@@ -16679,9 +16009,7 @@ void ZTest::test(MainWindow *host)
   }
 
   std::cout << "Pixmap time: " << t << " ms." << std::endl;
-
 #endif
-
 #if 0
   size_t testCount = 20;
   std::vector<int> sizeArray(testCount, 0); //single dimension
@@ -16727,7 +16055,6 @@ void ZTest::test(MainWindow *host)
   }
   stream.close();
 #endif
-
 #if 0
 //  tic();
   ZPixmap pixmap(QSize(10000, 10000));
@@ -16753,11 +16080,9 @@ void ZTest::test(MainWindow *host)
 
   std::cout << std::endl;
 #endif
-
 #if 0
   std::cout << new QFutureWatcher<void>(NULL) << std::endl;
 #endif
-
 #if 0
   ZPixmap pixmap(10000, 10000);
 
@@ -16828,7 +16153,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << std::endl;
 #endif
-
 #if 0
   libdvid::DVIDNodeService service("http://emdata1.int.janelia.org:8500", "ccf");
 //  std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
@@ -16858,7 +16182,6 @@ void ZTest::test(MainWindow *host)
   ptoc();
   std::cout << std::endl;
 #endif
-
 #if 0
   libdvid::DVIDNodeService service("http://emdata1.int.janelia.org:8500", "86e1");
 //  std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
@@ -16888,7 +16211,6 @@ void ZTest::test(MainWindow *host)
   ptoc();
   std::cout << std::endl;
 #endif
-
 #if 0
   ZPainter painter;
   ZPixmap pixmap(10000, 10000);
@@ -16911,7 +16233,6 @@ void ZTest::test(MainWindow *host)
 
   pixmap.toImage().save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
-
 #if 0
   ZPainter painter;
   ZImage image(256, 256);
@@ -16928,7 +16249,6 @@ void ZTest::test(MainWindow *host)
 
   image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
-
 #if 0
   ZDvidTarget target("emdata1", "51d", 8500);
   target.setLabelBlockName("labels");
@@ -16937,14 +16257,11 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
   ZObject3dScan obj = reader.readCoarseBody(14742253);
   obj.save(GET_TEST_DATA_DIR + "/test.sobj");
-
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set()
 #endif
-
 #if 0
   ZFlyEmBodyMerger bodyMerger;
   bodyMerger.pushMap(1, 2);
@@ -16958,11 +16275,7 @@ void ZTest::test(MainWindow *host)
 
   ZJsonArray jsonArray = bodyMerger.toJsonArray();
   std::cout << jsonArray.dumpString(2) << std::endl;
-
-
-
 #endif
-
 #if 0
   ZDvidTarget target("emdata2.int.janelia.org", "79b", 7000);
   target.setBodyLabelName("m10_lo_bodies");
@@ -16986,16 +16299,13 @@ void ZTest::test(MainWindow *host)
     obj1.save(GET_TEST_DATA_DIR + "/test.sobj");
   }
 #endif
-
 #if 0
   ZIntPoint dsIntv = misc::getDsIntvFor3DVolume(29);
   std::cout << dsIntv.toString() << std::endl;
 #endif
-
 #if 0
   std::cout << qgetenv("USERNAME").data() << std::endl;
 #endif
-
 #if 0
   ZDvidTarget target("emdata1.int.janelia.org", "6f15", 8500);
   ZDvidReader reader;
@@ -17035,7 +16345,6 @@ void ZTest::test(MainWindow *host)
   std::cout << obj1.getVoxelNumber() + obj2.getVoxelNumber() +
                obj3.getVoxelNumber() << std::endl;
 #endif
-
 #if 0
 
   {
@@ -17063,7 +16372,6 @@ void ZTest::test(MainWindow *host)
   array3.dump(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block_cut3.json");
   }
 #endif
-
 #if 0
   ZDvidReader reader;
   ZDvidTarget target("emdata1.int.janelia.org", "9db", 8500);
@@ -17073,7 +16381,6 @@ void ZTest::test(MainWindow *host)
   std::cout << obj.getVoxelNumber() << std::endl;
 //  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
-
 #if 0
   std::string filePath = GET_TEST_DATA_DIR + "/flyem/MB/aftersplit.results";
   std::string outFile = GET_TEST_DATA_DIR + "/flyem/MB/aftersplit2500.txt";
@@ -17098,7 +16405,6 @@ void ZTest::test(MainWindow *host)
   fclose(fp);
   fclose(outFp);
 #endif
-
 #if 0
   ZDvidTarget target("emdata1.int.janelia.org", "c348", 8500);
   ZDvidReader reader;
@@ -17106,9 +16412,7 @@ void ZTest::test(MainWindow *host)
     ZStack *stack = reader.readGrayScale(2600, 5200, 3958, 3200, 2400, 1);
     stack->save(GET_TEST_DATA_DIR + "/flyem/MB/script/cast/grayscale.tif");
   }
-
 #endif
-
 #if 0
   ZObject3dScan obj1;
   obj1.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block_cut1.sobj");
@@ -17135,7 +16439,6 @@ void ZTest::test(MainWindow *host)
 
   stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
-
 #if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/flyem/MB/script/cast/grayscale.tif");
@@ -17183,7 +16486,6 @@ void ZTest::test(MainWindow *host)
     canvasStack->save(GET_TEST_DATA_DIR + "/flyem/MB/script/cast/color6.tif");
   }
 #endif
-
 #if 0
   ZStack stack;
 //  stack.load(GET_TEST_DATA_DIR + "/00001.tif");
@@ -17221,7 +16523,6 @@ void ZTest::test(MainWindow *host)
   ZSwcTree *tree = tracer.trace(stackData);
   tree->save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/system/zjump_test.swc");
@@ -17229,15 +16530,12 @@ void ZTest::test(MainWindow *host)
   Biocytin::SwcProcessor::breakZJump(&tree, 2.0);
 
   tree.save(GET_TEST_DATA_DIR + "/test.swc");
-
 #endif
-
 #if 0
   QDateTime time = QDateTime::currentDateTime().toLocalTime();
 
   qDebug() << time.toString("yyyy-MM-dd hh:mm:ss");
 #endif
-
 #if 0
   QProcess::execute(
         "curl",
@@ -17254,15 +16552,12 @@ void ZTest::test(MainWindow *host)
   if (process.waitForFinished(-1)) {
     qDebug() << process.readAllStandardOutput();
   }
-
 #endif
-
 #if 0
   QString str("\"MaxLabel\": {\"test\": 12433534}; other {}");
   str.remove(QRegularExpression("\"MaxLabel\":\\s*\\{[^{}]*\\}"));
   qDebug() << str;
 #endif
-
 #if 0
   ZFlyEmSupervisor supervisor;
 
@@ -17282,11 +16577,7 @@ void ZTest::test(MainWindow *host)
 
 //  std::cout << supervisor.checkIn(100) << std::endl;
   std::cout << supervisor.checkOut(100) << std::endl;
-
-
-
 #endif
-
 #if 0
   std::string dataDir = GET_TEST_DATA_DIR + "/flyem/MB/proofread/fix1";
   ZDvidTarget target2("emdata1.int.janelia.org", "0f33", 8500);
@@ -17296,7 +16587,6 @@ void ZTest::test(MainWindow *host)
   wholeObj.canonize();
   wholeObj.save(dataDir + "/13707636_s.sobj");
 #endif
-
 #if 0
   ZDvidTarget target("emdata1.int.janelia.org", "c0a5", 8500);
 
@@ -17309,8 +16599,7 @@ void ZTest::test(MainWindow *host)
   reader.open(target2);
   ZObject3dScan wholeObj =reader.readBody(13707636);
 //  wholeObj.save(dataDir + "/13707636_s.sobj");
-
-#  if 1
+#if 1
   ZDvidWriter writer;
   writer.open(target2);
 
@@ -17350,9 +16639,8 @@ void ZTest::test(MainWindow *host)
   } else {
     std::cout << "Failed to open " << target.getSourceString() << std::endl;
   }
-#  endif
 #endif
-
+#endif
 #if 0
   ZDvidBufferReader reader;
   reader.read("http://emdata2.int.janelia.org:9100/state/ee7dc");
@@ -17377,7 +16665,6 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
 #if 0
   ZString text = "split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=<username=zhaot>";
   if (text.contains("<username=")) {
@@ -17388,9 +16675,7 @@ void ZTest::test(MainWindow *host)
     userName.trim();
     std::cout << userName << std::endl;
   }
-
 #endif
-
 #if 0
   ZWindowFactory factory;
   factory.setWindowTitle("Test");
@@ -17418,7 +16703,6 @@ void ZTest::test(MainWindow *host)
 //  doc->addBody(12596838);
 //  doc->addBody(13890100);
 #endif
-
 #if 0
   ZFlyEmBody3dDoc::BodyEvent event1(
         ZFlyEmBody3dDoc::BodyEvent::ACTION_ADD, 1200);
@@ -17432,7 +16716,6 @@ void ZTest::test(MainWindow *host)
   event2.mergeEvent(event1, NeuTube::DIRECTION_FORWARD);
   event2.print();
 #endif
-
 #if 0
   ZFlyEmBody3dDoc doc;
   std::vector<uint64_t> bodyIdArray;
@@ -17442,7 +16725,6 @@ void ZTest::test(MainWindow *host)
   doc.addBodyChangeEvent(bodyIdArray.begin(), bodyIdArray.end());
   doc.printEventQueue();
 #endif
-
 #if 0
   ZString str = "232435232-53634643637-423422222222893";
   std::vector<uint64_t> array = str.toUint64Array();
@@ -17450,7 +16732,6 @@ void ZTest::test(MainWindow *host)
     std::cout << array[i] << std::endl;
   }
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set("http://emdata1.int.janelia.org", "1f62", 8500);
@@ -17477,9 +16758,7 @@ void ZTest::test(MainWindow *host)
     obj.unify(obj2);
     obj.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/merged.sobj");
   }
-
 #endif
-
 #if 0
   ZObject3dScan obj1;
   obj1.load(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/mb_subtracted.sobj");
@@ -17490,7 +16769,6 @@ void ZTest::test(MainWindow *host)
         obj1, ZJsonFactory::OBJECT_SPARSE);
   array.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/mb_subtracted.json");
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set("http://emdata1.int.janelia.org", "1f62", 8500);
@@ -17515,14 +16793,11 @@ void ZTest::test(MainWindow *host)
     obj.unify(obj2);
     obj.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/merged.sobj");
   }
-
 #endif
-
 #if 0
   ZNeuronTracerConfig::getInstance().print();
 #endif
-
-#if 0 //Move body annotations
+#if 0 // Move body annotations
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "66ba", 8500);
 
@@ -17547,10 +16822,7 @@ void ZTest::test(MainWindow *host)
 
     writer.writeJson("bodies3_annotations", key.toStdString(), obj);
   }
-
-
 #endif
-
 #if 0
   ZStackFrame *frame = ZStackFrame::Make(NULL);
   frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
@@ -17559,7 +16831,6 @@ void ZTest::test(MainWindow *host)
 
   frame->view()->highlightPosition(129, 120, 0);
 #endif
-
 #if 0
   QDir autoSaveDir(NeutubeConfig::getInstance().getPath(
         NeutubeConfig::AUTO_SAVE).c_str());
@@ -17568,8 +16839,6 @@ void ZTest::test(MainWindow *host)
   QDir mergeDir(autoSaveDir.absoluteFilePath(mergeFolder));
   qDebug() << mergeDir.absoluteFilePath("neutu_merge_opr.json");
 #endif
-
-
 #if 0
   ZDvidReader reader;
   ZDvidTarget target("emdata1.int.janelia.org", "eafc", 8500);
@@ -17579,7 +16848,6 @@ void ZTest::test(MainWindow *host)
     reader.readLabels64(4327, 5443, 6341 + i, 512, 512, 1);
   }
 #endif
-
 #if 0
   ZDvidBufferReader reader;
 
@@ -17589,7 +16857,6 @@ void ZTest::test(MainWindow *host)
     std::cout << toc() << " ms" << std::endl;
   }
 #endif
-
 #if 0
   ZPixmap image(2056, 2056);
 //  ZStTransform transform;
@@ -17610,7 +16877,6 @@ void ZTest::test(MainWindow *host)
 
 //  image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
-
 #if 0
   ZImage image(2056, 2056);
   ZObject3dScan obj;
@@ -17623,7 +16889,6 @@ void ZTest::test(MainWindow *host)
   pixmap.fromImage(image);
   std::cout << toc() << "ms passed" << std::endl;
 #endif
-
 #if 0
   ZDvidWriter writer;
 
@@ -17654,7 +16919,6 @@ void ZTest::test(MainWindow *host)
   }
   */
 #endif
-
 #if 0
   ZDvidTarget target("emdata1.int.janelia.org", "b0f7d", 8500);
   target.setLabelBlockName("labels3");
@@ -17685,7 +16949,6 @@ void ZTest::test(MainWindow *host)
     std::cout << bodyArray[i] << ": " << posArray[i].toString() << std::endl;
   }
 #endif
-
 #if 0
   ZDvidTarget target("emdata1.int.janelia.org", "7872", 8500);
   target.setLabelBlockName("labels3");
@@ -17726,7 +16989,6 @@ void ZTest::test(MainWindow *host)
     std::cout << bodyArray[i] << ": " << posArray[i].toString() << std::endl;
   }
 #endif
-
 #if 0
   ZDvidTarget target("emdata1.int.janelia.org", "86e1", 8500);
   ZDvidReader reader;
@@ -17740,9 +17002,7 @@ void ZTest::test(MainWindow *host)
   } else {
     std::cout << "The two objects are NOT adjacent." << std::endl;
   }
-
 #endif
-
 #if 0
   Swc_Tree_Node *tn = SwcTreeNode::makePointer(1, 0, 0, 0, 0, 1, -1);
 
@@ -17771,7 +17031,6 @@ void ZTest::test(MainWindow *host)
   selector.reset(selected, prevSelected);
   selector.print();
 #endif
-
 #if 0
   ZSharedPointer<ZStackObject> obj = ZSharedPointer<ZStackObject>(new ZSwcTree);
   std::cout << obj.use_count() << std::endl;
@@ -17783,9 +17042,7 @@ void ZTest::test(MainWindow *host)
   ZSharedPointer<ZSwcTree> obj2 = Shared_Dynamic_Cast<ZSwcTree>(obj);
   std::cout << obj.use_count() << std::endl;
   std::cout << obj2.use_count() << std::endl;
-
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/benchmark/pile.sobj");
@@ -17798,17 +17055,13 @@ void ZTest::test(MainWindow *host)
 
   subobj = obj.subobject(ZIntCuboid(15, 15, 1, 17, 17, 3));
   subobj.print();
-
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
   ZObject3dScan subobj = obj.subobject(ZIntCuboid(261, 603, 224, 441, 754, 272));
   subobj.save(GET_TEST_DATA_DIR + "/test.sobj");
-
 #endif
-
 #if 0
   Stack *stack = C_Stack::readSc(
         GET_TEST_DATA_DIR + "/benchmark//binary/2d/btrig2_skel.tif");
@@ -17816,7 +17069,6 @@ void ZTest::test(MainWindow *host)
 
   C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/mouse_single_org.swc");
@@ -17840,9 +17092,7 @@ void ZTest::test(MainWindow *host)
 
 //  branch->radiusResample();
 //  branch->print();
-
 #endif
-
 #if 0
   std::string dataDir =
       GET_TEST_DATA_DIR + "/flyem/MB/light/2015alphalobe/neurons_affine";
@@ -17850,7 +17100,6 @@ void ZTest::test(MainWindow *host)
 
   ZSwcTree tree;
   tree.load(dataDir + "/" + baseName + ".swc");
-
 #if 0
   ZSwcTree::DepthFirstIterator treeIter(&tree);
   while (treeIter.hasNext()) {
@@ -17868,9 +17117,7 @@ void ZTest::test(MainWindow *host)
 //  sampler.radiusResample(&tree);
 
   tree.save(dataDir + "/" + baseName + "_scaled.swc");
-
 #endif
-
 #if 0
   std::string dataDir =
       GET_TEST_DATA_DIR + "/flyem/MB/light/2015alphalobe/KCandMBON/MBON/affine";
@@ -17896,7 +17143,6 @@ void ZTest::test(MainWindow *host)
     tree.save(dataDir + "/" + baseName + "_scaled.swc");
   }
 #endif
-
 #if 0
   ZDvidWriter writer;
   ZDvidTarget target;
@@ -17910,9 +17156,7 @@ void ZTest::test(MainWindow *host)
   jsonObj.load("/Users/zhaot/Work/neutube/neurolabi/json/skeletonize_mb.json");
 
   writer.writeJson("bodies3_skeletons", "config.json", jsonObj);
-
 #endif
-
 #if 0
   ZObject3dScan oldRoi;
   oldRoi.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block.sobj");
@@ -17931,7 +17175,6 @@ void ZTest::test(MainWindow *host)
         patchRoi, ZJsonFactory::OBJECT_SPARSE);
   array.dump(GET_TEST_DATA_DIR + "/flyem/MB/deeper_patch_roi.json");
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/benchmark/sample.swc");
@@ -17940,7 +17183,6 @@ void ZTest::test(MainWindow *host)
 
   tree.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
-
 #if 0
   ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
   doc->setDvidTarget(ZDvidTarget("emdata1.int.janelia.org", "86e1", 8500));
@@ -17959,7 +17201,6 @@ void ZTest::test(MainWindow *host)
 
   delete doc;
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/test.swc");
@@ -17971,7 +17212,6 @@ void ZTest::test(MainWindow *host)
 
   tree.save(GET_TEST_DATA_DIR + "/test2.swc");
 #endif
-
 #if 0
   ZSwcTree tree;
   Swc_Tree_Node *root = SwcTreeNode::makePointer(ZPoint(0, 1, 0), 1);
@@ -17989,7 +17229,6 @@ void ZTest::test(MainWindow *host)
   tree.save(GET_TEST_DATA_DIR + "/test.swc");
 //  tree.load(GET_TEST_DATA_DIR + "/benchmark/");
 #endif
-
 #if 0
 //  ZSwcTree tree;
   Swc_Tree_Node *root = SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1);
@@ -18009,10 +17248,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "Bending energy: " << SwcTreeNode::maxBendingEnergy(tn4) << std::endl;
 
 //  tree.setDataFromNode(root);
-
-
 #endif
-
 #if 0
   QColor color(255, 153, 0);
   std::cout << color.hueF() << std::endl;
@@ -18020,9 +17256,7 @@ void ZTest::test(MainWindow *host)
 
   color.setHsv(color.hue(), color.saturation()/2, color.value());
   std::cout << color.red() << " " << color.green() << " " << color.blue() << std::endl;
-
 #endif
-
 #if 0
   ZStackDoc doc;
   ZSwcTree *tree = new ZSwcTree;
@@ -18062,9 +17296,7 @@ void ZTest::test(MainWindow *host)
        iter = swcMap.begin(); iter != swcMap.end(); ++iter) {
     std::cout << iter.key() << " " << iter.value() << std::endl;
   }
-
 #endif
-
 #if 0
   tic();
   std::vector<int> vec;
@@ -18076,7 +17308,6 @@ void ZTest::test(MainWindow *host)
   std::cout << vec.size() << " elements" << std::endl;
   ptoc();
 #endif
-
 #if 0
   tic();
   Int_Arraylist *arrayList = Int_Arraylist_New(0, 0);
@@ -18086,7 +17317,6 @@ void ZTest::test(MainWindow *host)
   std::cout << arrayList->length << " elements" << std::endl;
   ptoc();
 #endif
-
 #if 0
   tic();
   std::vector<int> vec;
@@ -18097,7 +17327,6 @@ void ZTest::test(MainWindow *host)
   std::cout << vec.size() << " elements" << std::endl;
   ptoc();
 #endif
-
 #if 0
 //  tic();
   ZDvidTarget dvidTarget("emdata1.int.janelia.org", "86e1", 8500);
@@ -18117,7 +17346,6 @@ void ZTest::test(MainWindow *host)
   delete tree;
 //  ptoc();
 #endif
-
 #if 0
   Biocytin::SwcProcessor processor;
   ZResolution resolution;
@@ -18128,7 +17356,6 @@ void ZTest::test(MainWindow *host)
   processor.breakZJump(&tree);
   tree.save(GET_TEST_DATA_DIR + "/test2.swc");
 #endif
-
 #if 0
   JNeuronTracer tracer;
   ZResolution resolution;
@@ -18163,7 +17390,6 @@ void ZTest::test(MainWindow *host)
   ZSwcTree *tree = tracer.trace(stackData);
   tree->save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
-
 #if 0
   Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR + "/benchmark/fork_2d.tif");
   ZIntHistogram *hist = C_Stack::hist(stack, NULL);
@@ -18177,7 +17403,6 @@ void ZTest::test(MainWindow *host)
 
   delete hist;
 #endif
-
 #if 0
   ZStackFrame *frame = ZStackFrame::Make(NULL);
   frame->load(GET_TEST_DATA_DIR + "/benchmark/fork_2d.tif");
@@ -18219,8 +17444,7 @@ void ZTest::test(MainWindow *host)
   host->presentStackFrame(frame2);
 
 //  stack->save(GET_TEST_DATA_DIR + "/test.tif");
-
-#  if 0
+#if 0
   ZStack *stack = frame->document()->getStack()->clone();
   //stack->setOffset(20, 30, 0);
   ZStackPatch *patch = new ZStackPatch(stack);
@@ -18232,9 +17456,8 @@ void ZTest::test(MainWindow *host)
   rect->setPenetrating(true);
   rect->setColor(0, 255, 0);
   frame->document()->addObject(rect);
-#  endif
 #endif
-
+#endif
 #if 0
   ZDvidBufferReader reader;
 
@@ -18258,7 +17481,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "Payload: " << queryForm.toStdString() << std::endl;
 
   QByteArray payload;
-  payload.append(queryForm);
+  payload.append(queryForm.toUtf8());
 
   reader.read("http://emdata1.int.janelia.org:8500/api/node/86e1/labels/labels",
               payload, true);
@@ -18266,7 +17489,6 @@ void ZTest::test(MainWindow *host)
   QString labels = QString(reader.getBuffer());
   std::cout << labels.toStdString() << std::endl;
 #endif
-
 #if 0
   ZDvidTarget dvidTarget("emdata1.int.janelia.org", "86e1", 8500);
 
@@ -18283,7 +17505,6 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
-
 #if 0
   ZDvidTarget target("emdata2.int.janelia.org", "86e1", 7100);
   ZDvidReader reader;
@@ -18292,7 +17513,6 @@ void ZTest::test(MainWindow *host)
   ZObject3dScan bs = reader.readBody(15950033);
   bs.save(GET_TEST_DATA_DIR + "/split.sobj");
 #endif
-
 #if 0
   ZDvidTarget target("emdata2.int.janelia.org", "86e1", 7100);
 
@@ -18321,7 +17541,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << "Status code: " << writer.getStatusCode() << std::endl;
 #endif
-
 #if 0
   ZObject3dScan bf;
   bf.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
@@ -18334,9 +17553,7 @@ void ZTest::test(MainWindow *host)
   ptoc();
 
   delete bs;
-
 #endif
-
 #if 0
   ZObject3dScan bf;
   bf.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
@@ -18439,7 +17656,6 @@ void ZTest::test(MainWindow *host)
 //  obj.subtract(ZObject3dFactory::MakeObject3dScan(
 //  block.subtract(
 #endif
-
 #if 0
   ZObject3dScan bf;
   bf.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
@@ -18459,7 +17675,6 @@ void ZTest::test(MainWindow *host)
     std::cout << "Testing failed: Object inconsistent." << std::endl;
   }
 #endif
-
 #if 0
   ZDvidTarget dvidTarget("emdata2.int.janelia.org", "c077", 7000);
   dvidTarget.setBodyLabelName("segmentation-labelvol");
@@ -18496,9 +17711,7 @@ void ZTest::test(MainWindow *host)
       }
     }
   }
-
 #endif
-
 #if 0
   std::string dataDir =
       GET_TEST_DATA_DIR +
@@ -18515,16 +17728,13 @@ void ZTest::test(MainWindow *host)
 //  sampler.radiusResample(&tree);
 
   tree.save(dataDir + "/" + baseName + "_scaled.swc");
-
 #endif
-
 #if 0
   ZDvidReader reader;
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "86e1", 7100);
   reader.open(target);
 #endif
-
 #if 0
 #if defined(_ENABLE_LIBDVIDCPP_)
   libdvid::DVIDNodeService service("emdata2.int.janelia.org:7100", "86e1");
@@ -18563,7 +17773,6 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 #endif
-
 #if 0
 
   ZDvidTarget target;
@@ -18583,7 +17792,6 @@ void ZTest::test(MainWindow *host)
     ensemble.update(tileIndices, 0, z);
   }
 #endif
-
 #if 0
   ZObject3dScan wholeRoi;
   wholeRoi.importDvidRoi(GET_TEST_DATA_DIR + "/flyem/AL/whole_roi.json");
@@ -18602,7 +17810,6 @@ void ZTest::test(MainWindow *host)
 
   json.dump(GET_TEST_DATA_DIR + "/flyem/AL/whole_sub_glomerulus_roi.json");
 #endif
-
 #if 0
   ZJsonObject jsonObj;
   jsonObj.load(GET_TEST_DATA_DIR +
@@ -18619,9 +17826,7 @@ void ZTest::test(MainWindow *host)
   if (writer.open(target)) {
     writer.writeJson(url.getSynapseAnnotationUrl(), jsonObj);
   }
-
 #endif
-
 #if 0
   ZDvidWriter writer;
   ZDvidTarget target;
@@ -18645,9 +17850,7 @@ void ZTest::test(MainWindow *host)
       writer.writeBodyAnntation(anno);
     }
   }
-
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "86e1", 7100);
@@ -18657,7 +17860,6 @@ void ZTest::test(MainWindow *host)
     writer.removeBodyAnnotation(12587667);
   }
 #endif
-
 #if 0
   ZObject3dStripe s1;
   s1.addSegment(0, 5);
@@ -18676,9 +17878,7 @@ void ZTest::test(MainWindow *host)
 
   ZObject3dStripe s = s1 - s2;
   s.print();
-
 #endif
-
 #if 0
   ZObject3dScan bf;
   bf.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block.sobj");
@@ -18686,7 +17886,6 @@ void ZTest::test(MainWindow *host)
   ZObject3dScan surfaceObj = bf.getSurfaceObject();
   surfaceObj.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
-
 #if 0
   ZObject3dScan bf;
   bf.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
@@ -18717,9 +17916,7 @@ void ZTest::test(MainWindow *host)
   bf.save(GET_TEST_DATA_DIR + "/test.sobj");
 
   delete bs;
-
 #endif
-
 #if 0
   FlyEm::ZSynapseAnnotationArray sa;
   sa.loadJson(GET_TEST_DATA_DIR + "/synapse.json");
@@ -18740,7 +17937,6 @@ void ZTest::test(MainWindow *host)
 
   dvidSynapseJson.dump(GET_TEST_DATA_DIR + "/test.json");
 #endif
-
 #if 0
   ZStackFrame *frame = ZStackFrame::Make(NULL);
   frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
@@ -18757,7 +17953,6 @@ void ZTest::test(MainWindow *host)
 
   frame->document()->addObject(synapse);
 #endif
-
 #if 0
   QStringList strings;
   strings << "This" << "is" << "a" << "test";
@@ -18766,7 +17961,6 @@ void ZTest::test(MainWindow *host)
 
   qDebug() << result;
 #endif
-
 #if 0
   QList<Stack*> stackList;
 
@@ -18784,19 +17978,16 @@ void ZTest::test(MainWindow *host)
     qDebug() << iter.next();
   }
 #endif
-
 #if 0
   ZJsonObject tileJson;
   tileJson.load(GET_TEST_DATA_DIR + "/biocytin/DH_7-6-13-2_100x/DH070613C2X100-.tiles.json");
   tileJson.dump(GET_TEST_DATA_DIR + "/test.json");
 #endif
-
 #if 0
   std::cout << "message testing ..." << std::endl;
   qDebug() << "Debug message test";
   qWarning() << "Warning message test";
 #endif
-
 #if 0
   ZDvidSynapse synapse;
   synapse.setPosition(30, 30, 30);
@@ -18824,9 +18015,7 @@ void ZTest::test(MainWindow *host)
   se.addSynapse(synapse);
 
   std::cout << se;
-
 #endif
-
 #if 0
   ZObject3dScan obj1;
   obj1.load(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/mbroi.sobj");
@@ -18840,7 +18029,6 @@ void ZTest::test(MainWindow *host)
 
   obj.save(GET_TEST_DATA_DIR + "/flyem/MB/alpha_add.sobj");
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_add.sobj");
@@ -18848,7 +18036,6 @@ void ZTest::test(MainWindow *host)
   ZJsonArray objJson = ZJsonFactory::MakeJsonArray(obj);
   objJson.dump(GET_TEST_DATA_DIR + "/flyem/MB/alpha_add.json");
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/test.sobj");
@@ -18861,7 +18048,6 @@ void ZTest::test(MainWindow *host)
     volume += subobj.getVoxelNumber();
   }
 #endif
-
 #if 0
   while (1) {
     ZObject3dScan obj = ZObject3dFactory::MakeRandomObject3dScan(
@@ -18902,9 +18088,7 @@ void ZTest::test(MainWindow *host)
       }
     }
   }
-
 #endif
-
 #if 0
   ZDvidSynapse synapse;
   synapse.setPosition(1, 2, 3);
@@ -18916,7 +18100,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << synapse.toJsonObject().dumpString(2) << std::endl;
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/roi_ME_cell_body.sobj");
@@ -18935,13 +18118,11 @@ void ZTest::test(MainWindow *host)
 
   slice.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
-
 #if 0
   if (host != NULL) {
     host->testFlyEmProofread();
   }
 #endif
-
 #if 0
   ZDvidWriter writer;
   ZDvidTarget target;
@@ -18950,7 +18131,6 @@ void ZTest::test(MainWindow *host)
   writer.deleteKey(QString("bodies0802_skeletons"), QString("0_swc"),
                    QString("9_swc"));
 #endif
-
 #if 0
   ZDvidWriter writer;
   ZDvidTarget target;
@@ -18961,7 +18141,6 @@ void ZTest::test(MainWindow *host)
   obj.load(GET_APPLICATION_DIR + "/json/skeletonize_fib25_len40.json");
   writer.writeJson("bodies1104_skeletons", "config.json", obj);
 #endif
-
 #if 0
   std::cout << ZFlyEmNeuronInfo::GuessTypeFromName("Mi15-O") << std::endl;
   std::cout << ZFlyEmNeuronInfo::GuessTypeFromName("Mi3-like_13852") << std::endl;
@@ -18970,7 +18149,6 @@ void ZTest::test(MainWindow *host)
   std::cout << ZFlyEmNeuronInfo::GuessTypeFromName("Y3/Y24-like") << std::endl;
   std::cout << ZFlyEmNeuronInfo::GuessTypeFromName("TmY4-like-0") << std::endl;
 #endif
-
 #if 0
   std::string dataFolder =
       GET_TEST_DATA_DIR + "/flyem/FIB/FIB25/20151104/neuromorpho";
@@ -19034,7 +18212,7 @@ void ZTest::test(MainWindow *host)
                       << std::endl;
             dataDir.mkdir(type.c_str());
           }
-#  if 1
+#if 1
           ZSwcTree *tree = reader.readSwc(bodyId);
           if (tree != NULL) {
             if (!tree->isEmpty()) {
@@ -19060,7 +18238,7 @@ void ZTest::test(MainWindow *host)
             emptyBody.push_back(bodyId);
             std::cout << "WARING: null tree" << std::endl;
           }
-#  endif
+#endif
 
           ++count;
         }
@@ -19079,9 +18257,7 @@ void ZTest::test(MainWindow *host)
     std::cout << "  " << *iter << " " << body.getVoxelNumber()
               << std::endl;
   }
-
 #endif
-
 #if 0
   ZJsonArray jsonArray;
 
@@ -19093,7 +18269,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << jsonArray.dumpString(2) << std::endl;
 #endif
-
 #if 0
   ZJsonArray jsonArray;
 
@@ -19114,7 +18289,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << jsonArray.dumpString(2) << std::endl;
 #endif
-
 #if 0
   ZJsonObject jsonObj;
   ZDvidSynapse::AddRelation(jsonObj, ZIntPoint(1, 2, 3), "PreSynTo");
@@ -19125,7 +18299,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << jsonObj.dumpString(2) << std::endl;
 #endif
-
 #if 0
   ZJsonObject jsonArray;
 
@@ -19142,7 +18315,6 @@ void ZTest::test(MainWindow *host)
 
   std::cout << jsonArray.dumpString(2) << std::endl;
 #endif
-
 #if 0
   ZDvidTarget dvidTarget;
   dvidTarget.set("emdata1.int.janelia.org", "86e1", 8500);
@@ -19158,7 +18330,6 @@ void ZTest::test(MainWindow *host)
     std::cout << jsonArray.dumpString(2) << std::endl;
   }
 #endif
-
 #if 0
   FILE *fp = fopen((GET_TEST_DATA_DIR + "/benchmark/swc/breadth_first.swc").c_str(), "r");
   Swc_Node node;
@@ -19170,13 +18341,11 @@ void ZTest::test(MainWindow *host)
 
   fclose(fp);
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/test.swc");
   tree.print();
 #endif
-
 #if 0
   ZDvidSynapse synapse;
   synapse.setPosition(30, 30, 30);
@@ -19225,9 +18394,7 @@ void ZTest::test(MainWindow *host)
             << std::endl;
   std::cout << se.getSynapse(31, 28, 28, ZDvidSynapseEnsemble::DATA_LOCAL)
             << std::endl;
-
 #endif
-
 #if 0
   ZFlyEmBookmark bookmark;
   bookmark.setCenter(1, 2, 3);
@@ -19243,7 +18410,6 @@ void ZTest::test(MainWindow *host)
   bookmark2.loadDvidAnnotation(bookmark.toDvidAnnotationJson());
   std::cout << bookmark2.toDvidAnnotationJson().dumpString(2) << std::endl;
 #endif
-
 #if 0
   ZStackFrame *frame = ZStackFrame::Make(NULL);
   frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
@@ -19259,7 +18425,6 @@ void ZTest::test(MainWindow *host)
 
   frame->document()->addObject(line);
 #endif
-
 #if 0
   ZObject3dScan obj;
   for (int i = 0; i < 50; ++i) {
@@ -19271,9 +18436,7 @@ void ZTest::test(MainWindow *host)
   }
 
   obj.save(GET_TEST_DATA_DIR + "/benchmark/obj2.sobj");
-
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "3ca7", 8500);
@@ -19298,7 +18461,6 @@ void ZTest::test(MainWindow *host)
   testDlg->show();
   testDlg->raise();
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "372c", 8500);
@@ -19309,8 +18471,6 @@ void ZTest::test(MainWindow *host)
 
   window->show();
 #endif
-
-
 #if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "3ca7", 8500);
@@ -19348,7 +18508,6 @@ void ZTest::test(MainWindow *host)
 
   dlg->show();
 #endif
-
 #if 0
   ZDvidReader reader;
   ZDvidTarget target;
@@ -19442,7 +18601,6 @@ void ZTest::test(MainWindow *host)
     dlg->show();
   }
 #endif
-
 #if 0
   QDialog *dlg = new QDialog(host);
   QGridLayout *layout = new QGridLayout(dlg);
@@ -19524,10 +18682,8 @@ void ZTest::test(MainWindow *host)
   layout->setVerticalSpacing(0);
 
   dlg->show();
-
 #endif
-
-#if  0
+#if 0
   ZStackDoc *doc = new ZStackDoc(NULL);
   doc->loadFile(GET_TEST_DATA_DIR + "/system/diadem/diadem_e1.tif");
 
@@ -19546,7 +18702,6 @@ void ZTest::test(MainWindow *host)
   testDlg->show();
   testDlg->raise();
 #endif
-
 #if 0
   ZDvidTarget target;
   target.set("emdata1", "3ca7", 8500);
@@ -19561,13 +18716,11 @@ void ZTest::test(MainWindow *host)
     std::cout << synapse.toJsonObject().dumpString(2) << std::endl;
   }
 #endif
-
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/test.sobj");
   std::cout << obj.getVoxelNumber() << std::endl;
 #endif
-
 #if 0
   ZObject3dScan obj;
   tic();
@@ -19575,9 +18728,7 @@ void ZTest::test(MainWindow *host)
   ptoc();
   obj.canonize();
   obj.save(GET_TEST_DATA_DIR + "/test.sobj");
-
 #endif
-
 #if 0
   ZObject3dScan bm;
   bm.importDvidObject(GET_TEST_DATA_DIR + "/test_bm.dvid");
@@ -19606,10 +18757,7 @@ void ZTest::test(MainWindow *host)
   Bsc.subtractSliently(Bbf_bs);
 
   Bsc.exportDvidObject(GET_TEST_DATA_DIR + "/test_Bsc_sub.dvid");
-
 #endif
-
-
 #if 0
   ZDvidReader reader;
   reader.open("emdata2.int.janelia.org", "059e", 7000);
@@ -19636,9 +18784,7 @@ void ZTest::test(MainWindow *host)
   ZJsonArray array = ZJsonFactory::MakeJsonArray(newObj);
 
   array.dump(GET_TEST_DATA_DIR + "/test.json");
-
 #endif
-
 #if 0
   ZDvidReader reader;
   reader.open("emdata2.int.janelia.org", "e402", 7000);
@@ -19667,7 +18813,6 @@ void ZTest::test(MainWindow *host)
     std::cout << "Bad object subtraction." << std::endl;
   }
 #endif
-
 #if 0
   Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR + "/benchmark/block3.tif");
 
@@ -19683,9 +18828,7 @@ void ZTest::test(MainWindow *host)
 
   v = misc::SampleStack(stack, x, y, z, misc::SAMPLE_STACK_UNIFORM);
   std::cout << v << std::endl;
-
 #endif
-
 #if 0
   ZStack stack;
 //  stack.load(GET_TEST_DATA_DIR + "/benchmark/block3.tif");
@@ -19740,9 +18883,7 @@ void ZTest::test(MainWindow *host)
   }
 
   newStack.save(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/new_label_field_block.tif");
-
 #endif
-
 #if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/new_label_field_block.tif");
@@ -19756,15 +18897,12 @@ void ZTest::test(MainWindow *host)
     objJson.dump(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/roi_json/" +
                  outFile.toStdString());
   }
-
 #endif
-
 #if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/benchmark/gaussians.tif");
   ZStackProcessor::SubtractBackground(&stack, 0.5, 3);
 #endif
-
 #if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/system/slice15_L11.tif");
@@ -19773,12 +18911,10 @@ void ZTest::test(MainWindow *host)
 
   stack.save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
-
 #if 0
   ZNeuronTracer tracer;
   tracer.test();
 #endif
-
 #if 0
   QString filePath((GET_TEST_DATA_DIR + "/cone").c_str());
 
@@ -19801,7 +18937,6 @@ void ZTest::test(MainWindow *host)
   qDebug() << dirInfo.isDir();
   qDebug() << dirInfo.absoluteFilePath();
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/_benchmark/swc/multi_tree2.swc");
@@ -19811,9 +18946,7 @@ void ZTest::test(MainWindow *host)
   connector.connect(tree.data());
 
   tree.save(GET_TEST_DATA_DIR + "/test.swc");
-
 #endif
-
 #if 0
   Stack *stack = C_Stack::readSc(
         GET_TEST_DATA_DIR + "/benchmark/binary/2d/ring_n10.tif");
@@ -19832,7 +18965,6 @@ void ZTest::test(MainWindow *host)
   objArray[0].save(GET_TEST_DATA_DIR + "/test.sobj");
 //  sizeArray = obj.getConnectedObjectSize();
 #endif
-
 #if 0
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/depth_first.swc");
@@ -19843,11 +18975,9 @@ void ZTest::test(MainWindow *host)
 
   tree.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
-
 #if 1
-  ZSwcExportSvgDialog *dlg = new ZSwcExportSvgDialog(host);
+  ZSwcExportSvgDialog* dlg = new ZSwcExportSvgDialog(host);
   dlg->exec();
 #endif
-
   std::cout << "Done." << std::endl;
 }
