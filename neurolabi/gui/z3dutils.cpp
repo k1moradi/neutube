@@ -10,8 +10,11 @@ namespace {
 // the performance is approximately log(n).
 class vtkCCSEdgeLocatorNode {
 public:
-  vtkCCSEdgeLocatorNode() :
-      ptId0(-1), ptId1(-1), edgeId(-1), next(0) {}
+  vtkCCSEdgeLocatorNode()
+    : ptId0(-1)
+    , ptId1(-1)
+    , edgeId(-1)
+    , next(0) {}
   ~vtkCCSEdgeLocatorNode() {
     vtkCCSEdgeLocatorNode* ptr = this->next;
     while(ptr) {
@@ -95,7 +98,7 @@ int64_t* vtkCCSEdgeLocator::InsertUniqueEdge(
 // A helper function for interpolating a new point along an edge.  It
 // stores the index of the interpolated point in "i", and returns 1 if
 // a new point was added to the points.  The values i0, i1, v0, v1 are
-// the edge enpoints and scalar values, respectively.
+// the edge endpoints and scalar values, respectively.
 // Point interpolation for clipping and contouring, given the scalar
 // values (v0, v1) for the two endpoints (p0, p1).  The use of this
 // function guarantees perfect consistency in the results.
@@ -531,7 +534,7 @@ int PointInPolygon(glm::dvec3 x, const std::vector<glm::dvec3>& pts, const doubl
 // returns != 0 if vertex can be removed. Uses half-space
 // comparison to determine whether ear-cut is valid, and may
 // resort to line-plane intersections to resolve possible
-// instersections with ear-cut.
+// intersections with ear-cut.
 int CanRemovePolygonVertex(size_t idx, double tolerance, glm::dvec3 normal, const std::vector<int64_t>& poly, const std::vector<glm::dvec3>& vertices) {
   int sign, currentSign;
   double val, s, t;

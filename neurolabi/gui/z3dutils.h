@@ -40,11 +40,13 @@ bool Z3DUtils::isApproxEqual(const glm::tvec3<Real, glm::highp>& vertex1, const 
 }
 template <typename Real>
 Real Z3DUtils::vertexPlaneDistance(const glm::tvec3<Real, glm::highp>& vertex, const glm::tvec4<Real, glm::highp>& plane, Real epsilon) {
-  double distance = glm::dot(plane.xyz(), vertex) - plane.w;
-  if(std::abs(distance) <= epsilon)
+  glm::tvec3<Real, glm::highp> n(plane.x, plane.y, plane.z);
+  Real distance = static_cast<Real>(glm::dot(n, vertex) - plane.w);
+  if(std::abs(distance) <= epsilon) {
     return 0;
-  else
+  } else {
     return distance;
+  }
 }
 template <typename Real>
 Real Z3DUtils::vertexTriangleSquaredDistance(glm::tvec3<Real, glm::highp> P, glm::tvec3<Real, glm::highp> A,
@@ -239,7 +241,7 @@ Real Z3DUtils::vertexLineSegmentSquaredDistance(const glm::tvec3<Real, glm::high
     tolerance = -tolerance;
   }
   if(-tolerance < denom && denom < tolerance) { // numerically bad!
-    closest = p1; // arbitrary, point is (numerically) far away
+    closest = p1;                               // arbitrary, point is (numerically) far away
   }
   // If parametric coordinate is within 0<=p<=1, then the point is closest to
   // the line.  Otherwise, it's closest to a point at the end of the line.
