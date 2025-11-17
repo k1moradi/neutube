@@ -16,7 +16,6 @@ void ZStackDocLoader::load(ZStackDoc* doc, const ZStackDocReader& reader) {
       iter != typeList.end(); ++iter) {
       ZStackObject::EType type = *iter;
       if(getLoadMode(type) == LOAD_OVERWRITE) {
-        //        doc->getObjectGroup().remove(type);
         m_typeRemoved.append(type);
       }
     }
@@ -32,7 +31,6 @@ void ZStackDocLoader::load(ZStackDoc* doc, const ZStackDocReader& reader) {
     for(QList<ZStackObject::EType>::const_iterator iter = typeList.begin();
       iter != typeList.end(); ++iter) {
       ZStackObject::EType type = *iter;
-      //      doc->getObjectGroup().append(newObjectGroup.getObjectList(type));
       m_typeAdded.append(type);
     }
     const ZStackObjectGroup& newObjectGroup = reader.getObjectGroup();
