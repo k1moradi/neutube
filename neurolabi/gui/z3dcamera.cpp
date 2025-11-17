@@ -191,13 +191,11 @@ glm::mat4 Z3DCamera::getProjectionMatrix(Z3DEye eye) {
       } else if(eye == LeftEye) {
         float frustumShift = (m_eyeSeparation / 2.f) * m_nearDist / m_centerDist;
         m_projectionMatrices[eye] = glm::frustum(
-          m_left + frustumShift, m_right + frustumShift,
-          m_bottom, m_top, m_nearDist, m_farDist);
+          m_left + frustumShift, m_right + frustumShift, m_bottom, m_top, m_nearDist, m_farDist);
       } else { // RightEye
         float frustumShift = (m_eyeSeparation / 2.f) * m_nearDist / m_centerDist;
         m_projectionMatrices[eye] = glm::frustum(
-          m_left - frustumShift, m_right - frustumShift,
-          m_bottom, m_top, m_nearDist, m_farDist);
+          m_left - frustumShift, m_right - frustumShift, m_bottom, m_top, m_nearDist, m_farDist);
       }
     }
     m_projectionMatricesIsValid[eye] = true;
@@ -295,10 +293,8 @@ glm::vec3 Z3DCamera::project(glm::vec3 wpt, glm::ivec4 viewport) {
   return glm::project(wpt, modelview, projection, viewport);
 }
 glm::vec3 Z3DCamera::worldToScreen(glm::vec3 wpt, glm::ivec4 viewport, Z3DEye eye) {
-  glm::vec4 clipSpacePos =
-    getProjectionMatrix(eye) * getViewMatrix(eye) * glm::vec4(wpt, 1.f);
-  if(clipSpacePos.w == 0.f)
-    return glm::vec3(-1.f, -1.f, -1.f);
+  glm::vec4 clipSpacePos = getProjectionMatrix(eye) * getViewMatrix(eye) * glm::vec4(wpt, 1.f);
+  if(clipSpacePos.w == 0.f) return glm::vec3(-1.f, -1.f, -1.f);
   glm::vec3 ndcSpacePos = glm::vec3(clipSpacePos.xyz()) / clipSpacePos.w;
   return ((ndcSpacePos + 1.f) / 2.f) * glm::vec3((float)viewport.z, (float)viewport.w, 1.f) + glm::vec3((float)viewport.x, (float)viewport.y, 0.f);
 }
@@ -375,11 +371,9 @@ void Z3DCamera::set(const ZJsonObject& cameraJson) {
     }
   }
   if(cameraJson.hasKey("projection")) {
-    if(strcmp(ZJsonParser::stringValue(cameraJson["projection"]),
-         "Perspective") == 0) {
+    if(strcmp(ZJsonParser::stringValue(cameraJson["projection"]), "Perspective") == 0) {
       m_projectionType = Perspective;
-    } else if(strcmp(ZJsonParser::stringValue(cameraJson["projection"]),
-                "Orthographic") == 0) {
+    } else if(strcmp(ZJsonParser::stringValue(cameraJson["projection"]), "Orthographic") == 0) {
       m_projectionType = Orthographic;
     }
   }
